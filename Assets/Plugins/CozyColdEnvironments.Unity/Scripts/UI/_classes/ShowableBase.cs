@@ -51,7 +51,7 @@ namespace CCEnvs.UnityX.UI
             protected set => isShown.Value = value;
         }
         public bool IsInited { get; protected set; }
-        public virtual bool IsReadyToShow => IsEnabled;
+        public virtual bool IsReadyToShow => didStart && IsEnabled;
 
         public bool IsEnabled {
             get => isEnabled;
@@ -302,16 +302,12 @@ namespace CCEnvs.UnityX.UI
         {
             OnShow();
             ShowCore();
-            SetShown();
-            OnShown();
         }
 
         protected void HideInternal()
         {
             OnHide();
             HideCore();
-            SetHiden();
-            OnHiden();
         }
 
         protected async UniTask InitVisibleStateAsync()
@@ -346,18 +342,55 @@ namespace CCEnvs.UnityX.UI
             }
         }
 
-        protected virtual void SetShown()
+        protected virtual ICommandBase GetHideCommand(CancellationToken cancellationToken)
         {
-            isShown.Value = true;
+            string cmdName = NameFactory.CreateFromCaller(
+                this,
+                nameof(Hide),
+                expirationTimeRelativeToNow: 5.Minutes()
+                );
 
-            OnShown();
+            return Command.Builder.WithName(cmdName)
+                .WithState(this)
+                .Synchronously()
+                .WithExecuteAction(
+                static @this =>
+                {
+                    @this.HideInternal();
+                    @this.IsShown = false;
+                    @this.OnHiden();
+                })
+                .BuildPooled()
+                .Value
+                .AttachExternalCancellationToken(cancellationToken);
         }
 
-        protected virtual void SetHiden()
+        protected virtual ICommandBase GetShowCommand(CancellationToken cancellationToken)
         {
-            isShown.Value = false;
+            string cmdName = NameFactory.CreateFromCaller(
+                this,
+                nameof(Show),
+                expirationTimeRelativeToNow: 5.Minutes()
+                );
 
-            OnHiden();
+            return Command.Builder.WithName(cmdName)
+                .WithState(this)
+                .WithExecutePredicate(
+                static @this =>
+                {
+                    return @this.IsReadyToShow;
+                })
+                .Synchronously()
+                .WithExecuteAction(
+                static @this =>
+                {
+                    @this.ShowInternal();
+                    @this.IsShown = true;
+                    @this.OnShown();
+                })
+                .BuildPooled()
+                .Value
+                .AttachExternalCancellationToken(cancellationToken);
         }
 
         private void SetRoot()
@@ -400,47 +433,6 @@ namespace CCEnvs.UnityX.UI
                     @this.SetRoot();
                 })
                 .RegisterTo(destroyCancellationToken);
-        }
-
-        private ICommandBase GetHideCommand(CancellationToken cancellationToken)
-        {
-            string cmdName = NameFactory.CreateFromCaller(
-                this,
-                nameof(Hide),
-                expirationTimeRelativeToNow: 5.Minutes()
-                );
-
-            return Command.Builder.WithName(cmdName)
-                .WithState(this)
-                .Synchronously()
-                .WithExecuteAction(
-                static @this => @this.HideInternal())
-                .BuildPooled()
-                .Value
-                .AttachExternalCancellationToken(cancellationToken);
-        }
-
-        private ICommandBase GetShowCommand(CancellationToken cancellationToken)
-        {
-            string cmdName = NameFactory.CreateFromCaller(
-                this,
-                nameof(Show),
-                expirationTimeRelativeToNow: 5.Minutes()
-                );
-
-            return Command.Builder.WithName(cmdName)
-                .WithState(this)
-                .WithExecutePredicate(
-                static @this =>
-                {
-                    return @this.IsReadyToShow;
-                })
-                .Synchronously()
-                .WithExecuteAction(
-                static @this => @this.ShowInternal())
-                .BuildPooled()
-                .Value
-                .AttachExternalCancellationToken(cancellationToken);
         }
     }
 }

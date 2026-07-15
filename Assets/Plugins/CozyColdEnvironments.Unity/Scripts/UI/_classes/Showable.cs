@@ -95,10 +95,7 @@ namespace CCEnvs.UnityX.UI
             switch (renderMode)
             {
                 case ShowableRenderMode.GameObject:
-                    {
-                        gameObject.SetActive(false);
-                        SetHiden();
-                    }
+                    gameObject.SetActive(false);
                     break;
 
                 case ShowableRenderMode.CanvasGroup:
@@ -123,8 +120,6 @@ namespace CCEnvs.UnityX.UI
                             snapshots.Value.Add(showable, new ShowableSnapshot(showable));
                             showable.Hide();
                         }
-
-                        SetHiden();
                     }
                     break;
 

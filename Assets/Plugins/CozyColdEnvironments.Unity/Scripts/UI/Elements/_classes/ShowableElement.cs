@@ -1,7 +1,10 @@
 #nullable enable
 using CCEnvs.Diagnostics;
+using CCEnvs.Patterns.Commands;
 using CCEnvs.UnityX.Injections;
 using Cysharp.Threading.Tasks;
+using Humanizer;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -92,6 +95,35 @@ namespace CCEnvs.UnityX.UI.Elements
         }
 
         protected virtual void OnInited() { }
+
+        protected override ICommandBase GetShowCommand(CancellationToken cancellationToken)
+        {
+            string cmdName = NameFactory.CreateFromCaller(
+                this,
+                nameof(Show),
+                expirationTimeRelativeToNow: 5.Minutes()
+                );
+
+            return Command.Builder.WithName(cmdName)
+                .WithState(this)
+                .WithExecutePredicate(@this => @this.IsReadyToShow)
+                .Asynchronously()
+                .WithExecuteAction(async (@this, cancellationToken) =>
+                {
+                    await UniTask.DelayFrame(
+                        delayFrameCount: 1,
+                        delayTiming: PlayerLoopTiming.Update,
+                        cancellationToken: cancellationToken
+                        );
+
+                    @this.ShowInternal();
+                    @this.IsShown = true;
+                    @this.OnShown();
+                })
+                .BuildPooled()
+                .Value
+                .AttachExternalCancellationToken(destroyCancellationToken);
+        }
 
         private void OnUIReload(PanelRenderer _, VisualElement root)
         {
