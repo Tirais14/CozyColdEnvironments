@@ -15,7 +15,7 @@ namespace CCEnvs.UnityX.Items.UI
 
         where T : IItemContainer
     {
-        private readonly ReactiveProperty<Sprite> iconView = new(UCC.TransparentSprite.Value);
+        private readonly ReactiveProperty<Sprite> iconView = new(UCC.TransparentSprite);
 
         private readonly ReactiveProperty<string> counterView = new();
 
@@ -44,7 +44,7 @@ namespace CCEnvs.UnityX.Items.UI
             CCDisposable.Dispose(ref iconBinding);
             CCDisposable.Dispose(ref counterBinding);
 
-            iconView.Value = UCC.TransparentSprite.Value;
+            iconView.Value = UCC.TransparentSprite;
             counterView.Value = string.Empty;
         }
 
@@ -63,11 +63,11 @@ namespace CCEnvs.UnityX.Items.UI
         private void OnItemChanged(IItem? item)
         {
             if (item.IsNull())
-                iconView.Value = UCC.TransparentSprite.Value;
+                iconView.Value = UCC.TransparentSprite;
 
             iconView.Value = item.Maybe()
                 .Map(static item => item.Icon)
-                .GetValue(UCC.TransparentSprite.Value);
+                .GetValue(UCC.TransparentSprite);
         }
 
         private void BindCounterText(T model)

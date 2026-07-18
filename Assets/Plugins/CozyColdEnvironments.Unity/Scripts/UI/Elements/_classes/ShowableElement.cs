@@ -23,10 +23,10 @@ namespace CCEnvs.UnityX.UI.Elements
 
         public VisualElement? rendererRoot { get; private set; }
 
-        public override bool IsShown {
-            get => base.IsShown && (rendererRoot?.visible ?? false);
-            protected set => base.IsShown = value;
-        }
+        //public override bool IsShown {
+        //    get => base.IsShown && (rendererRoot?.visible ?? false);
+        //    protected set => base.IsShown = value;
+        //}
 
         protected override void Start()
         {
@@ -122,7 +122,7 @@ namespace CCEnvs.UnityX.UI.Elements
                 })
                 .BuildPooled()
                 .Value
-                .AttachExternalCancellationToken(destroyCancellationToken);
+                .WithCancellationToken(destroyCancellationToken);
         }
 
         private void OnUIReload(PanelRenderer _, VisualElement root)

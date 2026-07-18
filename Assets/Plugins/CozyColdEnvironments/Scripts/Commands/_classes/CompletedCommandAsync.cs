@@ -32,7 +32,7 @@ namespace CCEnvs.Patterns.Commands
 
         public CommandSignature Signature => new(TypeofCache<CompletedCommandAsync>.Type, Name, 545423464);
 
-        public ICommandAsync AttachExternalCancellationToken(CancellationToken cancellationToken)
+        public ICommandAsync WithCancellationToken(CancellationToken cancellationToken)
         {
             return this;
         }

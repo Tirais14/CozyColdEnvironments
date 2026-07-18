@@ -1,11 +1,7 @@
-using CCEnvs.Diagnostics;
 using CCEnvs.Disposables;
-using CCEnvs.TypeMatching;
 using CCEnvs.UnityX.UI;
-using CommunityToolkit.Diagnostics;
 using R3;
 using System;
-using Unity.Properties;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -116,5 +112,27 @@ namespace CCEnvs.UnityX.Items.UIElements
             countBinding = viewModel.Count.Subscribe(OnCountChanged);
         }
 
+    }
+
+    public class ItemContainerView : ItemContainerView<ItemContainerViewModel>
+    {
+        [SerializeField]
+        protected CompareAction<int> showCounterViewPredicate;
+
+        public CompareAction<int> ShowCounterViewPredicate {
+            get => showCounterViewPredicate;
+            set => SetShowCounterViewPredicate(value);
+        }
+
+        public ItemContainerView SetShowCounterViewPredicate(CompareAction<int> predicate)
+        {
+            showCounterViewPredicate = predicate;
+            return this;
+        }
+
+        protected override ItemContainerViewModel? CreateViewModel()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -8,68 +8,75 @@ namespace CCEnvs.UnityX.Tests
     [TestFixture]
     public class ItemContainerTests
     {
+        private ItemContainer container = null!;
 
-        private ItemContainer itemContainer = null!;
+        private Mock<IItem> cigarettesMock = null!;
+
+        private IItem cigarettes => cigarettesMock.Object;
 
         [SetUp]
         public void Setup()
         {
-            itemContainer = new ItemContainer();
+            container = new ItemContainer();
+            cigarettesMock = GetItemMock();
         }
 
         [TearDown]
         public void TearDown()
         {
-            itemContainer.Dispose();
-            itemContainer = null!;
+            container.Dispose();
+            container = null!;
+            cigarettesMock = null!;
         }
 
         [Test]
         public void CheckPutItem()
         {
-            Mock<IItem> itemMock = GetItemMock();
-            IItem item = itemMock.Object;
-            itemContainer.PutItem(item);
-            Assert.AreEqual(item, itemContainer.Item);
+            container.PutItem(cigarettes);
+            Assert.AreEqual(cigarettes, container.Item);
         }
 
         [Test]
         public void CheckItemCount()
         {
-            Mock<IItem> itemMock = GetItemMock();
-            IItem item = itemMock.Object;
-
             const int PUT_ITEM_COUNT = 15000;
-            ReadOnlyItemContainer restItems = itemContainer.PutItem(item, PUT_ITEM_COUNT);
+            ReadOnlyItemContainer restItems = container.PutItem(cigarettes, PUT_ITEM_COUNT);
 
             Assert.AreEqual(0, restItems.ItemCount);
-            Assert.AreEqual(PUT_ITEM_COUNT, itemContainer.ItemCount);
+            Assert.AreEqual(PUT_ITEM_COUNT, container.ItemCount);
         }
 
         [Test]
         public void CheckFreeSpace()
         {
-            Mock<IItem> itemMock = GetItemMock();
-            IItem item = itemMock.Object;
-            int putItemCount = item.MaxItemCount / 2;
-            itemContainer.PutItem(item, putItemCount);
-            Assert.AreEqual(itemContainer.Capacity - putItemCount, itemContainer.FreeSpace);
+            int putItemCount = cigarettes.MaxItemCount / 2;
+            container.PutItem(cigarettes, putItemCount);
+            Assert.AreEqual(container.Capacity - putItemCount, container.FreeSpace);
         }
 
         [Test]
         public void CheckTakeItem()
         {
-            Mock<IItem> itemMock = GetItemMock();
-            IItem item = itemMock.Object;
-
             const int PUT_ITEM_COUNT = 15000;
             const int TAKE_ITEM_COUNT = 15000;
 
-            itemContainer.PutItem(item, PUT_ITEM_COUNT);
-            ReadOnlyItemContainer takenItems = itemContainer.TakeItem(TAKE_ITEM_COUNT);
+            container.PutItem(cigarettes, PUT_ITEM_COUNT);
+            ReadOnlyItemContainer takenItems = container.TakeItem(TAKE_ITEM_COUNT);
 
             Assert.AreEqual(TAKE_ITEM_COUNT, takenItems.ItemCount);
-            Assert.AreEqual(PUT_ITEM_COUNT - TAKE_ITEM_COUNT, itemContainer.ItemCount);
+            Assert.AreEqual(PUT_ITEM_COUNT - TAKE_ITEM_COUNT, container.ItemCount);
+        }
+
+        [Test]
+        public void CheckIcon()
+        {
+            container.PutItem(cigarettes, 1500);
+
+            Assert.IsNotNull(container.Item);
+            Assert.AreEqual(UCC.TransparentSprite, container.Item.IfNotNull(x => x.Icon));
+
+            container.TakeItem();
+            Assert.AreEqual(UCC.TransparentSprite, container.Item.IfNotNull(x => x.Icon));
         }
 
         private Mock<IItem> GetItemMock()
@@ -79,6 +86,7 @@ namespace CCEnvs.UnityX.Tests
             itemMock.Setup(item => item.Name).Returns("Cigarettes");
             itemMock.Setup(item => item.ID).Returns(1);
             itemMock.Setup(item => item.MaxItemCount).Returns(int.MaxValue / 2);
+            itemMock.Setup(item => item.Icon).Returns(UCC.TransparentSprite);
 
             return itemMock;
         }

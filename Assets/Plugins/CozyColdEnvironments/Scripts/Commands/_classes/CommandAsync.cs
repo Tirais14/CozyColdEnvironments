@@ -46,7 +46,7 @@ namespace CCEnvs.Patterns.Commands
 
             try
             {
-                AttachExternalCancellationToken(cancellationToken);
+                WithCancellationToken(cancellationToken);
 
                 if (CancellationToken.IsCancellationRequested)
                 {

@@ -12,4 +12,15 @@ namespace CCEnvs.UnityX.Items.UIElements
         {
         }
     }
+
+    public class ItemContainerViewModel : ItemContainerViewModel<IItemContainer>
+    {
+        public ItemContainerViewModel()
+        {
+        }
+
+        public ItemContainerViewModel(IItemContainer? model) : base(model)
+        {
+        }
+    }
 }

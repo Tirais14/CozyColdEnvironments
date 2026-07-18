@@ -126,7 +126,7 @@ namespace CCEnvs.UnityX.UI.Leaderboards
                })
                .BuildPooled()
                .Value
-               .AttachExternalCancellationToken(destroyCancellationToken)
+               .WithCancellationToken(destroyCancellationToken)
                .ScheduleBy(commandScheduler);
         }
 
@@ -290,7 +290,7 @@ namespace CCEnvs.UnityX.UI.Leaderboards
                 })
                 .BuildPooled()
                 .Value
-                .AttachExternalCancellationToken(destroyCancellationToken)
+                .WithCancellationToken(destroyCancellationToken)
                 .ScheduleBy(commandScheduler);
         }
 

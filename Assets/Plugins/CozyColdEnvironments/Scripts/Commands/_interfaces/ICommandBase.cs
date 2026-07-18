@@ -49,7 +49,7 @@ namespace CCEnvs.Patterns.Commands
     {
         TThis Reset();
 
-        TThis AttachExternalCancellationToken(CancellationToken cancellationToken);
+        TThis WithCancellationToken(CancellationToken cancellationToken);
     }
 
     public static class ICommandBaseExtensions

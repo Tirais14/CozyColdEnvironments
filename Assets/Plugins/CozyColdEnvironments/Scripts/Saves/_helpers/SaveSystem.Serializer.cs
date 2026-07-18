@@ -40,7 +40,7 @@ namespace CCEnvs.Saves
                     })
                     .BuildPooled()
                     .Value
-                    .AttachExternalCancellationToken(cancellationToken)
+                    .WithCancellationToken(cancellationToken)
                     .ScheduleBy(CommandScheduler)
                     .WaitForDone();
             }
@@ -73,7 +73,7 @@ namespace CCEnvs.Saves
                     })
                     .BuildPooled()
                     .Value
-                    .AttachExternalCancellationToken(cancellationToken)
+                    .WithCancellationToken(cancellationToken)
                     .ScheduleBy(CommandScheduler)
                     .WaitForDone();
 

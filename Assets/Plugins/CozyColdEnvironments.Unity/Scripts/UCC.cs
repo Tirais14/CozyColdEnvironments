@@ -70,21 +70,28 @@ namespace CCEnvs.UnityX
                 return go;
             });
 
-        public static Lazy<Sprite> ColorSprite { get; } = new(static () => Resources.Load<Sprite>("Textures/ColorSprite"));
+        private static readonly Lazy<Sprite> colorSprite = new(static () => Resources.Load<Sprite>("Textures/ColorSprite"));
 
-        public static Lazy<Sprite> TransparentSprite { get; } = new(static () => Resources.Load<Sprite>("Textures/DummySprite"));
+        private static readonly Lazy<Sprite> transparentSprite = new(static () => Resources.Load<Sprite>("Textures/DummySprite"));
 
-        public static Lazy<Sprite> RedCrossSprite { get; } = new(static () => Resources.Load<Sprite>("Textures/RedCross"));
+        private static readonly Lazy<Sprite> redCrossSprite = new(static () => Resources.Load<Sprite>("Textures/RedCross"));
 
-        public static Lazy<IInventory> WorldInventory { get; } = new(static () => new Inventory());
+        private static readonly Lazy<IInventory> worldInventory = new(static () => new Inventory());
 
-        public static Lazy<Material> MockMaterial { get; } = new(static () => Resources.Load<Material>("CC/Mock_Material"));
+        private static readonly Lazy<Material> mockMaterial = new(static () => Resources.Load<Material>("CC/Mock_Material"));
+
+        public static Sprite ColorSprite => colorSprite.Value;
+        public static Sprite TransparentSprite => transparentSprite.Value;
+        public static Sprite RedCrossSprite => redCrossSprite.Value;
+        public static Sprite AnonymousProfileImage => anonymousProfileImage.Value;
+
+        public static IInventory WorldInventory => worldInventory.Value;
+
+        public static Material MockMaterial => mockMaterial.Value;
 
         public static Canvas DevCanvas => _devCanvas.Value;
 
         public static GameObject PooledObjectsParent => _pooledObjectsParent.Value;
-
-        public static Sprite AnonymousProfileImage => anonymousProfileImage.Value;
 
         public static Transform DevObject => devOjbect.Value;
 

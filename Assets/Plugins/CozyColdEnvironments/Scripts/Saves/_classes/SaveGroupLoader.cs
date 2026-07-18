@@ -73,7 +73,7 @@ namespace CCEnvs.Saves
                 })
                 .BuildPooled()
                 .Value
-                .AttachExternalCancellationToken(cancellationToken)
+                .WithCancellationToken(cancellationToken)
                 .ScheduleBy(Group.commandScheduler)
                 .WaitForDone();
 
@@ -119,7 +119,7 @@ namespace CCEnvs.Saves
                 })
                 .BuildPooled()
                 .Value
-                .AttachExternalCancellationToken(cancellationToken)
+                .WithCancellationToken(cancellationToken)
                 .ScheduleBy(Group.commandScheduler)
                 .WaitForDone();
         }
@@ -173,7 +173,7 @@ namespace CCEnvs.Saves
                 })
                 .BuildPooled()
                 .Value
-                .AttachExternalCancellationToken(cancellationToken)
+                .WithCancellationToken(cancellationToken)
                 .ScheduleBy(Group.commandScheduler)
                 .WaitForDone();
 
@@ -209,7 +209,7 @@ namespace CCEnvs.Saves
                 })
                 .BuildPooled()
                 .Value
-                .AttachExternalCancellationToken(cancellationToken)
+                .WithCancellationToken(cancellationToken)
                 .ScheduleBy(Group.commandScheduler)
                 .WaitForDone();
         }

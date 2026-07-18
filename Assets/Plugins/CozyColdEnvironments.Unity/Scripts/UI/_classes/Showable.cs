@@ -86,7 +86,7 @@ namespace CCEnvs.UnityX.UI
                 })
                 .BuildPooled()
                 .Value
-                .AttachExternalCancellationToken(destroyCancellationToken)
+                .WithCancellationToken(destroyCancellationToken)
                 .ScheduleBy(commandScheduler);
         }
 
@@ -269,47 +269,6 @@ namespace CCEnvs.UnityX.UI
             canvasController = this.Q()
                 .FromParents()
                 .Component<ICanvasController>().Raw;
-        }
-
-        private ICommandBase GetHideCommand(CancellationToken cancellationToken)
-        {
-            string cmdName = NameFactory.CreateFromCaller(
-                this,
-                nameof(Hide),
-                expirationTimeRelativeToNow: 5.Minutes()
-                );
-
-            return Command.Builder.WithName(cmdName)
-                .WithState(this)
-                .Synchronously()
-                .WithExecuteAction(
-                static @this => @this.HideInternal())
-                .BuildPooled()
-                .Value
-                .AttachExternalCancellationToken(cancellationToken);
-        }
-
-        private ICommandBase GetShowCommand(CancellationToken cancellationToken)
-        {
-            string cmdName = NameFactory.CreateFromCaller(
-                this,
-                nameof(Hide),
-                expirationTimeRelativeToNow: 5.Minutes()
-                );
-
-            return Command.Builder.WithName(cmdName)
-                .WithState(this)
-                .WithExecutePredicate(
-                static @this =>
-                {
-                    return @this.IsReadyToShow;
-                })
-                .Synchronously()
-                .WithExecuteAction(
-                static @this => @this.ShowInternal())
-                .BuildPooled()
-                .Value
-                .AttachExternalCancellationToken(cancellationToken);
         }
     }
 }

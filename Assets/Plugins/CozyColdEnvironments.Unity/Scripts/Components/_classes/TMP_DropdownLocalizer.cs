@@ -77,7 +77,7 @@ namespace CCEnvs.UnityX.Components
                 .BuildPooled()
                 .Value
                 .ScheduleBy(commandScheduler)
-                .AttachExternalCancellationToken(destroyCancellationToken);
+                .WithCancellationToken(destroyCancellationToken);
         }
 
         private void TryApplyLocalizationToOption(OptionData option, StringTable table, string key)

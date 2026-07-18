@@ -174,17 +174,19 @@ namespace CCEnvs.UnityX.UI
 
         public bool SwitchShownState()
         {
-            ThrowIfInitFailured();
-
             if (!IsEnabled)
                 return IsShown;
 
             if (IsShown)
+            {
                 Hide();
+                return false;
+            }
             else
+            {
                 Show();
-
-            return IsShown;
+                return true;
+            }
         }
 
         public async UniTask<bool> SwitchShownStateAsync(CancellationToken cancellationToken = default)
@@ -193,11 +195,15 @@ namespace CCEnvs.UnityX.UI
                 return IsShown;
 
             if (IsShown)
+            {
                 await HideAsync();
+                return false;
+            }
             else
+            {
                 await ShowAsync();
-
-            return IsShown;
+                return true;
+            }
         }
 
         public void SwitchShownStateVoid() => SwitchShownState();
@@ -335,7 +341,11 @@ namespace CCEnvs.UnityX.UI
                     childs,
                     static childs =>
                     {
-                        return childs.All(x => x.IsInited);
+                        foreach (var child in childs)
+                            if (!child.IsInited)
+                                return false;
+
+                        return true;
                     },
                     cancellationToken: destroyCancellationToken
                     );
@@ -362,7 +372,7 @@ namespace CCEnvs.UnityX.UI
                 })
                 .BuildPooled()
                 .Value
-                .AttachExternalCancellationToken(cancellationToken);
+                .WithCancellationToken(cancellationToken);
         }
 
         protected virtual ICommandBase GetShowCommand(CancellationToken cancellationToken)
@@ -390,7 +400,7 @@ namespace CCEnvs.UnityX.UI
                 })
                 .BuildPooled()
                 .Value
-                .AttachExternalCancellationToken(cancellationToken);
+                .WithCancellationToken(cancellationToken);
         }
 
         private void SetRoot()

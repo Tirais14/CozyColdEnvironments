@@ -12,7 +12,7 @@ namespace CCEnvs.UnityX.Items
 
         public string Name { get; init; } = "None";
         public int ID { get; init; } = int.MinValue;
-        public Sprite Icon { get; init; } = UCC.RedCrossSprite.Value;
+        public Sprite Icon { get; init; } = UCC.RedCrossSprite;
         public int MaxItemCount { get; init; } = int.MaxValue;
 
         public static bool operator ==(ItemCustom? left, ItemCustom? right)

@@ -192,7 +192,7 @@ namespace CCEnvs.Patterns.Commands
         }
 
 
-        public TThis AttachExternalCancellationToken(CancellationToken cancellationToken)
+        public TThis WithCancellationToken(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 

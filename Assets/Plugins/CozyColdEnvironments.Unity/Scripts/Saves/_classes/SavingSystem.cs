@@ -336,7 +336,7 @@ namespace CCEnvs.UnityX.Saves
                 })
                 .BuildPooled()
                 .Value
-                .AttachExternalCancellationToken(cancellationToken)
+                .WithCancellationToken(cancellationToken)
                 .ScheduleBy(commandScheduler)
                 .ObserveIsDone()
                 .FirstAsync(cancellationToken);
@@ -357,7 +357,7 @@ namespace CCEnvs.UnityX.Saves
                 })
                 .BuildPooled()
                 .Value
-                .AttachExternalCancellationToken(cancellationToken)
+                .WithCancellationToken(cancellationToken)
                 .ScheduleBy(commandScheduler)
                 .ObserveIsDone()
                 .FirstAsync(cancellationToken);
