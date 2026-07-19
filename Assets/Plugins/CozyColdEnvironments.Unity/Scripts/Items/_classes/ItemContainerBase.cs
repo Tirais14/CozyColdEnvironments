@@ -227,7 +227,12 @@ namespace CCEnvs.UnityX.Items
             if (onTakeItem is not null && takenCount >= 1)
                 onTakeItem.Execute(CreateTakeItemEvent(Item!, takenCount));
 
-            return CreateReadOnlyContainer(Item, takenCount);
+            TReadOnlyContainer takenItems = CreateReadOnlyContainer(Item, takenCount);
+
+            if (itemCount.Value <= 0)
+                item.Value = default;
+
+            return takenItems;
         }
         public TReadOnlyContainer TakeItem() => TakeItem(itemCount.Value);
         public TReadOnlyContainer TakeItem(TItem? item, int count)

@@ -68,7 +68,7 @@ namespace CCEnvs.UnityX.Tests
         }
 
         [Test]
-        public void CheckIcon()
+        public void CheckItemIcon()
         {
             container.PutItem(cigarettes, 1500);
 
@@ -76,7 +76,19 @@ namespace CCEnvs.UnityX.Tests
             Assert.AreEqual(UCC.TransparentSprite, container.Item.IfNotNull(x => x.Icon));
 
             container.TakeItem();
-            Assert.AreEqual(UCC.TransparentSprite, container.Item.IfNotNull(x => x.Icon));
+            Assert.IsNull(container.Item.IfNotNull(x => x.Icon));
+        }
+
+        [Test]
+        public void CheckItem()
+        {
+            const int PUT_ITEM_COUNT = 15;
+
+            Assert.IsNull(container.Item);
+            container.PutItem(cigarettes, PUT_ITEM_COUNT);
+            Assert.AreEqual(cigarettes, container.Item);
+            container.TakeItem(PUT_ITEM_COUNT);
+            Assert.IsNull(container.Item);
         }
 
         private Mock<IItem> GetItemMock()
