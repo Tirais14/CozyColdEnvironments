@@ -1,3 +1,4 @@
+using CCEnvs.Diagnostics;
 using CCEnvs.UnityX.Components;
 using CCEnvs.UnityX.EditorSerialization;
 using CCEnvs.UnityX.Injections;
@@ -10,14 +11,10 @@ using UnityEngine.UIElements;
 namespace CCEnvs.UnityX.UI.Elements
 {
     [RequireComponent(typeof(PanelRenderer))]
-    public class DragHandler<TBeginEvent, TDragEvent, TEndEvent>
+    public class DragHandler
         :
         CCBehaviour,
-        IDragHandler<TBeginEvent, TDragEvent, TEndEvent>
-
-        where TBeginEvent : EventBase<TBeginEvent>, new()
-        where TDragEvent : EventBase<TDragEvent>, new()
-        where TEndEvent : EventBase<TEndEvent>, new()
+        IDragHandler
     {
         [SerializeField]
         protected string? targetName;
@@ -28,9 +25,9 @@ namespace CCEnvs.UnityX.UI.Elements
         [SerializeField]
         protected SerializedNullable<LayerMask> dropTargetLayerMask;
 
-        private ReactiveCommand<DragContext<TBeginEvent>>? onBeginDragCmd;
-        private ReactiveCommand<DragContext<TDragEvent>>? onDragCmd;
-        private ReactiveCommand<DragContext<TEndEvent>>? onEndDragCmd;
+        private ReactiveCommand<DragContext>? onBeginDragCmd;
+        private ReactiveCommand<DragContext>? onDragCmd;
+        private ReactiveCommand<DragContext>? onEndDragCmd;
 
         [field: GetBySelf]
         public PanelRenderer renderer { get; private set; } = null!;
@@ -54,6 +51,11 @@ namespace CCEnvs.UnityX.UI.Elements
             set => SetDropTargetLayerMask(value);
         }
 
+        bool IToggleable.IsEnabled {
+            get => enabled;
+            set => enabled = value;
+        }
+
         protected override void OnEnable()
         {
             base.OnEnable();
@@ -63,6 +65,7 @@ namespace CCEnvs.UnityX.UI.Elements
         protected override void OnDisable()
         {
             base.OnDisable();
+            IsDragging = false;
             UnbindUIReload();
             UnbindBeginEvent();
             UnbindMoveEvent();
@@ -75,49 +78,49 @@ namespace CCEnvs.UnityX.UI.Elements
             onDragCmd?.Dispose();
         }
 
-        public DragHandler<TBeginEvent, TDragEvent, TEndEvent> SetTargetName(string? name)
+        public DragHandler SetTargetName(string? name)
         {
             targetName = name;
             return this;
         }
 
-        public DragHandler<TBeginEvent, TDragEvent, TEndEvent> SetDropTargetTag(string? tag)
+        public DragHandler SetDropTargetTag(string? tag)
         {
             dropTargetTag = tag;
             return this;
         }
 
-        public DragHandler<TBeginEvent, TDragEvent, TEndEvent> SetDropTargetLayerMask(int? layerMask)
+        public DragHandler SetDropTargetLayerMask(int? layerMask)
         {
             dropTargetLayerMask = new SerializedNullable<LayerMask>(layerMask ?? null);
             return this;
         }
 
-        public Observable<DragContext<TBeginEvent>> ObserveBeginDrag()
+        public Observable<DragContext> ObserveBeginDrag()
         {
-            onBeginDragCmd ??= new ReactiveCommand<DragContext<TBeginEvent>>();
+            onBeginDragCmd ??= new ReactiveCommand<DragContext>();
             return onBeginDragCmd;
         }
 
-        public Observable<DragContext<TDragEvent>> ObserveDrag()
+        public Observable<DragContext> ObserveDrag()
         {
-            onDragCmd ??= new ReactiveCommand<DragContext<TDragEvent>>();
+            onDragCmd ??= new ReactiveCommand<DragContext>();
             return onDragCmd;
         }
 
-        public Observable<DragContext<TEndEvent>> ObserveEndDrag()
+        public Observable<DragContext> ObserveEndDrag()
         {
-            onEndDragCmd ??= new ReactiveCommand<DragContext<TEndEvent>>();
+            onEndDragCmd ??= new ReactiveCommand<DragContext>();
             return onEndDragCmd;
         }
 
         protected virtual void OnUIReload(PanelRenderer renderer, VisualElement root) { }
 
-        protected virtual void OnBeginEvent(TBeginEvent ev) { }
+        protected virtual void OnBeginEvent(PointerDownEvent ev) { }
 
-        protected virtual void OnDragEvent(TDragEvent ev) { }
+        protected virtual void OnDragEvent(PointerMoveEvent ev) { }
 
-        protected virtual void OnEndEvent(TEndEvent ev) { }
+        protected virtual void OnEndEvent(PointerUpEvent ev) { }
 
         private void OnUIReloadInternal(PanelRenderer renderer, VisualElement root)
         {
@@ -148,8 +151,11 @@ namespace CCEnvs.UnityX.UI.Elements
             target = null;
         }
 
-        private void OnBeginEventInternal(TBeginEvent ev)
+        private void OnBeginEventInternal(PointerDownEvent ev)
         {
+            if (!enabled)
+                return;
+
             Guard.IsNotNull(target);
             IsDragging = true;
 
@@ -161,20 +167,26 @@ namespace CCEnvs.UnityX.UI.Elements
 
             OnBeginEvent(ev);
             onBeginDragCmd?.Execute(context);
+
+            if (CCDebug<DragHandler>.IsEnabled)
+                this.PrintLog("Begin Drag");
         }
 
         private void BindBeginEvent(VisualElement target)
         {
-            target.RegisterCallback<TBeginEvent>(OnBeginEventInternal);
+            target.RegisterCallback<PointerDownEvent>(OnBeginEventInternal);
         }
 
         private void UnbindBeginEvent()
         {
-            target?.UnregisterCallback<TBeginEvent>(OnBeginEventInternal);
+            target?.UnregisterCallback<PointerDownEvent>(OnBeginEventInternal);
         }
 
-        private void OnDragEventInternal(TDragEvent ev)
+        private void OnDragEventInternal(PointerMoveEvent ev)
         {
+            if (!enabled)
+                return;
+
             Guard.IsNotNull(target);
 
             if (!IsDragging)
@@ -192,16 +204,19 @@ namespace CCEnvs.UnityX.UI.Elements
 
         private void BindMoveEvent(VisualElement target)
         {
-            target.RegisterCallback<TDragEvent>(OnDragEventInternal);
+            target.RegisterCallback<PointerMoveEvent>(OnDragEventInternal);
         }
 
         private void UnbindMoveEvent()
         {
-            target?.UnregisterCallback<TDragEvent>(OnDragEventInternal);
+            target?.UnregisterCallback<PointerMoveEvent>(OnDragEventInternal);
         }
 
-        private void OnEndEventInternal(TEndEvent ev) 
+        private void OnEndEventInternal(PointerUpEvent ev) 
         {
+            if (!enabled)
+                return;
+
             Guard.IsNotNull(target);
 
             if (!IsDragging)
@@ -212,11 +227,6 @@ namespace CCEnvs.UnityX.UI.Elements
                 gameObject,
                 ev
                 );
-
-            OnEndEvent(ev);
-            onEndDragCmd?.Execute(context);
-
-            IsDragging = false;
 
             if (DropTargetRegistry.Targets.TryGetValue(ev.target, out DropTarget dropTarget)
                 &&
@@ -230,16 +240,24 @@ namespace CCEnvs.UnityX.UI.Elements
             {
                 targetDropHandler.SendDropEvent(context);
             }
+
+            OnEndEvent(ev);
+            onEndDragCmd?.Execute(context);
+
+            IsDragging = false;
+
+            if (CCDebug<DragHandler>.IsEnabled)
+                this.PrintLog("End Drag");
         }
 
         private void BindEndEvent(VisualElement target)
         {
-            target.RegisterCallback<TEndEvent>(OnEndEventInternal);
+            target.RegisterCallback<PointerUpEvent>(OnEndEventInternal);
         }
 
         private void UnbindEndEvent()
         {
-            target?.UnregisterCallback<TEndEvent>(OnEndEventInternal);
+            target?.UnregisterCallback<PointerUpEvent>(OnEndEventInternal);
         }
     }
 }

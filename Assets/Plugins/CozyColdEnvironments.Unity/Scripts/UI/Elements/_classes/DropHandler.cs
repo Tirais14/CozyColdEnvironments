@@ -32,6 +32,11 @@ namespace CCEnvs.UnityX.UI.Elements
             set => SetTargetName(value);
         }
 
+        bool IToggleable.IsEnabled {
+            get => enabled;
+            set => enabled = value;
+        }
+
         protected override void OnEnable()
         {
             base.OnEnable();
@@ -56,8 +61,7 @@ namespace CCEnvs.UnityX.UI.Elements
             return this;
         }
 
-        public void SendDropEvent<TEvent>(DragContext<TEvent> dragContext)
-            where TEvent : EventBase<TEvent>, new()
+        public void SendDropEvent(DragContext dragContext)
         {
             OnDropEvent();
             var context = DropContext.Create(dragContext, gameObject);

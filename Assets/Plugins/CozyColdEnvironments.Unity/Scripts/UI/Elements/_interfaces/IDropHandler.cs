@@ -1,17 +1,14 @@
 using R3;
-using System;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 #nullable enable
 namespace CCEnvs.UnityX.UI.Elements
 {
-    public interface IDropHandler
+    public interface IDropHandler : IToggleable
     {
         GameObject gameObject { get; }
 
-        void SendDropEvent<TEvent>(DragContext<TEvent> dragContext)
-            where TEvent : EventBase<TEvent>, new();
+        void SendDropEvent(DragContext dragContext);
 
         Observable<DropContext> ObserveDrop();
     }
