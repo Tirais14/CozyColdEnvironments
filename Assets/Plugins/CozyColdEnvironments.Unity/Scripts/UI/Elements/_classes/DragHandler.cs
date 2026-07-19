@@ -1,4 +1,5 @@
 using CCEnvs.UnityX.Components;
+using CCEnvs.UnityX.EditorSerialization;
 using CCEnvs.UnityX.Injections;
 using CommunityToolkit.Diagnostics;
 using R3;
@@ -21,16 +22,37 @@ namespace CCEnvs.UnityX.UI.Elements
         [SerializeField]
         protected string? targetName;
 
-        private ReactiveCommand<DragAndDropContext<TBeginEvent>>? onBeginDragCmd;
-        private ReactiveCommand<DragAndDropContext<TDragEvent>>? onDragCmd;
-        private ReactiveCommand<DragAndDropContext<TEndEvent>>? onEndDragCmd;
+        [SerializeField]
+        protected string? dropTargetTag;
+
+        [SerializeField]
+        protected SerializedNullable<LayerMask> dropTargetLayerMask;
+
+        private ReactiveCommand<DragContext<TBeginEvent>>? onBeginDragCmd;
+        private ReactiveCommand<DragContext<TDragEvent>>? onDragCmd;
+        private ReactiveCommand<DragContext<TEndEvent>>? onEndDragCmd;
 
         [field: GetBySelf]
         public PanelRenderer renderer { get; private set; } = null!;
 
         public VisualElement? root { get; private set; }
-
         public VisualElement? target { get; private set; }
+
+        public bool IsDragging { get; private set; }
+
+        public string? TargetName {
+            get => targetName;
+            set => SetTargetName(value);
+        }
+        public string? DropTargetTag {
+            get => dropTargetTag;
+            set => SetDropTargetTag(value);
+        }
+
+        public int DropTargetLayerMask {
+            get => dropTargetLayerMask.Data ?? ~0;
+            set => SetDropTargetLayerMask(value);
+        }
 
         protected override void OnEnable()
         {
@@ -53,21 +75,39 @@ namespace CCEnvs.UnityX.UI.Elements
             onDragCmd?.Dispose();
         }
 
-        public Observable<DragAndDropContext<TBeginEvent>> ObserveBeginDrag()
+        public DragHandler<TBeginEvent, TDragEvent, TEndEvent> SetTargetName(string? name)
         {
-            onBeginDragCmd ??= new ReactiveCommand<DragAndDropContext<TBeginEvent>>();
+            targetName = name;
+            return this;
+        }
+
+        public DragHandler<TBeginEvent, TDragEvent, TEndEvent> SetDropTargetTag(string? tag)
+        {
+            dropTargetTag = tag;
+            return this;
+        }
+
+        public DragHandler<TBeginEvent, TDragEvent, TEndEvent> SetDropTargetLayerMask(int? layerMask)
+        {
+            dropTargetLayerMask = new SerializedNullable<LayerMask>(layerMask ?? null);
+            return this;
+        }
+
+        public Observable<DragContext<TBeginEvent>> ObserveBeginDrag()
+        {
+            onBeginDragCmd ??= new ReactiveCommand<DragContext<TBeginEvent>>();
             return onBeginDragCmd;
         }
 
-        public Observable<DragAndDropContext<TDragEvent>> ObserveDrag()
+        public Observable<DragContext<TDragEvent>> ObserveDrag()
         {
-            onDragCmd ??= new ReactiveCommand<DragAndDropContext<TDragEvent>>();
+            onDragCmd ??= new ReactiveCommand<DragContext<TDragEvent>>();
             return onDragCmd;
         }
 
-        public Observable<DragAndDropContext<TEndEvent>> ObserveEndDrag()
+        public Observable<DragContext<TEndEvent>> ObserveEndDrag()
         {
-            onEndDragCmd ??= new ReactiveCommand<DragAndDropContext<TEndEvent>>();
+            onEndDragCmd ??= new ReactiveCommand<DragContext<TEndEvent>>();
             return onEndDragCmd;
         }
 
@@ -111,8 +151,9 @@ namespace CCEnvs.UnityX.UI.Elements
         private void OnBeginEventInternal(TBeginEvent ev)
         {
             Guard.IsNotNull(target);
+            IsDragging = true;
 
-            var context = DragAndDropContext.Create(
+            var context = DragContext.Create(
                 target,
                 gameObject,
                 ev
@@ -136,7 +177,10 @@ namespace CCEnvs.UnityX.UI.Elements
         {
             Guard.IsNotNull(target);
 
-            var context = DragAndDropContext.Create(
+            if (!IsDragging)
+                return;
+
+            var context = DragContext.Create(
                 target,
                 gameObject,
                 ev
@@ -160,7 +204,10 @@ namespace CCEnvs.UnityX.UI.Elements
         {
             Guard.IsNotNull(target);
 
-            var context = DragAndDropContext.Create(
+            if (!IsDragging)
+                return;
+
+            var context = DragContext.Create(
                 target,
                 gameObject,
                 ev
@@ -168,6 +215,21 @@ namespace CCEnvs.UnityX.UI.Elements
 
             OnEndEvent(ev);
             onEndDragCmd?.Execute(context);
+
+            IsDragging = false;
+
+            if (DropTargetRegistry.Targets.TryGetValue(ev.target, out DropTarget dropTarget)
+                &&
+                gameObject != dropTarget.GameObject
+                &&
+                (dropTargetTag.IsNullOrWhiteSpace() || dropTarget.GameObject.CompareTag(dropTargetTag))
+                &&
+                (DropTargetLayerMask & (1 << dropTarget.GameObject.layer)) != 0
+                &&
+                dropTarget.GameObject.Q().Component<IDropHandler>().Lax().TryGetValue(out var targetDropHandler))
+            {
+                targetDropHandler.SendDropEvent(context);
+            }
         }
 
         private void BindEndEvent(VisualElement target)

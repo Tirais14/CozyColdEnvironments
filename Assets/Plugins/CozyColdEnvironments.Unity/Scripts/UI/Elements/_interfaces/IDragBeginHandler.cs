@@ -7,8 +7,8 @@ namespace CCEnvs.UnityX.UI.Elements
 {
     public interface IDragBeginHandler<TDownEvent> where TDownEvent : EventBase<TDownEvent>, new()
     {
-        event Action<DragAndDropContext<TDownEvent>> OnBeginDrag;
+        event Action<DragContext<TDownEvent>> OnBeginDrag;
 
-        Observable<DragAndDropContext<TDownEvent>> ObserveBeginDrag();
+        Observable<DragContext<TDownEvent>> ObserveBeginDrag();
     }
 }

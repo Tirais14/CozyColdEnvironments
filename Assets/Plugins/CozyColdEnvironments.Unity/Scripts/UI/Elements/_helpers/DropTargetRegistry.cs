@@ -6,15 +6,15 @@ using UnityEngine.UIElements;
 #nullable enable
 namespace CCEnvs.UnityX.UI.Elements
 {
-    public static class DropHandlerTargetRegistry
+    public static class DropTargetRegistry
     {
-        private static Dictionary<IEventHandler, GameObject> gameObjects = new(0);
+        private static Dictionary<IEventHandler, DropTarget> targets = new(0);
 
-        public static IReadOnlyDictionary<IEventHandler, GameObject> GameObjects => gameObjects;
+        public static IReadOnlyDictionary<IEventHandler, DropTarget> Targets => targets;
 
         public static bool Unregister(IEventHandler handler)
         {
-            return gameObjects.Remove(handler);
+            return targets.Remove(handler);
         }
 
         public static LightDisposable<IEventHandler> Register(
@@ -25,7 +25,7 @@ namespace CCEnvs.UnityX.UI.Elements
             CC.Guard.IsNotNull(handler, nameof(handler));
             CC.Guard.IsNotNull(gameObject, nameof(gameObject));
 
-            gameObjects.Add(handler, gameObject);
+            targets.Add(handler, new DropTarget(gameObject));
 
             return CCDisposable.CreateLight(handler, static handler => Unregister(handler));
         }

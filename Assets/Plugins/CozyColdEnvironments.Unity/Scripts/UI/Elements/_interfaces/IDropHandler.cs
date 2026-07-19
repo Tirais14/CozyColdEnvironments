@@ -1,14 +1,18 @@
 using R3;
 using System;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 #nullable enable
 namespace CCEnvs.UnityX.UI.Elements
 {
-    public interface IDropHandler<TEvent> where TEvent : EventBase<TEvent>, new()
+    public interface IDropHandler
     {
-        event Action<TEvent> OnDrop;
+        GameObject gameObject { get; }
 
-        Observable<TEvent> ObserveDrop();
+        void SendDropEvent<TEvent>(DragContext<TEvent> dragContext)
+            where TEvent : EventBase<TEvent>, new();
+
+        Observable<DropContext> ObserveDrop();
     }
 }
