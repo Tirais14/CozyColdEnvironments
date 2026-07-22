@@ -1,5 +1,6 @@
 #nullable enable
 using CCEnvs.Attributes;
+using CCEnvs.Diagnostics;
 using CCEnvs.Json;
 using CCEnvs.Patterns.Commands;
 using CCEnvs.Reflection;
@@ -13,6 +14,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace CCEnvs
 {
@@ -273,6 +275,23 @@ namespace CCEnvs
                     ThrowHelper.MissingComponentException(typeof(T), paramName);
             }
 #endif
+        }
+
+        public static class LogHelper
+        {
+            public static bool AssertMonoBehaviourStarted(
+                MonoBehaviour monoBeh,
+                Diagnostics.LogType logType = Diagnostics.LogType.Warning
+                )
+            {
+                Guard.IsNotNull(monoBeh, nameof(monoBeh));
+
+                if (!monoBeh.didStart)
+                    return false;
+
+                monoBeh.PrintDebug("Is Started", logType);
+                return true;
+            }
         }
 
         public static class Platform

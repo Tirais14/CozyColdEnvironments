@@ -2,6 +2,7 @@ using CCEnvs.Disposables;
 using CCEnvs.UnityX.Components;
 using CCEnvs.UnityX.Injections;
 using R3;
+using System;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -12,7 +13,8 @@ namespace CCEnvs.UnityX.UI.Elements
     public class DropHandler
         :
         CCBehaviour,
-        IDropHandler
+        IDropHandler,
+        IElement
     {
         [SerializeField]
         protected string? targetName;
@@ -21,10 +23,12 @@ namespace CCEnvs.UnityX.UI.Elements
 
         private ReactiveCommand<DropContext>? onDropCmd;
 
-        [field: GetBySelf]
-        public PanelRenderer renderer { get; private set; } = null!;
+        public event Action<DropContext>? OnDrop;
 
-        public VisualElement? root { get; private set; }
+        [field: GetBySelf]
+        public PanelRenderer Renderer { get; private set; } = null!;
+
+        public VisualElement? RendererRoot { get; private set; }
         public VisualElement? target { get; private set; }
 
         public string? TargetName {
@@ -57,6 +61,7 @@ namespace CCEnvs.UnityX.UI.Elements
 
         public DropHandler SetTargetName(string? name)
         {
+            CC.LogHelper.AssertMonoBehaviourStarted(this);
             targetName = name;
             return this;
         }
@@ -65,6 +70,7 @@ namespace CCEnvs.UnityX.UI.Elements
         {
             OnDropEvent();
             var context = DropContext.Create(dragContext, gameObject);
+            OnDrop?.Invoke(context);
             onDropCmd?.Execute(context);
         }
 
@@ -78,7 +84,7 @@ namespace CCEnvs.UnityX.UI.Elements
 
         private void OnUIReload(PanelRenderer renderer, VisualElement root)
         {
-            this.root = root;
+            this.RendererRoot = root;
 
             if (targetName.IsNullOrWhiteSpace())
                 target = root;
@@ -91,14 +97,14 @@ namespace CCEnvs.UnityX.UI.Elements
 
         private void BindUIReload() 
         {
-            renderer.RegisterUIReloadCallback(OnUIReload);
+            Renderer.RegisterUIReloadCallback(OnUIReload);
         }
 
         private void UnbindUIReload()
         {
             registryHandle.Dispose();
-            renderer.UnregisterUIReloadCallback(OnUIReload);
-            root = null;
+            Renderer.UnregisterUIReloadCallback(OnUIReload);
+            RendererRoot = null;
             target = null;
         }
     }

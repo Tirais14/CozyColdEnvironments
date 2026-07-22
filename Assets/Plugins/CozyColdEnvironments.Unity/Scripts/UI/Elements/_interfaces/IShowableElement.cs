@@ -3,15 +3,11 @@ using UnityEngine.UIElements;
 
 namespace CCEnvs.UnityX.UI.Elements
 {
-    public interface IShowableElement : IShowableBase
+    public interface IShowableElement : IShowableBase, IElement
     {
-        IShowableElement? root { get; }
+        IShowableElement? ShowableRoot { get; }
 
-        IShowableElement? parent { get; }
-
-        PanelRenderer renderer { get; }
-
-        VisualElement? rendererRoot { get; }
+        IShowableElement? Parent { get; }
 
         IShowableElement[] GetDirectChilds();
     }

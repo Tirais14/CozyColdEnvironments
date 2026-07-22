@@ -35,8 +35,8 @@ namespace CCEnvs.UnityX.UI
 
         public Canvas? canvas => showable.canvas;
 
-        public IShowable? root => showable.root;
-        public IShowable? parent => showable.parent;
+        public IShowable? ShowableRoot => showable.ShowableRoot;
+        public IShowable? Parent => showable.Parent;
 
         public ICanvasController? canvasController => showable.canvasController;
 

@@ -16,9 +16,9 @@ namespace CCEnvs.UnityX.UI
 
         Canvas canvas { get; }
 
-        IShowable? root { get; }
+        IShowable? ShowableRoot { get; }
 
-        IShowable? parent { get; }
+        IShowable? Parent { get; }
 
         ICanvasController? canvasController { get; }
 

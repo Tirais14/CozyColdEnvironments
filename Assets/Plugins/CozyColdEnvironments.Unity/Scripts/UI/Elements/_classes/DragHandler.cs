@@ -1,9 +1,9 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.UnityX.Components;
-using CCEnvs.UnityX.EditorSerialization;
 using CCEnvs.UnityX.Injections;
 using CommunityToolkit.Diagnostics;
 using R3;
+using System;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -14,7 +14,8 @@ namespace CCEnvs.UnityX.UI.Elements
     public class DragHandler
         :
         CCBehaviour,
-        IDragHandler
+        IDragHandler,
+        IElement
     {
         [SerializeField]
         protected string? targetName;
@@ -23,16 +24,20 @@ namespace CCEnvs.UnityX.UI.Elements
         protected string? dropTargetTag;
 
         [SerializeField]
-        protected SerializedNullable<LayerMask> dropTargetLayerMask;
+        protected LayerMask dropTargetLayerMask = ~0;
 
         private ReactiveCommand<DragContext>? onBeginDragCmd;
         private ReactiveCommand<DragContext>? onDragCmd;
         private ReactiveCommand<DragContext>? onEndDragCmd;
 
-        [field: GetBySelf]
-        public PanelRenderer renderer { get; private set; } = null!;
+        public event Action<DragContext>? OnBeginDrag;
+        public event Action<DragContext>? OnDrag;
+        public event Action<DragContext>? OnEndDrag;
 
-        public VisualElement? root { get; private set; }
+        [field: GetBySelf]
+        public PanelRenderer Renderer { get; private set; } = null!;
+
+        public VisualElement? RendererRoot { get; private set; }
         public VisualElement? target { get; private set; }
 
         public bool IsDragging { get; private set; }
@@ -47,7 +52,7 @@ namespace CCEnvs.UnityX.UI.Elements
         }
 
         public int DropTargetLayerMask {
-            get => dropTargetLayerMask.Data ?? ~0;
+            get => dropTargetLayerMask;
             set => SetDropTargetLayerMask(value);
         }
 
@@ -59,17 +64,23 @@ namespace CCEnvs.UnityX.UI.Elements
         protected override void OnEnable()
         {
             base.OnEnable();
-            BindUIReload();
+            Renderer.RegisterUIReloadCallback(OnUIReload);    
         }
 
         protected override void OnDisable()
         {
             base.OnDisable();
             IsDragging = false;
-            UnbindUIReload();
-            UnbindBeginEvent();
-            UnbindMoveEvent();
-            UnbindEndEvent();
+            Renderer.UnregisterUIReloadCallback(OnUIReload);
+            RendererRoot = null;
+            target = null;
+
+            if (target is not null)
+            {
+                target.UnregisterCallback<PointerDownEvent>(OnPointerDown);
+                target.UnregisterCallback<PointerMoveEvent>(OnPointerMove);
+                target.UnregisterCallback<PointerUpEvent>(OnPointerUp);
+            }
         }
 
         protected override void OnDestroy()
@@ -90,9 +101,9 @@ namespace CCEnvs.UnityX.UI.Elements
             return this;
         }
 
-        public DragHandler SetDropTargetLayerMask(int? layerMask)
+        public DragHandler SetDropTargetLayerMask(int layerMask)
         {
-            dropTargetLayerMask = new SerializedNullable<LayerMask>(layerMask ?? null);
+            dropTargetLayerMask = layerMask;
             return this;
         }
 
@@ -122,9 +133,9 @@ namespace CCEnvs.UnityX.UI.Elements
 
         protected virtual void OnEndEvent(PointerUpEvent ev) { }
 
-        private void OnUIReloadInternal(PanelRenderer renderer, VisualElement root)
+        private void OnUIReloadInternal(PanelRenderer _, VisualElement root)
         {
-            this.root = root;
+            RendererRoot = root;
 
             if (targetName.IsNullOrWhiteSpace())
                 target = root;
@@ -133,25 +144,13 @@ namespace CCEnvs.UnityX.UI.Elements
 
             if (target is not null)
             {
-                BindBeginEvent(target);
-                BindMoveEvent(target);
-                BindEndEvent(target);
+                target.RegisterCallback<PointerDownEvent>(OnPointerDown);
+                target.RegisterCallback<PointerMoveEvent>(OnPointerMove);
+                target.RegisterCallback<PointerUpEvent>(OnPointerUp);
             }
         }
 
-        private void BindUIReload()
-        {
-            renderer.RegisterUIReloadCallback(OnUIReloadInternal);
-        }
-
-        private void UnbindUIReload()
-        {
-            renderer.UnregisterUIReloadCallback(OnUIReloadInternal);
-            root = null;
-            target = null;
-        }
-
-        private void OnBeginEventInternal(PointerDownEvent ev)
+        private void OnPointerDown(PointerDownEvent ev)
         {
             if (!enabled)
                 return;
@@ -165,32 +164,21 @@ namespace CCEnvs.UnityX.UI.Elements
                 ev
                 );
 
+            RendererRoot.CapturePointer(context.Event.pointerId);
             OnBeginEvent(ev);
+            OnBeginDrag?.Invoke(context);
             onBeginDragCmd?.Execute(context);
 
             if (CCDebug<DragHandler>.IsEnabled)
                 this.PrintLog("Begin Drag");
         }
 
-        private void BindBeginEvent(VisualElement target)
+        private void OnPointerMove(PointerMoveEvent ev)
         {
-            target.RegisterCallback<PointerDownEvent>(OnBeginEventInternal);
-        }
-
-        private void UnbindBeginEvent()
-        {
-            target?.UnregisterCallback<PointerDownEvent>(OnBeginEventInternal);
-        }
-
-        private void OnDragEventInternal(PointerMoveEvent ev)
-        {
-            if (!enabled)
+            if (!IsDragging)
                 return;
 
             Guard.IsNotNull(target);
-
-            if (!IsDragging)
-                return;
 
             var context = DragContext.Create(
                 target,
@@ -199,28 +187,19 @@ namespace CCEnvs.UnityX.UI.Elements
                 );
 
             OnDragEvent(ev);
+            OnDrag?.Invoke(context);
             onDragCmd?.Execute(context);
+
+            if (CCDebug<DragHandler>.IsEnabled && Time.time % 0.5f == 0)
+                this.PrintLog("Dragging");
         }
 
-        private void BindMoveEvent(VisualElement target)
+        private void OnPointerUp(PointerUpEvent ev) 
         {
-            target.RegisterCallback<PointerMoveEvent>(OnDragEventInternal);
-        }
-
-        private void UnbindMoveEvent()
-        {
-            target?.UnregisterCallback<PointerMoveEvent>(OnDragEventInternal);
-        }
-
-        private void OnEndEventInternal(PointerUpEvent ev) 
-        {
-            if (!enabled)
+            if (!IsDragging)
                 return;
 
             Guard.IsNotNull(target);
-
-            if (!IsDragging)
-                return;
 
             var context = DragContext.Create(
                 target,
@@ -236,28 +215,24 @@ namespace CCEnvs.UnityX.UI.Elements
                 &&
                 (DropTargetLayerMask & (1 << dropTarget.GameObject.layer)) != 0
                 &&
-                dropTarget.GameObject.Q().Component<IDropHandler>().Lax().TryGetValue(out var targetDropHandler))
+                dropTarget.GameObject.Q()
+                    .Component<IDropHandler>()
+                    .Lax()
+                    .TryGetValue(out var targetDropHandler)
+                )
             {
                 targetDropHandler.SendDropEvent(context);
             }
 
+            RendererRoot.ReleasePointer(context.Event.pointerId);
             OnEndEvent(ev);
+            OnEndDrag?.Invoke(context);
             onEndDragCmd?.Execute(context);
 
             IsDragging = false;
 
             if (CCDebug<DragHandler>.IsEnabled)
                 this.PrintLog("End Drag");
-        }
-
-        private void BindEndEvent(VisualElement target)
-        {
-            target.RegisterCallback<PointerUpEvent>(OnEndEventInternal);
-        }
-
-        private void UnbindEndEvent()
-        {
-            target?.UnregisterCallback<PointerUpEvent>(OnEndEventInternal);
         }
     }
 }

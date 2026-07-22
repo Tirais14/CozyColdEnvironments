@@ -1,4 +1,5 @@
 using CCEnvs.Diagnostics;
+using CCEnvs.FuncLanguage;
 using CCEnvs.Linq;
 using CCEnvs.Patterns.Commands;
 using CCEnvs.UnityX.Components;
@@ -22,42 +23,38 @@ namespace CCEnvs.UnityX.Items.UIElements
         private readonly CommandScheduler commandScheduler = CommandScheduler.Update(nameof(ItemContainerViewDragAndDropHandler));
 
         [SerializeField]
-        [Tooltip("Must contains View with " + nameof(IItemContainerViewModel) + " and " + nameof(IItemContainer) + " as model")]
+        [Tooltip("Must contains View with " + nameof(IItemContainerViewModel) + ", " + nameof(IShowableElement) + " and " + nameof(IItemContainer) + " as model")]
         private GameObject containerViewProxyPrefab = null!;
         private GameObject? containerViewProxyGO;
-        private MonoBehaviour? containerViewProxyGOHook;
+
+        private DragTarget? containerViewProxyDragTarget;
 
         [GetBySelf]
         private IView containerView = null!;
         private IView? containerViewProxy = null!;
 
-        [GetBySelf]
+        [GetByParent]
         private IDragHandler dragHandler = null!;
 
-        [GetBySelf]
+        [GetByParent]
         private IDropHandler dropHandler = null!;
-
-        private IDisposable? beginDragBinding;
-        private IDisposable? dragBinging;
-        private IDisposable? endDragBinding;
-        private IDisposable? dropBinging;
 
         public GameObject ContainerViewProxyGO {
             get => containerViewProxyPrefab;
             set => SetContainerViewProxyPrefab(value);
         }
 
-        private IItemContainer containerProxy => containerViewProxy.ThrowIfNull(nameof(containerViewProxy)).GetModel<IItemContainer>();
+        private IItemContainer? containerProxy => containerViewProxy.IfNotNull(proxy => proxy.Model.As<IItemContainer>());
         private IItemContainer container => containerView.GetModel<IItemContainer>();
 
         protected override void OnEnable()
         {
             base.OnEnable();
             commandScheduler.Enable();
-            BindBeginDrag();
-            BindDrag();
-            BindEndDrag();
-            BindDrop();
+            dragHandler.OnBeginDrag += OnBeginDrag;
+            dragHandler.OnDrag += OnDrag;
+            dragHandler.OnEndDrag += OnEndDrag;
+            dropHandler.OnDrop += OnDrop;
         }
 
         protected override void OnDisable()
@@ -65,10 +62,10 @@ namespace CCEnvs.UnityX.Items.UIElements
             base.OnDisable();
             commandScheduler.Reset();
             commandScheduler.Disable();
-            beginDragBinding?.Dispose();
-            dragBinging?.Dispose();
-            endDragBinding?.Dispose();
-            dropBinging?.Dispose();
+            dragHandler.OnBeginDrag -= OnBeginDrag;
+            dragHandler.OnDrag -= OnDrag; ;
+            dragHandler.OnEndDrag -= OnEndDrag;
+            dropHandler.OnDrop -= OnDrop;
         }
 
         protected override void OnDestroy()
@@ -86,7 +83,7 @@ namespace CCEnvs.UnityX.Items.UIElements
 
         private void OnBeginDragCore()
         {
-            if (containerViewProxyGO == null)
+            if (containerViewProxyGO == null || containerProxy.IsNull())
                 return;
 
             containerViewProxy = containerViewProxyGO.Q().Component<IView>().Strict();
@@ -97,8 +94,7 @@ namespace CCEnvs.UnityX.Items.UIElements
         {
             containerViewProxyGO = Instantiate(containerViewProxyPrefab);
             containerViewProxyGO.SetActive(true);
-            containerViewProxyGO.transform.position = new Vector3(-10000, -10000);
-            containerViewProxyGOHook = containerViewProxyGO.AddComponent<EmptyMonoBehaviour>();
+            containerViewProxyDragTarget = containerViewProxyGO.AddComponent<DragTarget>();
 
             string cmdName = NameFactory.CreateFromCaller(
                 this,
@@ -110,9 +106,9 @@ namespace CCEnvs.UnityX.Items.UIElements
                 .WithExecutePredicate(
                 static @this =>
                 {
-                    return @this.containerViewProxyGO == null
-                           ||
-                           @this.containerViewProxyGOHook!.didStart;
+                    return @this.containerViewProxyDragTarget != null
+                           &&
+                           @this.containerViewProxyDragTarget.didStart;
                 })
                 .WithCancelAction(
                 static @this =>
@@ -125,71 +121,49 @@ namespace CCEnvs.UnityX.Items.UIElements
                 .BuildPooled()
                 .Value
                 .WithCancellationToken(destroyCancellationToken)
-                .WithCancellationToken(containerViewProxyGOHook.destroyCancellationToken)
+                .WithCancellationToken(containerViewProxyDragTarget.destroyCancellationToken)
                 .ScheduleBy(commandScheduler);
-        }
-
-        private void BindBeginDrag()
-        {
-            beginDragBinding = dragHandler.ObserveBeginDrag().Subscribe(OnBeginDrag);
         }
 
         private void OnDrag(DragContext context)
         {
-            if (containerViewProxyGO == null
+            if (containerViewProxyDragTarget == null
                 ||
-                containerViewProxyGOHook == null
-                ||
-                !containerViewProxyGOHook.didStart)
+                !containerViewProxyDragTarget.didStart)
             {
                 return;
             }
 
-            containerViewProxyGO.transform.position = context.Event.position;
-        }
-
-        private void BindDrag()
-        {
-            dragBinging = dragHandler.ObserveDrag().Subscribe(OnDrag);
+            containerViewProxyDragTarget.SetPosition(context.Event.position);
         }
 
         private void OnEndDrag(DragContext _)
         {
-            if (containerViewProxyGO == null
-                ||
-                containerViewProxy.IsNull())
-            {
+            if (containerProxy.IsNull())
                 return;
-            }
 
             container.PutItem(containerProxy.TakeItem());
 
-            containerViewProxy = null;
             Destroy(containerViewProxyGO);
-        }
-
-        private void BindEndDrag()
-        {
-            endDragBinding = dragHandler.ObserveEndDrag().Subscribe(OnEndDrag);
+            containerViewProxy = null;
+            containerViewProxyDragTarget = null;
+            containerViewProxyGO = null;
         }
 
         private void OnDrop(DropContext context)
         {
-            if (containerViewProxyGO == null
+            if (containerProxy.IsNull()
                 ||
-                containerViewProxy.IsNull()
-                ||
-                !context.TargetGameObject.Q().Model<IItemContainer>().Lax().TryGetValue(out var targetContainer))
+                !context.TargetGameObject.Q()
+                    .Model<IItemContainer>()
+                    .Lax()
+                    .TryGetValue(out var targetContainer)
+                )
             {
                 return;
             }
 
             targetContainer.PutItem(containerProxy.TakeItem());
-        }
-
-        private void BindDrop()
-        {
-            dropBinging = dropHandler.ObserveDrop().Subscribe(OnDrop);
         }
     }
 }

@@ -12,7 +12,7 @@ namespace CCEnvs.Snapshots
     public class AnonymousSnapshotMemberResolver
     {
         private readonly static Dictionary<Type, MemberInfo[]> propertyMemberInfos = new();
-        private readonly static Dictionary<Type, (MemberInfo Value, SnapshotConvertibleAttribute Attribute)[]> compositerPartMemberInfos = new();
+        private readonly static Dictionary<Type, (MemberInfo Value, SnapshotConvertibleAttribute Attribute)[]> compositePartMemberInfos = new();
 
         private readonly static object propertyMemberInfosGate = new();
         private readonly static object compositerPartMemberInfosGate = new();
@@ -43,7 +43,7 @@ namespace CCEnvs.Snapshots
                 .ToArray();
 
             lock (compositerPartMemberInfosGate)
-                AnonymousSnapshotMemberResolver.compositerPartMemberInfos.Add(targetType, compositerPartMemberInfos);
+                compositePartMemberInfos.Add(targetType, compositerPartMemberInfos);
 
             CreateCompositeParts(
                 members.Value,
@@ -66,7 +66,7 @@ namespace CCEnvs.Snapshots
 
                     lock (compositerPartMemberInfosGate)
                     {
-                        if (compositerPartMemberInfos.TryGetValue(targetType, out var compositePartMemberInfos))
+                        if (AnonymousSnapshotMemberResolver.compositePartMemberInfos.TryGetValue(targetType, out var compositePartMemberInfos))
                             CreateCompositeParts(members, compositePartMemberInfos);
                     }
 

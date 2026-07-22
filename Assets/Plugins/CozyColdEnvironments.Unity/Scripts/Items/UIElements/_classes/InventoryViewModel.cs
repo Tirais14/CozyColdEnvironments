@@ -3,6 +3,7 @@ using CCEnvs.Disposables;
 using CCEnvs.Threading.Tasks;
 using CCEnvs.UnityX.UI.Elements;
 using Cysharp.Threading.Tasks;
+using Humanizer;
 using ObservableCollections;
 using R3;
 using System;
@@ -61,8 +62,8 @@ namespace CCEnvs.UnityX.Items.UIElements
             BindContainerViewsClear();
         }
 
-        private async ValueTask OnContainerViewAdd(
-            DictionaryAddEvent<CCEnvs.UnityX.Items.IItemContainer, GameObject> addEv,
+        private async ValueTask OnContainerViewAddAsync(
+            DictionaryAddEvent<IItemContainer, GameObject> addEv,
             CancellationToken cancellationToken
             )
         {
@@ -70,35 +71,41 @@ namespace CCEnvs.UnityX.Items.UIElements
 
             var (container, containerViewGO) = addEv;
 
-            if (!containerViewGO.Q().Component<IShowableElement>().Lax().TryGetValue(out var containerView))
+            if (!containerViewGO.Q()
+                    .Component<IShowableElement>()
+                    .Lax()
+                    .TryGetValue(out var containerView)
+                )
+            {
                 return;
+            }
 
-            if (containerView.rendererRoot is null)
+            if (containerView.RendererRoot is null)
             {
                 await UniTask.WaitUntil(
                     containerView,
                     static containerView =>
                     {
-                        return containerView.rendererRoot is not null;
+                        return containerView.RendererRoot is not null;
                     },
                     cancellationToken: cancellationToken
                     );
             }
 
-            containerRendererRoots.Add(container, containerView.rendererRoot!);
+            containerRendererRoots.Add(container, containerView.RendererRoot!);
         }
 
         private void BindContainerViewAdd()
         {
             containerViewAddBinding = ContainerViews.ObserveDictionaryAdd(DisposeCancellationToken)
-                .SubscribeAwait(OnContainerViewAdd);
+                .SubscribeAwait(OnContainerViewAddAsync);
         }
 
         private void OnContainerViewRemove(
-            DictionaryRemoveEvent<CCEnvs.UnityX.Items.IItemContainer, GameObject> removeEv
+            DictionaryRemoveEvent<IItemContainer, GameObject> removeEv
             )
         {
-            containerRendererRoots.Remove((IItemContainer)removeEv.Key);
+            containerRendererRoots.Remove(removeEv.Key);
         }
 
         private void BindContainerViewRemove()
@@ -108,16 +115,16 @@ namespace CCEnvs.UnityX.Items.UIElements
         }
 
         private void OnContainerViewReplace(
-            DictionaryReplaceEvent<CCEnvs.UnityX.Items.IItemContainer, GameObject> replaceEv
+            DictionaryReplaceEvent<IItemContainer, GameObject> replaceEv
             )
         {
             var (container, oldContainerViewGO, newContainerViewGO) = replaceEv;
 
-            var addEv = new DictionaryAddEvent<CCEnvs.UnityX.Items.IItemContainer, GameObject>(container, oldContainerViewGO);
-            var removeEv = new DictionaryRemoveEvent<CCEnvs.UnityX.Items.IItemContainer, GameObject>(container, newContainerViewGO);
+            var addEv = new DictionaryAddEvent<IItemContainer, GameObject>(container, oldContainerViewGO);
+            var removeEv = new DictionaryRemoveEvent<IItemContainer, GameObject>(container, newContainerViewGO);
 
             OnContainerViewRemove(removeEv);
-            OnContainerViewAdd(addEv, DisposeCancellationToken).Forget();
+            OnContainerViewAddAsync(addEv, DisposeCancellationToken).Forget();
         }
 
         private void BindContainerViewsReplace()

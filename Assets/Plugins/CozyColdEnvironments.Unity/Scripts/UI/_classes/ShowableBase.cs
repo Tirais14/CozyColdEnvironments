@@ -63,8 +63,8 @@ namespace CCEnvs.UnityX.UI
             set => preventHide = value;
         }
 
-        public TSelf? root => _root.As<TSelf>();
-        public TSelf? parent => _parent.As<TSelf>();
+        public TSelf? ShowableRoot => _root.As<TSelf>();
+        public TSelf? Parent => _parent.As<TSelf>();
 
         protected override void Awake()
         {

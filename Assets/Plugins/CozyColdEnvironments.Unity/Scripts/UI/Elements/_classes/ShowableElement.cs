@@ -19,14 +19,9 @@ namespace CCEnvs.UnityX.UI.Elements
         private bool isUIReloadBinded;
 
         [field: GetBySelf]
-        public PanelRenderer renderer { get; private set; } = null!;
+        public PanelRenderer Renderer { get; private set; } = null!;
 
-        public VisualElement? rendererRoot { get; private set; }
-
-        //public override bool IsShown {
-        //    get => base.IsShown && (rendererRoot?.visible ?? false);
-        //    protected set => base.IsShown = value;
-        //}
+        public VisualElement? RendererRoot { get; private set; }
 
         protected override void Start()
         {
@@ -37,14 +32,14 @@ namespace CCEnvs.UnityX.UI.Elements
         protected override void OnEnable()
         {
             base.OnEnable();
-            renderer.RegisterUIReloadCallback(OnUIReload);
+            Renderer.RegisterUIReloadCallback(OnUIReload);
             isUIReloadBinded = true;
         }
 
         protected override void OnDisable()
         {
             base.OnDisable();
-            renderer.UnregisterUIReloadCallback(OnUIReload);
+            Renderer.UnregisterUIReloadCallback(OnUIReload);
             isUIReloadBinded = false;
         }
 
@@ -54,23 +49,23 @@ namespace CCEnvs.UnityX.UI.Elements
                 return;
 
             HideCore();
-            renderer.UnregisterUIReloadCallback(OnUIReload);
-            renderer.RegisterUIReloadCallback(OnUIReload);
+            Renderer.UnregisterUIReloadCallback(OnUIReload);
+            Renderer.RegisterUIReloadCallback(OnUIReload);
             ShowCore();
         }
 
         protected override void HideCore()
         {
-            if (rendererRoot is null)
+            if (RendererRoot is null)
                 return;
 
-            rendererRoot.visible = false;
+            RendererRoot.visible = false;
 
             if (CCDebug<ShowableElement>.IsEnabled)
             {
                 this.PrintLog(DebugMessageBuilder.CreatePooled()
                     .AddMessage("Root state changed")
-                    .AddProperty(nameof(rendererRoot.visible), rendererRoot.visible)
+                    .AddProperty(nameof(RendererRoot.visible), RendererRoot.visible)
                     .ToStringAndDispose()
                     );
             }
@@ -78,17 +73,16 @@ namespace CCEnvs.UnityX.UI.Elements
 
         protected override void ShowCore()
         {
-            if (rendererRoot is null)
+            if (RendererRoot is null)
                 return;
 
-            rendererRoot.visible = true;
-
+            RendererRoot.visible = true;
 
             if (CCDebug<ShowableElement>.IsEnabled)
             {
                 this.PrintLog(DebugMessageBuilder.CreatePooled()
                     .AddMessage("Root state changed")
-                    .AddProperty(nameof(rendererRoot.visible), rendererRoot.visible)
+                    .AddProperty(nameof(RendererRoot.visible), RendererRoot.visible)
                     .ToStringAndDispose()
                     );
             }
@@ -100,8 +94,7 @@ namespace CCEnvs.UnityX.UI.Elements
         {
             string cmdName = NameFactory.CreateFromCaller(
                 this,
-                nameof(Show),
-                expirationTimeRelativeToNow: 5.Minutes()
+                nameof(Show)
                 );
 
             return Command.Builder.WithName(cmdName)
@@ -127,7 +120,7 @@ namespace CCEnvs.UnityX.UI.Elements
 
         private void OnUIReload(PanelRenderer _, VisualElement root)
         {
-            rendererRoot = root;
+            RendererRoot = root;
         }
 
         private async UniTask InitAsync()

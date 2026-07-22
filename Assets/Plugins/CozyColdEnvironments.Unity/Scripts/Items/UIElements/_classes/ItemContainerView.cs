@@ -57,9 +57,9 @@ namespace CCEnvs.UnityX.Items.UIElements
         protected override void OnSetViewModel(TViewModel? vm)
         {
             if (vm.IsNull())
-                ElementShowable.renderer.UnregisterUIReloadCallback(OnUIReload);
+                ElementShowable.Renderer.UnregisterUIReloadCallback(OnUIReload);
             else
-                ElementShowable.renderer.RegisterUIReloadCallback(OnUIReload);
+                ElementShowable.Renderer.RegisterUIReloadCallback(OnUIReload);
 
             CCDisposable.Dispose(ref iconBinding);
             CCDisposable.Dispose(ref countBinding);
