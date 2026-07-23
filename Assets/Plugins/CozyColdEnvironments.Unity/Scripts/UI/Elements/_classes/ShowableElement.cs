@@ -1,9 +1,8 @@
 #nullable enable
 using CCEnvs.Diagnostics;
 using CCEnvs.Patterns.Commands;
-using CCEnvs.UnityX.Injections;
+using CCEnvs.UnityX.ComponentInjections;
 using Cysharp.Threading.Tasks;
-using Humanizer;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -16,6 +15,9 @@ namespace CCEnvs.UnityX.UI.Elements
         ShowableBase<IShowableElement>,
         IShowableElement
     {
+        [SerializeField]
+        protected int showCommandDelayFramCount = 1;
+
         private bool isUIReloadBinded;
 
         [field: GetBySelf]
@@ -103,11 +105,14 @@ namespace CCEnvs.UnityX.UI.Elements
                 .Asynchronously()
                 .WithExecuteAction(async (@this, cancellationToken) =>
                 {
-                    await UniTask.DelayFrame(
-                        delayFrameCount: 1,
-                        delayTiming: PlayerLoopTiming.Update,
-                        cancellationToken: cancellationToken
-                        );
+                    if (@this.showCommandDelayFramCount >= 1)
+                    {
+                        await UniTask.DelayFrame(
+                            delayFrameCount: @this.showCommandDelayFramCount,
+                            delayTiming: PlayerLoopTiming.Update,
+                            cancellationToken: cancellationToken
+                            );
+                    }
 
                     @this.ShowInternal();
                     @this.IsShown = true;

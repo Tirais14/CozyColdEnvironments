@@ -1,5 +1,5 @@
 using CCEnvs.UnityX.Components;
-using CCEnvs.UnityX.Injections;
+using CCEnvs.UnityX.ComponentInjections;
 
 #nullable enable
 #pragma warning disable IDE0044

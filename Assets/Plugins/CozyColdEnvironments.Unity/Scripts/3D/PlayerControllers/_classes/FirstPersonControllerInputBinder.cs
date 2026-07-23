@@ -1,5 +1,5 @@
 using CCEnvs.UnityX.Components;
-using CCEnvs.UnityX.Injections;
+using CCEnvs.UnityX.ComponentInjections;
 using CCEnvs.UnityX.InputSystem.Rx;
 using R3;
 using System;

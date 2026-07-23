@@ -104,6 +104,20 @@ namespace CCEnvs.FuncLanguage
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T Do<T, TValue>(T input,
+            Action<TValue> some
+            )
+            where T : struct, IConditional<TValue>
+        {
+            Guard.IsNotNull(some, nameof(some));
+
+            if (input.IsSome)
+                some(input.GetValueUnsafe());
+
+            return input;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static T Do<T, TValue>(T input,
             Action<TValue> some,
             Action none)
             where T : struct, IConditional<TValue>

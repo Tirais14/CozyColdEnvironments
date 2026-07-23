@@ -3,7 +3,7 @@ using CCEnvs.Patterns.Commands;
 using CCEnvs.Pools;
 using CCEnvs.Snapshots;
 using CCEnvs.Threading;
-using CCEnvs.UnityX.Injections;
+using CCEnvs.UnityX.ComponentInjections;
 using CCEnvs.UnityX.Snapshots.UI;
 using Cysharp.Threading.Tasks;
 using Humanizer;

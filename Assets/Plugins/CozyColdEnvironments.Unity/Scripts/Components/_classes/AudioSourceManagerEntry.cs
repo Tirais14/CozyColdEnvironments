@@ -1,4 +1,4 @@
-using CCEnvs.UnityX.Injections;
+using CCEnvs.UnityX.ComponentInjections;
 using CCEnvs.UnityX.Snapshots;
 using UnityEngine;
 

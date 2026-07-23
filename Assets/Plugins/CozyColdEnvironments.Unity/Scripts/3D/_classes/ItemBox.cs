@@ -5,7 +5,7 @@ using CCEnvs.Events;
 using CCEnvs.UnityX.Components;
 using CCEnvs.UnityX.D3.Events;
 using CCEnvs.UnityX.EditorSerialization;
-using CCEnvs.UnityX.Injections;
+using CCEnvs.UnityX.ComponentInjections;
 using R3;
 using System.Collections;
 using System.Collections.Generic;

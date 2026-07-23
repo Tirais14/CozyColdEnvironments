@@ -1,5 +1,5 @@
 #if UNITY_2017_1_OR_NEWER
-using CCEnvs.UnityX.Injections;
+using CCEnvs.UnityX.ComponentInjections;
 using Cysharp.Threading.Tasks;
 using R3;
 using System;
@@ -12,7 +12,7 @@ namespace CCEnvs.UnityX.Components
 {
     public class CCBehaviour : MonoBehaviour
     {
-        private readonly CompositeDisposable disposables = new();
+        private CompositeDisposable? disposables;
 
         private Transform m_CTransform = null!;
 
@@ -65,7 +65,9 @@ namespace CCEnvs.UnityX.Components
                 {
                     @this.destroyCancellationToken.ThrowIfCancellationRequested();
 
-                    await UniTask.Yield(
+                    await UniTask.WaitUntil(
+                        @this,
+                        static @this => @this.didStart,
                         PlayerLoopTiming.PreUpdate,
                         @this.destroyCancellationToken
                         );
@@ -73,19 +75,23 @@ namespace CCEnvs.UnityX.Components
                     @this.StartPassed = true;
                 })
                 .Forget();
+
+            OnEnableLate();
         }
 
         protected virtual void OnEnable()
         {
+            if (didStart)
+                OnEnableLate();
         }
 
-        protected virtual void OnDisable()
-        {
-        }
+        protected virtual void OnEnableLate() { }
+
+        protected virtual void OnDisable() { }
 
         protected virtual void OnDestroy()
         {
-            disposables.Dispose();
+            disposables?.Dispose();
             IsDestroyed = true;
         }
 
@@ -93,6 +99,8 @@ namespace CCEnvs.UnityX.Components
             where T : IDisposable
         {
             CC.Guard.IsNotNull(disposable, nameof(disposable));
+
+            disposables ??= new CompositeDisposable();
 
             disposables.Add(disposable);
             return disposable;

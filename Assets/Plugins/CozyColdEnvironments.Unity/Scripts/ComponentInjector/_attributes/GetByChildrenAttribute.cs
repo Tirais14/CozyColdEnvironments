@@ -1,7 +1,7 @@
 using System;
 
 #nullable enable
-namespace CCEnvs.UnityX.Injections
+namespace CCEnvs.UnityX.ComponentInjections
 {
     /// <summary>
     /// Same as <see cref="UnityEngine.Component.GetComponentInChildren"/>

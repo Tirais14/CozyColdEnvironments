@@ -39,8 +39,7 @@ namespace CCEnvs.UnityX
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IEnumerator<Type> GetEnumerator(this RequireComponent source)
         {
-            CC.Guard.IsNotNullSource(source);
-            return source.TypesToArray().GetEnumeratorT();
+            return source.AsEnumerable().GetEnumerator();
         }
     }
 }

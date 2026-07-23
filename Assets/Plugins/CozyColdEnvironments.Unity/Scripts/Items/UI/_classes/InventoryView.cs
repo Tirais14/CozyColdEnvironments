@@ -1,6 +1,6 @@
 using CCEnvs.Pools;
 using CCEnvs.TypeMatching;
-using CCEnvs.UnityX.Injections;
+using CCEnvs.UnityX.ComponentInjections;
 using CCEnvs.UnityX.UI;
 using CCEnvs.UnityX.UI.Elements;
 using System;

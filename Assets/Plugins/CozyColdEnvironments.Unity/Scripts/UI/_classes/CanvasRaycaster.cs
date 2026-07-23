@@ -1,7 +1,7 @@
 #nullable enable
 using CCEnvs.UnityX.Components;
 using CCEnvs.UnityX.Diagnostics;
-using CCEnvs.UnityX.Injections;
+using CCEnvs.UnityX.ComponentInjections;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;

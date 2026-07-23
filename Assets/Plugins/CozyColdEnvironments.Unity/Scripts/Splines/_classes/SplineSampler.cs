@@ -1,7 +1,7 @@
 #if SPLINES_PLUGIN
 using CCEnvs.Disposables;
 using CCEnvs.UnityX.Components;
-using CCEnvs.UnityX.Injections;
+using CCEnvs.UnityX.ComponentInjections;
 using CommunityToolkit.Diagnostics;
 using R3;
 using System.Collections.Generic;

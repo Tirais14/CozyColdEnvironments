@@ -4,7 +4,7 @@ using System;
 #nullable enable
 namespace CCEnvs.UnityX.UI.Elements
 {
-    public interface IDragHandler : IToggleable
+    public interface IDragHandler : IToggleable, IElement
     {
         event Action<DragContext> OnBeginDrag;
         event Action<DragContext> OnDrag;

@@ -1,7 +1,7 @@
 #if UNITY_EDITOR
 using CCEnvs.Attributes;
 using CCEnvs.UnityX.Components;
-using CCEnvs.UnityX.Injections;
+using CCEnvs.UnityX.ComponentInjections;
 using System.Reflection;
 using UnityEditor;
 using UnityEditor.UIElements;

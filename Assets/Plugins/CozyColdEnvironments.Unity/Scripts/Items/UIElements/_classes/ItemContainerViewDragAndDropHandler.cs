@@ -3,7 +3,7 @@ using CCEnvs.FuncLanguage;
 using CCEnvs.Linq;
 using CCEnvs.Patterns.Commands;
 using CCEnvs.UnityX.Components;
-using CCEnvs.UnityX.Injections;
+using CCEnvs.UnityX.ComponentInjections;
 using CCEnvs.UnityX.UI;
 using CCEnvs.UnityX.UI.Elements;
 using Cysharp.Threading.Tasks;

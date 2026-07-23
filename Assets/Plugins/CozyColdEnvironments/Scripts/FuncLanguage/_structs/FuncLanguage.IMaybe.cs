@@ -36,6 +36,13 @@ namespace CCEnvs.FuncLanguage
             return Lang.Do(this, some, none);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [DebuggerStepThrough]
+        public readonly Maybe<T> Do(Action<T> some)
+        {
+            return Lang.Do(this, some);
+        }
+
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly TOut Match<TOut>(Func<T, TOut> some, Func<TOut> none)

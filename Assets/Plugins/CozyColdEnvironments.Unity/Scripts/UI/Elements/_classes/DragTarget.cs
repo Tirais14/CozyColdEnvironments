@@ -2,7 +2,7 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.Disposables;
 using CCEnvs.UnityX.Components;
-using CCEnvs.UnityX.Injections;
+using CCEnvs.UnityX.ComponentInjections;
 using UnityEngine;
 using UnityEngine.UIElements;
 

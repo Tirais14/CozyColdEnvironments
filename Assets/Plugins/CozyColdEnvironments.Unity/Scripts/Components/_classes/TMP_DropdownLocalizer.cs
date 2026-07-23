@@ -1,6 +1,6 @@
 using CCEnvs.Patterns.Commands;
 using CCEnvs.Threading;
-using CCEnvs.UnityX.Injections;
+using CCEnvs.UnityX.ComponentInjections;
 using Cysharp.Threading.Tasks;
 using R3;
 using System;

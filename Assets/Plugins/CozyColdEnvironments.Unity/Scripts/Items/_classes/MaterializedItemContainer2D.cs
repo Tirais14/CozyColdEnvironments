@@ -1,6 +1,6 @@
 #nullable enable
 using CCEnvs.FuncLanguage;
-using CCEnvs.UnityX.Injections;
+using CCEnvs.UnityX.ComponentInjections;
 using UnityEngine;
 
 #pragma warning disable S2933

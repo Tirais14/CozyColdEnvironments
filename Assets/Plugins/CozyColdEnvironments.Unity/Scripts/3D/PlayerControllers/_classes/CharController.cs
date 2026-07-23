@@ -1,6 +1,6 @@
 using CCEnvs.UnityX.Components;
 using CCEnvs.UnityX.EditorSerialization;
-using CCEnvs.UnityX.Injections;
+using CCEnvs.UnityX.ComponentInjections;
 using R3;
 using UnityEngine;
 

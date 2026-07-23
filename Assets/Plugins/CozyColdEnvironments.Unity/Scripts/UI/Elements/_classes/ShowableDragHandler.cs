@@ -1,5 +1,12 @@
+using CCEnvs.Diagnostics;
+using CCEnvs.Threading;
+using CCEnvs.UnityX.Async;
+using CCEnvs.UnityX.ComponentInjections;
 using CCEnvs.UnityX.Components;
-using CCEnvs.UnityX.Injections;
+using Cysharp.Threading.Tasks;
+using Humanizer;
+using System.Threading;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 #nullable enable
@@ -14,9 +21,11 @@ namespace CCEnvs.UnityX.UI.Elements
         [GetBySelf]
         private IShowableElement showable = null!;
 
-        private VisualElement? showableClone;
+        private VisualElement? showableCloneElement;
 
-        private bool isDragging;
+        private ShowableDragHandler? clone;
+
+        public bool IsDragging { get; private set; }
 
         protected override void OnEnable()
         {
@@ -34,41 +43,81 @@ namespace CCEnvs.UnityX.UI.Elements
             handler.OnEndDrag -= OnEndDrag;
         }
 
+        private async UniTask OnBeginDragCoreAsync()
+        {
+            if (clone == null)
+                return;
+
+            var showableClone = clone.Q().Component<IShowableElement>().Strict();
+
+            using (var linkedCancellationTokenSource = destroyCancellationToken.TryLinkTokens(
+                clone.destroyCancellationToken,
+                out CancellationToken linkedCancellationToken
+                ))
+            {
+                await UniTask.WaitUntil(
+                    showableClone,
+                    static showableClone => showableClone.RendererRoot is not null,
+                    timing: PlayerLoopTiming.PreUpdate,
+                    cancellationToken: linkedCancellationToken
+                    )
+                    .Timeout(60.Seconds());
+            }
+
+            showableCloneElement = showableClone.RendererRoot.ThrowIfNull(nameof(showableClone.RendererRoot));
+            showableCloneElement.pickingMode = PickingMode.Ignore;
+            showableCloneElement.style.position = Position.Absolute;
+            IsDragging = true;
+        }
+
         private void OnBeginDrag(DragContext context)
         {
             if (!enabled || showable.RendererRoot is null)
                 return;
 
-            showableClone = showable.Renderer.visualTreeAsset.CloneTree();
-            showableClone.style.position = Position.Absolute;
-            //showable.RendererRoot.visible = false;
-            showable.RendererRoot.CapturePointer(context.Event.pointerId);
-            isDragging = true;
+            clone = Instantiate(this, showable.As<Component>().IfNotNull(x => x.transform));
+
+            Destroy(clone.Q().Component<ShowableDragHandler>().Strict());
+
+            clone.Q()
+                .Component<IDropHandler>()
+                .Lax()
+                .Cast<Component>()
+                .Do(dropHandler => Destroy(dropHandler));
+
+            clone.Q()
+                .Component<IDragHandler>()
+                .Lax()
+                .Cast<Component>()
+                .Do(dragHandler => Destroy(dragHandler));   
+
+            OnBeginDragCoreAsync().ForgetByPrintException();
         }
 
         private void OnDrag(DragContext context)
         {
-            if (!isDragging || showableClone is null)
+            if (!IsDragging || showableCloneElement is null)
                 return;
 
-            showableClone.style.left = context.Event.position.x;
-            showableClone.style.top = context.Event.position.y;
+            showableCloneElement.style.left = context.Event.position.x;
+            showableCloneElement.style.top = context.Event.position.y;
         }
 
         private void OnEndDrag(DragContext context)
         {
-            if (!isDragging || showableClone is null)
+            if (!IsDragging || showableCloneElement is null)
                 return;
 
             if (showable.RendererRoot is not null)
-            {
                 showable.RendererRoot.visible = true;
-                showable.RendererRoot.ReleasePointer(context.Event.pointerId);
-            }
 
-            showableClone.RemoveFromHierarchy();
-            showableClone = null;
-            isDragging = false;
+            showableCloneElement.RemoveFromHierarchy();
+            showableCloneElement = null;
+
+            if (clone != null)
+                Destroy(clone);
+
+            IsDragging = false;
         }
     }
 }

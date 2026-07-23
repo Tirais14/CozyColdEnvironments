@@ -1,7 +1,7 @@
 using CCEnvs.FuncLanguage;
 using CCEnvs.UnityX.Components;
 using CCEnvs.UnityX.Events;
-using CCEnvs.UnityX.Injections;
+using CCEnvs.UnityX.ComponentInjections;
 using UnityEngine;
 using UnityEngine.UI;
 
