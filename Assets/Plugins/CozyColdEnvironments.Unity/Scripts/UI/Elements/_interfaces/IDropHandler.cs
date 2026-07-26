@@ -7,12 +7,10 @@ namespace CCEnvs.UnityX.UI.Elements
 {
     public interface IDropHandler : IToggleable
     {
-        event Action<DropContext> OnDrop;
+        event Action<DropEvent> OnDrop;
 
         GameObject gameObject { get; }
 
-        void SendDropEvent(DragContext dragContext);
-
-        Observable<DropContext> ObserveDrop();
+        void SendDropEvent(DragEvent dragContext);
     }
 }

@@ -6,16 +6,12 @@ namespace CCEnvs.UnityX.UI.Elements
 {
     public interface IDragHandler : IToggleable, IElement
     {
-        event Action<DragContext> OnBeginDrag;
-        event Action<DragContext> OnDrag;
-        event Action<DragContext> OnEndDrag;
+        event DragAction OnBeginDrag;
+        event DragAction OnDrag;
+        event DragAction OnEndDrag;
 
         bool IsDragging { get; }
 
-        Observable<DragContext> ObserveBeginDrag();
-
-        Observable<DragContext> ObserveDrag();
-
-        Observable<DragContext> ObserveEndDrag();
+        IDragPredicate? Predicate { get; set; }
     }
 }

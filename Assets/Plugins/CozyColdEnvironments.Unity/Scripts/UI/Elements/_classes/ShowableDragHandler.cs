@@ -1,3 +1,4 @@
+using CCEnvs.Attributes;
 using CCEnvs.Diagnostics;
 using CCEnvs.Threading;
 using CCEnvs.UnityX.Async;
@@ -15,17 +16,42 @@ namespace CCEnvs.UnityX.UI.Elements
 {
     public class ShowableDragHandler : CCBehaviour
     {
+        [SerializeField, OptionalField]
+        [Tooltip("Must contains " + nameof(IShowableElement))]
+        protected GameObject? ghostPrefab;
+
+        [SerializeField]
+        protected DragPosition dragPosition = DragPosition.Center;
+
+        [SerializeField]
+        protected bool isMoveToDropPosition;
+        [SerializeField]
+        protected bool hideWhenDrag;
+
         [GetByParent]
         private IDragHandler handler = null!;
 
         [GetBySelf]
         private IShowableElement showable = null!;
 
-        private VisualElement? showableCloneElement;
+        public VisualElement? ShowableGhostElement { get; private set; }
 
-        private ShowableDragHandler? clone;
+        public MonoBehaviour? Ghost { get; private set; }
 
         public bool IsDragging { get; private set; }
+        public bool HideWhenDrag {
+            get => hideWhenDrag;
+            set => SetHideWhenDrag(value);
+        }
+        public bool IsMoveToDropPosition {
+            get => isMoveToDropPosition;
+            set => SetIsMoveToDropPosition(value);
+        }
+
+        public DragPosition DragPosition {
+            get => dragPosition;
+            set => SetDragPosition(value);
+        }
 
         protected override void OnEnable()
         {
@@ -43,49 +69,78 @@ namespace CCEnvs.UnityX.UI.Elements
             handler.OnEndDrag -= OnEndDrag;
         }
 
+        public ShowableDragHandler SetDragPosition(DragPosition value)
+        {
+            if (value == DragPosition.None)
+                throw new System.ArgumentException(nameof(value));   
+
+            dragPosition = value;
+            return this;
+        }
+
+        public ShowableDragHandler SetIsMoveToDropPosition(bool state)
+        {
+            isMoveToDropPosition = state;
+            return this;
+        }
+
+        public ShowableDragHandler SetHideWhenDrag(bool state)
+        {
+            hideWhenDrag = state;
+            return this;
+        }
+
         private async UniTask OnBeginDragCoreAsync()
         {
-            if (clone == null)
+            if (Ghost == null)
                 return;
 
-            var showableClone = clone.Q().Component<IShowableElement>().Strict();
+            var showableClone = Ghost.Q().Component<IShowableElement>().Strict();
 
             using (var linkedCancellationTokenSource = destroyCancellationToken.TryLinkTokens(
-                clone.destroyCancellationToken,
+                Ghost.destroyCancellationToken,
                 out CancellationToken linkedCancellationToken
                 ))
             {
-                await UniTask.WaitUntil(
+                var task = UniTask.WaitUntil(
                     showableClone,
                     static showableClone => showableClone.RendererRoot is not null,
                     timing: PlayerLoopTiming.PreUpdate,
                     cancellationToken: linkedCancellationToken
-                    )
-                    .Timeout(60.Seconds());
+                    );
+
+                if (CCDebug<ShowableDragHandler>.IsEnabled)
+                    task = task.Timeout(60.Seconds());
+
+                await task;
             }
 
-            showableCloneElement = showableClone.RendererRoot.ThrowIfNull(nameof(showableClone.RendererRoot));
-            showableCloneElement.pickingMode = PickingMode.Ignore;
-            showableCloneElement.style.position = Position.Absolute;
+            ShowableGhostElement = showableClone.RendererRoot.ThrowIfNull(nameof(showableClone.RendererRoot));
+            ShowableGhostElement.pickingMode = PickingMode.Ignore;
+            ShowableGhostElement.style.position = Position.Absolute;
+
+            if (showable.RendererRoot is not null && hideWhenDrag)
+                showable.RendererRoot.visible = false;
+
             IsDragging = true;
         }
 
-        private void OnBeginDrag(DragContext context)
+        private void OnBeginDrag(DragEvent context)
         {
             if (!enabled || showable.RendererRoot is null)
                 return;
 
-            clone = Instantiate(this, showable.As<Component>().IfNotNull(x => x.transform));
+            Ghost = Instantiate(ghostPrefab.IfNull(gameObject)).AddComponent<EmptyMonoBehaviour>();
 
-            Destroy(clone.Q().Component<ShowableDragHandler>().Strict());
+            Destroy(Ghost.Q().Component<ShowableDragHandler>().Strict());
 
-            clone.Q()
+            Ghost.Q()
                 .Component<IDropHandler>()
                 .Lax()
                 .Cast<Component>()
                 .Do(dropHandler => Destroy(dropHandler));
 
-            clone.Q()
+            Ghost.Q()
                 .Component<IDragHandler>()
                 .Lax()
                 .Cast<Component>()
@@ -94,30 +149,56 @@ namespace CCEnvs.UnityX.UI.Elements
             OnBeginDragCoreAsync().ForgetByPrintException();
         }
 
-        private void OnDrag(DragContext context)
+        private void OnDrag(DragEvent context)
         {
-            if (!IsDragging || showableCloneElement is null)
+            if (!IsDragging || ShowableGhostElement is null)
                 return;
 
-            showableCloneElement.style.left = context.Event.position.x;
-            showableCloneElement.style.top = context.Event.position.y;
+            switch (dragPosition)
+            {
+                case DragPosition.LeftTop:
+                    ShowableGhostElement.style.left = context.Event.position.x;
+                    ShowableGhostElement.style.top = context.Event.position.y;
+                    break;
+                case DragPosition.Center:
+                    float xOffset = showable.RendererRoot?.layout.size.x / 2 ?? 0;
+                    float yOffset = showable.RendererRoot?.layout.size.y / 2 ?? 0;
+                    ShowableGhostElement.style.left = context.Event.position.x - xOffset;
+                    ShowableGhostElement.style.top = context.Event.position.y - yOffset;
+                    break;
+                default:
+                    throw CC.ThrowHelper.InvalidOperationException(dragPosition);
+            }
         }
 
-        private void OnEndDrag(DragContext context)
+        private void OnEndDrag(DragEvent context)
         {
-            if (!IsDragging || showableCloneElement is null)
-                return;
+            if (IsDragging)
+            {
+                if (showable.RendererRoot is not null)
+                {
+                    if (hideWhenDrag)
+                        showable.RendererRoot.visible = true;
 
-            if (showable.RendererRoot is not null)
-                showable.RendererRoot.visible = true;
+                    if (isMoveToDropPosition && ShowableGhostElement is not null)
+                    {
+                        StyleEnum<Position> showablePosition = showable.RendererRoot.style.position;
+                        showable.RendererRoot.style.position = Position.Absolute;
+                        showable.RendererRoot.style.left = ShowableGhostElement.style.left;
+                        showable.RendererRoot.style.right = ShowableGhostElement.style.right;
+                        showable.RendererRoot.style.position = showablePosition;
+                    }
+                }
 
-            showableCloneElement.RemoveFromHierarchy();
-            showableCloneElement = null;
+                IsDragging = false;
+            }
 
-            if (clone != null)
-                Destroy(clone);
+            ShowableGhostElement = null;
 
-            IsDragging = false;
+            if (Ghost != null)
+                Destroy(Ghost.gameObject);
+
+            Ghost = null;
         }
     }
 }

@@ -21,15 +21,13 @@ namespace CCEnvs.UnityX.UI.Elements
 
         private LightDisposable<IEventHandler> registryHandle;
 
-        private ReactiveCommand<DropContext>? onDropCmd;
-
-        public event Action<DropContext>? OnDrop;
+        public event Action<DropEvent>? OnDrop;
 
         [field: GetBySelf]
         public PanelRenderer Renderer { get; private set; } = null!;
 
         public VisualElement? RendererRoot { get; private set; }
-        public VisualElement? target { get; private set; }
+        public VisualElement? Target { get; private set; }
 
         public string? TargetName {
             get => targetName;
@@ -44,68 +42,82 @@ namespace CCEnvs.UnityX.UI.Elements
         protected override void OnEnable()
         {
             base.OnEnable();
-            BindUIReload();
+            Renderer.RegisterUIReloadCallback(OnUIReloadInternal);
         }
 
         protected override void OnDisable()
         {
             base.OnDisable();
-            UnbindUIReload();
-        }
-
-        protected override void OnDestroy()
-        {
-            base.OnDestroy();
-            onDropCmd?.Dispose();
+            registryHandle.Dispose();
+            Renderer.UnregisterUIReloadCallback(OnUIReloadInternal);
+            RendererRoot = null;
+            Target = null;
         }
 
         public DropHandler SetTargetName(string? name)
         {
-            CC.LogHelper.AssertMonoBehaviourStarted(this);
             targetName = name;
             return this;
         }
 
-        public void SendDropEvent(DragContext dragContext)
+        public void Refresh()
         {
-            OnDropEvent();
-            var context = DropContext.Create(dragContext, gameObject);
-            OnDrop?.Invoke(context);
-            onDropCmd?.Execute(context);
+            enabled = !enabled;
+            enabled = !enabled;
         }
 
-        public Observable<DropContext> ObserveDrop()
+        public void SendDropEvent(DragEvent dragEv)
         {
-            onDropCmd ??= new ReactiveCommand<DropContext>();
-            return onDropCmd;
+            var ev = new DropEvent(
+                dragEv.Source,
+                dragEv.Target,
+                dragEv.SourceGameObject,
+                dragEv.TargetGameObject
+                );
+
+            try
+            {
+                OnDrop?.Invoke(ev);
+            }
+            catch (Exception ex)
+            {
+                this.PrintException(ex);
+            }
+
+            try
+            {
+                OnDropEvent(ev);
+            }
+            catch (Exception ex)
+            {
+                this.PrintException(ex);
+            }
         }
 
-        protected virtual void OnDropEvent() { }
+        protected virtual void OnDropEvent(DropEvent ev) { }
 
-        private void OnUIReload(PanelRenderer renderer, VisualElement root)
+        protected virtual void OnUIReload(PanelRenderer renderer, VisualElement root) { }
+
+        private void OnUIReloadInternal(PanelRenderer renderer, VisualElement root)
         {
-            this.RendererRoot = root;
+            RendererRoot = root;
 
             if (targetName.IsNullOrWhiteSpace())
-                target = root;
+                Target = root;
             else
-                target = root.Q<VisualElement>(targetName);
+                Target = root.Q<VisualElement>(targetName);
 
-            if (target is not null)
-                registryHandle = DropTargetRegistry.Register(target, gameObject);
-        }
+            if (Target is not null)
+                registryHandle = DropTargetRegistry.Register(Target, gameObject);
 
-        private void BindUIReload() 
-        {
-            Renderer.RegisterUIReloadCallback(OnUIReload);
-        }
-
-        private void UnbindUIReload()
-        {
-            registryHandle.Dispose();
-            Renderer.UnregisterUIReloadCallback(OnUIReload);
-            RendererRoot = null;
-            target = null;
+            try
+            {
+                OnUIReload(renderer, root);
+            }
+            catch (Exception ex)
+            {
+                this.PrintException(ex);
+            }
         }
     }
 }

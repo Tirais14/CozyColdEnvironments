@@ -2,7 +2,9 @@ using CCEnvs.Collections;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Patterns.Commands;
 using CCEnvs.Threading;
+using CCEnvs.TypeMatching;
 using CCEnvs.UnityX.Components;
+using CCEnvs.UnityX.UI.Elements;
 using Cysharp.Threading.Tasks;
 using Humanizer;
 using R3;
@@ -405,27 +407,35 @@ namespace CCEnvs.UnityX.UI
 
         private void SetRoot()
         {
-            _root = this.Q()
-                .FromParents()
-                .ExcludeSelf()
-                .Component<IShowable>()
-                .Lax()
-                .CastEither<MonoBehaviour>()
-                .RightTarget;
+            foreach (var showable in transform.root.Q()
+                .FromChildrens()
+                .IncludeInactive()
+                .FirstComponentsOnBranch()
+                .Components<IShowableBase>())
+            {
+                if (showable.IsNot<MonoBehaviour>(out var monoShowable))
+                    continue;
+
+                if (monoShowable == this)
+                    break;
+
+                if (transform.IsChildOf(monoShowable.transform))
+                {
+                    _root = monoShowable;
+                    break;  
+                }
+            }
         }
 
         private void SetParent()
         {
-            _parent = transform.root.Maybe()
-                .Map(static trRoot =>
-                {
-                    return trRoot.Q()
-                        .FromChildrens()
-                        .Component<IShowable>()
-                        .Lax()
-                        .CastEither<MonoBehaviour>()
-                        .RightTarget;
-                })
+            _parent = this.Q()
+                .FromParents()
+                .ExcludeSelf()
+                .IncludeInactive()
+                .Component<IShowableBase>()
+                .Lax()
+                .Cast<MonoBehaviour>()
                 .GetValue();
         }
 

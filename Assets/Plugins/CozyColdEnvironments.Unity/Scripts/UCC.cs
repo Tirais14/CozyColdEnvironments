@@ -76,7 +76,7 @@ namespace CCEnvs.UnityX
 
         private static readonly Lazy<Sprite> redCrossSprite = new(static () => Resources.Load<Sprite>("Textures/RedCross"));
 
-        private static readonly Lazy<IInventory> worldInventory = new(static () => new Inventory());
+        private static readonly Lazy<Inventory> worldInventory = new(static () => new Inventory());
 
         private static readonly Lazy<Material> mockMaterial = new(static () => Resources.Load<Material>("CC/Mock_Material"));
 
@@ -85,7 +85,7 @@ namespace CCEnvs.UnityX
         public static Sprite RedCrossSprite => redCrossSprite.Value;
         public static Sprite AnonymousProfileImage => anonymousProfileImage.Value;
 
-        public static IInventory WorldInventory => worldInventory.Value;
+        public static Inventory WorldInventory => worldInventory.Value;
 
         public static Material MockMaterial => mockMaterial.Value;
 
