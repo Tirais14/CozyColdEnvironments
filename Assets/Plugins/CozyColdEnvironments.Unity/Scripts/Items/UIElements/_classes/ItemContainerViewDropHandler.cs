@@ -2,10 +2,12 @@ using CCEnvs.UnityX.ComponentInjections;
 using CCEnvs.UnityX.Components;
 using CCEnvs.UnityX.UI;
 using CCEnvs.UnityX.UI.Elements;
+using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.UnityX.Items.UIElements
 {
+    [DisallowMultipleComponent]
     public class ItemContainerViewDropHandler : CCBehaviour
     {
         [GetBySelf]

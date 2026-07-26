@@ -9,6 +9,7 @@ using UnityEngine.UIElements;
 
 namespace CCEnvs.UnityX.UI.Elements
 {
+    [DisallowMultipleComponent]
     [RequireComponent(typeof(PanelRenderer))]
     public class ShowableElement
         :

@@ -1,23 +1,38 @@
+using CCEnvs.FuncLanguage;
+using CCEnvs.Pools;
 using CommunityToolkit.Diagnostics;
+using System;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 #nullable enable
 namespace CCEnvs.UnityX.UI.Elements
 {
-    public sealed class DragEvent
+    public sealed class DragEvent : IPoolable
     {
-        public VisualElement Source { get; private set; }
-        public VisualElement Target { get; private set; }
+        private Action<IPoolable>? onDespawnCallback;
 
-        public GameObject SourceGameObject { get; private set; }
-        public GameObject TargetGameObject { get; private set; }
+        public VisualElement Source { get; internal set; } = null!;
+        public VisualElement Target { get; internal set; } = null!;
 
-        public IPointerEvent Event { get; set; }
+        public GameObject SourceGameObject { get; internal set; } = null!;
+        public GameObject TargetGameObject { get; internal set; } = null!;
+
+        public IPointerEvent Event { get; internal set; } = null!;
+
+        event Action<IPoolable> IPoolable.OnDespawnCallback {
+            add => onDespawnCallback += value;
+            remove => onDespawnCallback -= value;
+        }
+
+        Maybe<PooledObject> IPoolable.PoolHandle { get; set; }
+
+        bool IPoolable.IsValid => true;
 
         public DragEvent(
             VisualElement source,
-            GameObject sourceGameObject
+            GameObject sourceGameObject,
+            IPointerEvent ev
             )
         {
             Guard.IsNotNull(source);
@@ -27,21 +42,13 @@ namespace CCEnvs.UnityX.UI.Elements
             Target = source;
             SourceGameObject = sourceGameObject;
             TargetGameObject = sourceGameObject;
-        }
-
-        public DragEvent SetSource(VisualElement source, GameObject sourceGameObject)
-        {
-            Guard.IsNotNull(source);
-            CC.Guard.IsNotNull(sourceGameObject, nameof(sourceGameObject));
-            Source = source;
-            SourceGameObject = sourceGameObject;
-            return this;
+            Event = ev;
         }
 
         public DragEvent SetTarget(VisualElement target, GameObject targetGameObject)
         {
             Guard.IsNotNull(target);
-            CC.Guard.IsNotNull(targetGameObject, nameof(targetGameObject));
+            CC.Guard.IsNotNull(targetGameObject);
             Target = target;
             TargetGameObject = targetGameObject;
             return this;
@@ -57,5 +64,25 @@ namespace CCEnvs.UnityX.UI.Elements
                 .AddProperty(nameof(Event), Event)
                 .ToStringAndDispose();
         }
+
+        void IPoolable.OnDespawned()
+        {
+            Source = null!;
+            SourceGameObject = null!;
+            Target = null!;
+            TargetGameObject = null!;
+            Event = null!;
+        }
+
+        void IPoolable.OnSpawned()
+        {
+        }
+
+        bool IPoolable.ReturnToPool()
+        {
+            return ((IPoolable)this).PoolHandle.IfSome(x => x.Dispose()).IsSome;
+        }
+
+        void IUtilizable.Utilize() => ((IPoolable)this).ReturnToPool();
     }
 }

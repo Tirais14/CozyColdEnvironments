@@ -10,6 +10,7 @@ using UnityEngine;
 #nullable enable
 namespace CCEnvs.UnityX.Items.UI
 {
+    [DisallowMultipleComponent]
     public abstract class InventoryView<TViewModel>
         :
         View<TViewModel>

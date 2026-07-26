@@ -9,6 +9,7 @@ using UnityEngine.UIElements;
 #nullable enable
 namespace CCEnvs.UnityX.UI.Elements
 {
+    [DisallowMultipleComponent]
     [RequireComponent(typeof(PanelRenderer))]
     public class DropHandler
         :

@@ -15,6 +15,7 @@ using UnityEngine;
 #pragma warning disable IDE0044
 namespace CCEnvs.UnityX.UI
 {
+    [DisallowMultipleComponent]
     [RequireComponent(typeof(IShowableBase))]
     public abstract class View : CCBehaviour
     {
@@ -63,6 +64,7 @@ namespace CCEnvs.UnityX.UI
             }
         }
     }
+    [DisallowMultipleComponent]
     public abstract class View<TViewModel>
         :
         View,

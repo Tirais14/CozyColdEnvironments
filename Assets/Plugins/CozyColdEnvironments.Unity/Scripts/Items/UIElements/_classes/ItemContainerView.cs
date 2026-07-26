@@ -8,6 +8,7 @@ using UnityEngine.UIElements;
 #nullable enable
 namespace CCEnvs.UnityX.Items.UIElements
 {
+    [DisallowMultipleComponent]
     [RequireComponent(typeof(PanelRenderer))]
     public abstract class ItemContainerView<TViewModel>
         :

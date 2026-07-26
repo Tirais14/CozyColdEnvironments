@@ -1,4 +1,5 @@
 using CCEnvs.Diagnostics;
+using CCEnvs.Pools;
 using CCEnvs.UnityX.ComponentInjections;
 using CCEnvs.UnityX.Components;
 using CommunityToolkit.Diagnostics;
@@ -30,6 +31,8 @@ namespace CCEnvs.UnityX.UI.Elements
 
         private IDragPredicate? predicate;
 
+        private DragEvent? dragEv;
+
         public event DragAction? OnBeginDrag;
         public event DragAction? OnDrag;
         public event DragAction? OnEndDrag;
@@ -46,8 +49,6 @@ namespace CCEnvs.UnityX.UI.Elements
             get => predicate;
             set => SetPredicate(value);
         }
-
-        protected DragEvent Event { get; private set; } = null!;
 
         public string? TargetName {
             get => targetName;
@@ -88,6 +89,8 @@ namespace CCEnvs.UnityX.UI.Elements
                 Target.UnregisterCallback<PointerMoveEvent>(OnPointerMove);
                 Target.UnregisterCallback<PointerUpEvent>(OnPointerUp);
             }
+
+            ReturnDragEvent();
         }
 
         public DragHandler SetTargetName(string? name)
@@ -120,6 +123,22 @@ namespace CCEnvs.UnityX.UI.Elements
             enabled = !enabled;
         }
 
+        protected DragEvent GetDragEvent(IPointerEvent pointerEv)
+        {
+            Guard.IsNotNull(Target, nameof(Target));
+
+            ReturnDragEvent();
+
+            DragEvent dragEv = DragEventPool.Shared.Get(
+                Target,
+                gameObject,
+                pointerEv
+                )
+                .Value;
+
+            return dragEv;
+        }
+
         protected virtual void OnUIReload(PanelRenderer renderer, VisualElement root) { }
 
         protected virtual void OnBeginEvent(DragEvent context) { }
@@ -127,6 +146,15 @@ namespace CCEnvs.UnityX.UI.Elements
         protected virtual void OnDragEvent(DragEvent context) { }
 
         protected virtual void OnEndEvent(DragEvent context) { }
+
+        private void ReturnDragEvent()
+        {
+            if (dragEv is null)
+                return;
+
+            DragEventPool.Shared.Return(dragEv);
+            dragEv = null;
+        }
 
         private void OnUIReloadInternal(PanelRenderer renderer, VisualElement root)
         {
@@ -154,22 +182,25 @@ namespace CCEnvs.UnityX.UI.Elements
             }
         }
 
-        private void OnPointerDown(PointerDownEvent ev)
+        private void OnPointerDown(PointerDownEvent pointerEv)
         {
-            if (!enabled || Target is null || (!Predicate?.Evaluate() ?? false))
+            if (!enabled ||
+                Target is null ||
+                (!Predicate?.Evaluate() ?? false))
+            {
                 return;
+            }
 
             Guard.IsNotNull(Target);
             IsDragging = true;
 
-            Event.SetSource(Target, gameObject)
-                .SetTarget(Target, gameObject);
+            RendererRoot.CapturePointer(pointerEv.pointerId);
 
-            RendererRoot.CapturePointer(ev.pointerId);
+            dragEv = GetDragEvent(pointerEv);
 
             try
             {
-                OnBeginEvent(Event);
+                OnBeginEvent(dragEv);
             }
             catch (Exception ex)
             {
@@ -178,7 +209,7 @@ namespace CCEnvs.UnityX.UI.Elements
 
             try
             {
-                OnBeginDrag?.Invoke(Event);
+                OnBeginDrag?.Invoke(dragEv);
             }
             catch (Exception ex)
             {
@@ -191,14 +222,16 @@ namespace CCEnvs.UnityX.UI.Elements
 
         private void OnPointerMove(PointerMoveEvent ev)
         {
-            if (!IsDragging || Target is null)
+            if (!IsDragging ||
+                Target is null ||
+                dragEv is null)
+            {
                 return;
-
-            Event.SetSource(Target, gameObject);
+            }
 
             try
             {
-                OnDragEvent(Event);
+                OnDragEvent(dragEv);
             }
             catch (Exception ex)
             {
@@ -207,7 +240,7 @@ namespace CCEnvs.UnityX.UI.Elements
 
             try
             {
-                OnDrag?.Invoke(Event);
+                OnDrag?.Invoke(dragEv);
             }
             catch (Exception ex)
             {
@@ -217,33 +250,31 @@ namespace CCEnvs.UnityX.UI.Elements
 
         private void OnPointerUp(PointerUpEvent ev) 
         {
-            if (!IsDragging || Target is null)
+            if (!IsDragging || 
+                Target is null ||
+                dragEv is null)
+            {
                 return;
+            }
 
-            Event.SetSource(Target, gameObject);
-
-            if (DropTargetRegistry.Targets.TryGetValue(ev.target, out DropTarget dropTarget)
-                &&
-                gameObject != dropTarget.GameObject
-                &&
-                (dropTargetTag.IsNullOrWhiteSpace() || dropTarget.GameObject.CompareTag(dropTargetTag))
-                &&
-                (DropTargetLayerMask & (1 << dropTarget.GameObject.layer)) != 0
-                &&
+            if (DropTargetRegistry.Targets.TryGetValue(ev.target, out DropTarget dropTarget) &&
+                gameObject != dropTarget.GameObject &&
+                (dropTargetTag.IsNullOrWhiteSpace() || dropTarget.GameObject.CompareTag(dropTargetTag)) &&
+                (DropTargetLayerMask & (1 << dropTarget.GameObject.layer)) != 0 &&
                 dropTarget.GameObject.Q()
                     .Component<IDropHandler>()
                     .Lax()
                     .TryGetValue(out var targetDropHandler)
                 )
             {
-                targetDropHandler.SendDropEvent(Event);
+                targetDropHandler.SendDropEvent(dragEv);
             }
 
             RendererRoot.ReleasePointer(ev.pointerId);
 
             try
             {
-                OnEndEvent(Event);
+                OnEndEvent(dragEv);
             }
             catch (Exception ex)
             {
@@ -252,7 +283,7 @@ namespace CCEnvs.UnityX.UI.Elements
 
             try
             {
-                OnEndDrag?.Invoke(Event);
+                OnEndDrag?.Invoke(dragEv);
             }
             catch (Exception ex)
             {

@@ -14,6 +14,7 @@ using UnityEngine.UIElements;
 #pragma warning disable IDE0044
 namespace CCEnvs.UnityX.UI.Elements
 {
+    [DisallowMultipleComponent]
     public class ShowableDragHandler : CCBehaviour
     {
         [SerializeField, OptionalField]
