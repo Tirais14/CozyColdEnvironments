@@ -13,12 +13,12 @@ namespace CCEnvs.UnityX.UI.Elements
         private Action<IPoolable>? onDespawnCallback;
 
         public VisualElement Source { get; internal set; } = null!;
-        public VisualElement Target { get; internal set; } = null!;
+        public VisualElement? Target { get; internal set; } = null!;
 
         public GameObject SourceGameObject { get; internal set; } = null!;
-        public GameObject TargetGameObject { get; internal set; } = null!;
+        public GameObject? TargetGameObject { get; internal set; } = null!;
 
-        public IPointerEvent Event { get; internal set; } = null!;
+        public IPointerEvent Info { get; internal set; } = null!;
 
         event Action<IPoolable> IPoolable.OnDespawnCallback {
             add => onDespawnCallback += value;
@@ -42,13 +42,13 @@ namespace CCEnvs.UnityX.UI.Elements
             Target = source;
             SourceGameObject = sourceGameObject;
             TargetGameObject = sourceGameObject;
-            Event = ev;
+            Info = ev;
         }
 
-        public DragEvent SetTarget(VisualElement target, GameObject targetGameObject)
+        internal DragEvent() { }
+
+        public DragEvent SetTarget(VisualElement? target, GameObject? targetGameObject)
         {
-            Guard.IsNotNull(target);
-            CC.Guard.IsNotNull(targetGameObject);
             Target = target;
             TargetGameObject = targetGameObject;
             return this;
@@ -61,7 +61,7 @@ namespace CCEnvs.UnityX.UI.Elements
                 .AddProperty(nameof(Target), Target)
                 .AddProperty(nameof(SourceGameObject), SourceGameObject)
                 .AddProperty(nameof(TargetGameObject), TargetGameObject)
-                .AddProperty(nameof(Event), Event)
+                .AddProperty(nameof(Info), Info)
                 .ToStringAndDispose();
         }
 
@@ -71,7 +71,7 @@ namespace CCEnvs.UnityX.UI.Elements
             SourceGameObject = null!;
             Target = null!;
             TargetGameObject = null!;
-            Event = null!;
+            Info = null!;
         }
 
         void IPoolable.OnSpawned()

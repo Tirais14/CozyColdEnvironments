@@ -12,11 +12,10 @@ namespace CCEnvs.UnityX.UI.Elements
         public static DragEventPool Shared { get; } = new();
 
         public DragEventPool(
-            IFactory<DragEvent>? factory = null,
             int capacity = 4,
             int? maxSize = null)
             :
-            base(factory, capacity, maxSize)
+            base(Factory.Create(() => new DragEvent()), capacity, maxSize)
         {
         }
 
@@ -32,7 +31,7 @@ namespace CCEnvs.UnityX.UI.Elements
             PooledObject<DragEvent> handle = base.Get();
             handle.Value.Source = source;
             handle.Value.SourceGameObject = sourceGameObject;
-            handle.Value.Event = ev;
+            handle.Value.Info = ev;
             return handle;
         }
     }

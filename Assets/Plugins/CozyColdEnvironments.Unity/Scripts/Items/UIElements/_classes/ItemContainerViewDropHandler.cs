@@ -8,7 +8,7 @@ using UnityEngine;
 namespace CCEnvs.UnityX.Items.UIElements
 {
     [DisallowMultipleComponent]
-    public class ItemContainerViewDropHandler : CCBehaviour
+    public sealed class ItemContainerViewDropHandler : CCBehaviour
     {
         [GetBySelf]
         private IDropHandler dropHandler = null!;

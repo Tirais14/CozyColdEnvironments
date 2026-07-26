@@ -1,5 +1,6 @@
 using R3;
 using System;
+using UnityEngine.UIElements;
 
 #nullable enable
 namespace CCEnvs.UnityX.UI.Elements
@@ -11,6 +12,8 @@ namespace CCEnvs.UnityX.UI.Elements
         event DragAction OnEndDrag;
 
         bool IsDragging { get; }
+
+        VisualElement? Target { get; }
 
         IDragPredicate? Predicate { get; set; }
     }

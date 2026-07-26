@@ -29,7 +29,7 @@ namespace CCEnvs.UnityX.UI.Elements
         [SerializeField]
         protected bool hideWhenDrag;
 
-        [GetByParent]
+        [GetBySelf]
         private IDragHandler handler = null!;
 
         [GetBySelf]
@@ -57,17 +57,17 @@ namespace CCEnvs.UnityX.UI.Elements
         protected override void OnEnable()
         {
             base.OnEnable();
-            handler.OnBeginDrag += OnBeginDrag;
-            handler.OnDrag += OnDrag;
-            handler.OnEndDrag += OnEndDrag;
+            handler.OnBeginDrag += OnBeginDragInternal;
+            handler.OnDrag += OnDragInternal;
+            handler.OnEndDrag += OnEndDragInternal;
         }
 
         protected override void OnDisable()
         {
             base.OnDisable();
-            handler.OnBeginDrag -= OnBeginDrag;
-            handler.OnDrag -= OnDrag;
-            handler.OnEndDrag -= OnEndDrag;
+            handler.OnBeginDrag -= OnBeginDragInternal;
+            handler.OnDrag -= OnDragInternal;
+            handler.OnEndDrag -= OnEndDragInternal;
         }
 
         public ShowableDragHandler SetDragPosition(DragPosition value)
@@ -126,12 +126,18 @@ namespace CCEnvs.UnityX.UI.Elements
             IsDragging = true;
         }
 
-        private void OnBeginDrag(DragEvent context)
+        private void OnBeginDragInternal(DragEvent ev)
         {
             if (!enabled || showable.RendererRoot is null)
                 return;
 
             Ghost = Instantiate(ghostPrefab.IfNull(gameObject)).AddComponent<EmptyMonoBehaviour>();
+            var ghostDragHandler = Ghost.Q().Component<IDragHandler>().Strict();
+
+            ev.SetTarget(
+                ghostDragHandler.Target, 
+                ghostDragHandler.As<Component>().IfNotNull(x => x.gameObject)
+                );
 
             Destroy(Ghost.Q().Component<ShowableDragHandler>().Strict());
 
@@ -150,7 +156,7 @@ namespace CCEnvs.UnityX.UI.Elements
             OnBeginDragCoreAsync().ForgetByPrintException();
         }
 
-        private void OnDrag(DragEvent context)
+        private void OnDragInternal(DragEvent context)
         {
             if (!IsDragging || ShowableGhostElement is null)
                 return;
@@ -158,21 +164,21 @@ namespace CCEnvs.UnityX.UI.Elements
             switch (dragPosition)
             {
                 case DragPosition.LeftTop:
-                    ShowableGhostElement.style.left = context.Event.position.x;
-                    ShowableGhostElement.style.top = context.Event.position.y;
+                    ShowableGhostElement.style.left = context.Info.position.x;
+                    ShowableGhostElement.style.top = context.Info.position.y;
                     break;
                 case DragPosition.Center:
                     float xOffset = showable.RendererRoot?.layout.size.x / 2 ?? 0;
                     float yOffset = showable.RendererRoot?.layout.size.y / 2 ?? 0;
-                    ShowableGhostElement.style.left = context.Event.position.x - xOffset;
-                    ShowableGhostElement.style.top = context.Event.position.y - yOffset;
+                    ShowableGhostElement.style.left = context.Info.position.x - xOffset;
+                    ShowableGhostElement.style.top = context.Info.position.y - yOffset;
                     break;
                 default:
                     throw CC.ThrowHelper.InvalidOperationException(dragPosition);
             }
         }
 
-        private void OnEndDrag(DragEvent context)
+        private void OnEndDragInternal(DragEvent context)
         {
             if (IsDragging)
             {
