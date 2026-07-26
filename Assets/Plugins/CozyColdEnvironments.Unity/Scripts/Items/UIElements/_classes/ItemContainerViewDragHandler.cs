@@ -1,5 +1,4 @@
 using CCEnvs.UnityX.ComponentInjections;
-using CCEnvs.UnityX.Components;
 using CCEnvs.UnityX.Items;
 using UnityEngine;
 
@@ -7,20 +6,15 @@ using UnityEngine;
 namespace CCEnvs.UnityX.UI.Elements
 {
     [DisallowMultipleComponent]
-    public sealed class ItemContainerViewDragHandler : CCBehaviour
+    public sealed class ItemContainerViewDragHandler : ShowableDragHandler
     {
-        [GetByParent]
-        private IDragHandler dragHandler = null!;
-
         [GetBySelf]
         private IView containerView = null!;
-
-        public bool IsDragging { get; private set; }
 
         protected override void Awake()
         {
             base.Awake();
-            dragHandler.Predicate = DragPredicate.Create(
+            Predicate = DragPredicate.Create(
                 this,
                 static @this =>
                 {
@@ -29,22 +23,10 @@ namespace CCEnvs.UnityX.UI.Elements
                 });
         }
 
-        protected override void OnEnable()
+        protected override void OnBeginDragEvent(DragEvent ev)
         {
-            base.OnEnable();
-            dragHandler.OnBeginDrag += OnBeginDrag;
-            dragHandler.OnEndDrag += OnEndDrag;
-        }
+            base.OnBeginDragEvent(ev);
 
-        protected override void OnDisable()
-        {
-            base.OnDisable();
-            dragHandler.OnBeginDrag -= OnBeginDrag;
-            dragHandler.OnEndDrag -= OnEndDrag;
-        }
-
-        private void OnBeginDrag(DragEvent ev)
-        {
             if (!containerView.HasModel<IItemContainer>() ||
                 ev.TargetGameObject == null ||
                 !ev.TargetGameObject.Q()
@@ -57,13 +39,13 @@ namespace CCEnvs.UnityX.UI.Elements
             }
 
             IItemContainer container = containerView.GetModel<IItemContainer>();
-
             container.PutItem(dragContainer.PutItem(container.TakeItem()));
-            IsDragging = true;
         }
 
-        private void OnEndDrag(DragEvent ev)
+        protected override void OnEndDragEvent(DragEvent ev)
         {
+            base.OnEndDragEvent(ev);
+
             if (!IsDragging ||
                 !containerView.HasModel<IItemContainer>() ||
                 ev.TargetGameObject == null ||
@@ -77,7 +59,6 @@ namespace CCEnvs.UnityX.UI.Elements
 
             var container = containerView.GetModel<IItemContainer>();
             dragContainer.PutItem(container.PutItem(dragContainer.TakeItem()));
-            IsDragging = false;
         }
     }
 }

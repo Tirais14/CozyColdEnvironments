@@ -1008,11 +1008,24 @@ namespace CCEnvs.UnityX
 
             public bool MoveNext()
             {
-                if (!componentEtor.TryMoveNextStruct<ComponentsEnumerator, Component>(out var cmp))
-                    return false;
+#if CC_DEBUG_ENABLED
+                var loopFuse = LoopFuse.Create();
+#endif
 
-                Current = cmp.CastTo<T>();
-                return true;
+                while (componentEtor.TryMoveNextStruct<ComponentsEnumerator, Component>(out var cmp))
+                {
+#if CC_DEBUG_ENABLED
+                    loopFuse.MoveNextThrow();
+#endif
+
+                    if (cmp.Is<T>(out var current))
+                    {
+                        Current = current;
+                        return true;
+                    }
+                }
+
+                return false;
             }
 
             public readonly void Dispose() => componentEtor.Dispose();
@@ -1083,13 +1096,13 @@ namespace CCEnvs.UnityX
 
                     if (viewModel.Is<Component>(out var cmp))
                     {
-                        var viewGO = cmp.gameObject;
+                        GameObject viewModelGO = cmp.gameObject;
 
-                        if (excludedGameObjects.Contains(viewGO)
+                        if (excludedGameObjects.Contains(viewModelGO)
                             ||
-                            !Query.IsGameObjectMatch(viewGO))
+                            !Query.IsGameObjectMatch(viewModelGO))
                         {
-                            excludedGameObjects.Add(viewGO);
+                            excludedGameObjects.Add(viewModelGO);
                             continue;
                         }
                     }
@@ -1228,7 +1241,7 @@ namespace CCEnvs.UnityX
                     if (hasModelType && model.IsNotInstanceOfType(modelType!))
                         continue;
 
-                    if (cmp != null || model.Is(out cmp))
+                    if (cmp != null || model.Is<Component>(out cmp))
                     {
                         var modelGO = cmp.gameObject;
 

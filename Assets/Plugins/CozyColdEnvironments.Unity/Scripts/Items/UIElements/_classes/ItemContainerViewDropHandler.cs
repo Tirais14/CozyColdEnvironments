@@ -1,5 +1,4 @@
 using CCEnvs.UnityX.ComponentInjections;
-using CCEnvs.UnityX.Components;
 using CCEnvs.UnityX.UI;
 using CCEnvs.UnityX.UI.Elements;
 using UnityEngine;
@@ -8,30 +7,17 @@ using UnityEngine;
 namespace CCEnvs.UnityX.Items.UIElements
 {
     [DisallowMultipleComponent]
-    public sealed class ItemContainerViewDropHandler : CCBehaviour
+    public sealed class ItemContainerViewDropHandler : UnityX.UI.Elements.DropHandler
     {
-        [GetBySelf]
-        private IDropHandler dropHandler = null!;
-
         [GetBySelf]
         private IView containerView = null!;
 
-        protected override void OnEnable()
+        protected override void OnDropEvent(DropEvent ev)
         {
-            base.OnEnable();
-            dropHandler.OnDrop += OnDrop;
-        }
+            base.OnDropEvent(ev);
 
-        protected override void OnDisable()
-        {
-            base.OnDisable();
-            dropHandler.OnDrop -= OnDrop;
-        }
-
-        private void OnDrop(DropEvent context)
-        {
-            if (!containerView.HasModel<IItemContainer>()||
-                !context.TargetGameObject.Q()
+            if (!containerView.HasModel<IItemContainer>() ||
+                !ev.TargetGameObject.Q()
                     .Model<IItemContainer>()
                     .Lax()
                     .TryGetValue(out var dragContainer)

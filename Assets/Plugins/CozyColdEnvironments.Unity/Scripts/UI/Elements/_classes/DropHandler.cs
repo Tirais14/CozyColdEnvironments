@@ -1,7 +1,6 @@
 using CCEnvs.Disposables;
-using CCEnvs.UnityX.Components;
 using CCEnvs.UnityX.ComponentInjections;
-using R3;
+using CCEnvs.UnityX.Components;
 using System;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -17,9 +16,6 @@ namespace CCEnvs.UnityX.UI.Elements
         IDropHandler,
         IElement
     {
-        [SerializeField]
-        protected string? targetName;
-
         private LightDisposable<IEventHandler> registryHandle;
 
         public event Action<DropEvent>? OnDrop;
@@ -28,12 +24,6 @@ namespace CCEnvs.UnityX.UI.Elements
         public PanelRenderer Renderer { get; private set; } = null!;
 
         public VisualElement? RendererRoot { get; private set; }
-        public VisualElement? Target { get; private set; }
-
-        public string? TargetName {
-            get => targetName;
-            set => SetTargetName(value);
-        }
 
         bool IToggleable.IsEnabled {
             get => enabled;
@@ -52,13 +42,6 @@ namespace CCEnvs.UnityX.UI.Elements
             registryHandle.Dispose();
             Renderer.UnregisterUIReloadCallback(OnUIReloadInternal);
             RendererRoot = null;
-            Target = null;
-        }
-
-        public DropHandler SetTargetName(string? name)
-        {
-            targetName = name;
-            return this;
         }
 
         public void Refresh()
@@ -102,14 +85,7 @@ namespace CCEnvs.UnityX.UI.Elements
         private void OnUIReloadInternal(PanelRenderer renderer, VisualElement root)
         {
             RendererRoot = root;
-
-            if (targetName.IsNullOrWhiteSpace())
-                Target = root;
-            else
-                Target = root.Q<VisualElement>(targetName);
-
-            if (Target is not null)
-                registryHandle = DropTargetRegistry.Register(Target, gameObject);
+            registryHandle = DropTargetRegistry.Register(root, gameObject);
 
             try
             {

@@ -17,9 +17,9 @@ namespace CCEnvs.UnityX.UI.Elements
 
         public DropEvent(
             VisualElement source,
-            VisualElement target,
+            VisualElement? target,
             GameObject sourceGameObject,
-            GameObject targetGameObject
+            GameObject? targetGameObject
             )
         {
             Guard.IsNotNull(source);
@@ -28,9 +28,9 @@ namespace CCEnvs.UnityX.UI.Elements
             CC.Guard.IsNotNull(targetGameObject, nameof(targetGameObject));
 
             Source = source;
-            Target = target;
+            Target = target.IfNull(source);
             SourceGameObject = sourceGameObject;
-            TargetGameObject = targetGameObject;
+            TargetGameObject = targetGameObject.IfNull(sourceGameObject);
         }
 
         public static bool operator ==(in DropEvent left, in DropEvent right)

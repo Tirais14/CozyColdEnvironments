@@ -12,13 +12,13 @@ namespace CCEnvs.UnityX.UI.Elements
     {
         private Action<IPoolable>? onDespawnCallback;
 
-        public VisualElement Source { get; internal set; } = null!;
-        public VisualElement? Target { get; internal set; } = null!;
+        public VisualElement Source { get; private set; } = null!;
+        public VisualElement? Target { get; private set; } = null!;
 
-        public GameObject SourceGameObject { get; internal set; } = null!;
-        public GameObject? TargetGameObject { get; internal set; } = null!;
+        public GameObject SourceGameObject { get; private set; } = null!;
+        public GameObject? TargetGameObject { get; private set; } = null!;
 
-        public IPointerEvent Info { get; internal set; } = null!;
+        public IPointerEvent Info { get; private set; } = null!;
 
         event Action<IPoolable> IPoolable.OnDespawnCallback {
             add => onDespawnCallback += value;
@@ -45,12 +45,27 @@ namespace CCEnvs.UnityX.UI.Elements
             Info = ev;
         }
 
-        internal DragEvent() { }
+        public DragEvent() { }
+
+        public DragEvent SetSource(VisualElement source, GameObject sourceGameObject)
+        {
+            Guard.IsNotNull(source);
+            CC.Guard.IsNotNull(sourceGameObject, nameof(sourceGameObject));
+            Source = source;
+            SourceGameObject = sourceGameObject;
+            return this;
+        }
 
         public DragEvent SetTarget(VisualElement? target, GameObject? targetGameObject)
         {
-            Target = target;
-            TargetGameObject = targetGameObject;
+            Target = target.IfNull(Source);
+            TargetGameObject = targetGameObject.IfNull(targetGameObject);
+            return this;
+        }
+
+        public DragEvent SetInfo(IPointerEvent info)
+        {
+            Info = info;
             return this;
         }
 
