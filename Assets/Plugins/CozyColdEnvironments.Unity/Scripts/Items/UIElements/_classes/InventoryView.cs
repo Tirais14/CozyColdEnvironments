@@ -38,7 +38,7 @@ namespace CCEnvs.UnityX.Items.UIElements
 
         protected override void InitViewModel(TViewModel viewModel)
         {
-            containersView = ElementShowable.ShowableRoot.IfNull(ElementShowable).RootElement.Q<VisualElement>(containerElementName);
+            containersView = ElementShowable.Root.IfNull(ElementShowable).RootElement.Q<VisualElement>(containerElementName);
             BindViewModelContainerRootAdd(viewModel);
             BindViewModelContainerRootRemove(viewModel);
             BindViewModelContainerRootReplace(viewModel);

@@ -4,7 +4,7 @@ using System;
 namespace CCEnvs.UnityX.Services
 {
     [Flags]
-    public enum ServiceBindActionOptions
+    public enum ServiceMonoBinderOptions
     {
         None,
         WithInterfaces = 1 << 0,

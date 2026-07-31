@@ -5,7 +5,7 @@ using UnityEngine;
 namespace CCEnvs.UnityX.Services
 {
     [Serializable]
-    public struct ServiceBindActionInfo
+    public struct ServiceMonoBinderItem
     {
         [field: SerializeField]
         public Component Component { get; private set; }
@@ -14,7 +14,7 @@ namespace CCEnvs.UnityX.Services
         public string? ID { get; private set; }
 
         [field: SerializeField]
-        public ServiceBindActionOptions Options { get; private set; }
+        public ServiceMonoBinderOptions Options { get; private set; }
 
         [field: SerializeField]
         public string? InterfacesFilter { get; private set; }

@@ -101,7 +101,12 @@ namespace CCEnvs.UnityX.UI.Elements
             if (!enabled || showable.RootElement is null)
                 return;
 
-            Ghost = Instantiate(ghostPrefab.IfNull(gameObject)).AddComponent<EmptyMonoBehaviour>();
+            Ghost = Instantiate(
+                ghostPrefab.IfNull(gameObject),
+                showable.Root.As<Component>().IfNotNull(root => root.transform)
+                )
+                .AddComponent<EmptyMonoBehaviour>();
+
             var ghostShowable = Ghost.Q().Component<IShowableElement>().Strict();
 
             Destroy(Ghost.Q().Component<ShowableDragHandler>().Strict());

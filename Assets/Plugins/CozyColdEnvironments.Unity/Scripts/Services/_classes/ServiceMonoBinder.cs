@@ -10,7 +10,7 @@ namespace CCEnvs.UnityX.Services
     [DisallowMultipleComponent]
     public sealed class ServiceMonoBinder : MonoBehaviour
     {
-        public ServiceBindActionInfo[] Infos = Array.Empty<ServiceBindActionInfo>();
+        public ServiceMonoBinderItem[] Infos = Array.Empty<ServiceMonoBinderItem>();
 
         public bool BindGameObject;
 
@@ -25,7 +25,7 @@ namespace CCEnvs.UnityX.Services
 
             for (int i = 0; i < Infos.Length; i++)
             {
-                ServiceBindActionInfo info = Infos[i];
+                ServiceMonoBinderItem info = Infos[i];
 
                 var binder = CCServices.BindInstance(info.Component);
 
@@ -39,10 +39,10 @@ namespace CCEnvs.UnityX.Services
                         binder.WithID(info.ID);
                 }
 
-                if (info.Options.HasFlagT(ServiceBindActionOptions.WithBaseTypes))
+                if (info.Options.HasFlagT(ServiceMonoBinderOptions.WithBaseTypes))
                     binder.WithBaseTypes();
 
-                if (info.Options.HasFlagT(ServiceBindActionOptions.WithInterfaces))
+                if (info.Options.HasFlagT(ServiceMonoBinderOptions.WithInterfaces))
                 {
                     if (info.InterfacesFilter.IsNotNullOrWhiteSpace())
                         binder.WithInterfaces(info.InterfacesFilter);

@@ -3,7 +3,7 @@ namespace CCEnvs.UnityX.UI.Elements
 {
     public interface IShowableElement : IShowableBase, IPaneledElement
     {
-        IShowableElement? ShowableRoot { get; }
+        IShowableElement? Root { get; }
 
         IShowableElement? Parent { get; }
 

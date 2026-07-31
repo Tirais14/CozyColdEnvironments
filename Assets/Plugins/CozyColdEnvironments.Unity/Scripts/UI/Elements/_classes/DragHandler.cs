@@ -1,5 +1,7 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.Disposables;
+using CCEnvs.Pools;
+using CCEnvs.TypeMatching;
 using CCEnvs.UnityX.ComponentInjections;
 using CCEnvs.UnityX.Components;
 using R3;
@@ -24,11 +26,17 @@ namespace CCEnvs.UnityX.UI.Elements
         [SerializeField]
         protected LayerMask dropTargetLayerMask = ~0;
 
+        [SerializeField]
+        protected int pointerButton = 0;
+
         private readonly DragEvent dragEv = new();
 
         private IDragPredicate? predicate;
 
         private IDisposable? rootElementBinding;
+
+        [GetBySelf]
+        private IShowableElement showable = null!;
 
         public event DragAction? OnBeginDrag;
         public event DragAction? OnDrag;
@@ -49,6 +57,10 @@ namespace CCEnvs.UnityX.UI.Elements
         public int DropTargetLayerMask {
             get => dropTargetLayerMask;
             set => SetDropTargetLayerMask(value);
+        }
+        public int PointerButton {
+            get => pointerButton;
+            set => SetPointerButton(value);
         }
 
         [field: GetBySelf]
@@ -90,6 +102,12 @@ namespace CCEnvs.UnityX.UI.Elements
             return this;
         }
 
+        public DragHandler SetPointerButton(int value)
+        {
+            pointerButton = value;
+            return this;
+        }
+
         protected virtual void OnBeginDragEvent(DragEvent ev) { }
 
         protected virtual void OnDragEvent(DragEvent ev) { }
@@ -127,6 +145,7 @@ namespace CCEnvs.UnityX.UI.Elements
         private void OnPointerDown(PointerDownEvent pointerEv)
         {
             if (!enabled ||
+                pointerEv.button != pointerButton ||
                 element.RootElement is null ||
                 (!Predicate?.Evaluate() ?? false))
             {
@@ -203,18 +222,31 @@ namespace CCEnvs.UnityX.UI.Elements
             dragEv.SetSource(element.RootElement, gameObject)
                 .SetInfo(ev);
 
-            if (DropTargetRegistry.Targets.TryGetValue(ev.currentTarget, out DropTarget dropTarget) &&
-                gameObject != dropTarget.GameObject &&
-                (dropTargetTag.IsNullOrWhiteSpace() || dropTarget.GameObject.CompareTag(dropTargetTag)) &&
-                (DropTargetLayerMask & (1 << dropTarget.GameObject.layer)) != 0 &&
-                dropTarget.GameObject.Q()
-                    .Component<IDropHandler>()
-                    .Lax()
-                    .TryGetValue(out var targetDropHandler)
-                )
+            using (var dropElements = new PooledList<VisualElement>(null))
             {
-                targetDropHandler.SendDropEvent(dragEv);
+                if (showable.Root.IfNull(showable).RootElement.IsNot(out VisualElement? root))
+                    return;
+
+                root.panel.PickAll(ev.position, dropElements);
+
+                foreach (var dropElement in dropElements)
+                {
+                    if (DropTargetRegistry.Targets.TryGetValue(dropElement, out DropTarget dropTarget) &&
+                        gameObject != dropTarget.GameObject &&
+                        (dropTargetTag.IsNullOrWhiteSpace() || dropTarget.GameObject.CompareTag(dropTargetTag)) &&
+                        (DropTargetLayerMask & (1 << dropTarget.GameObject.layer)) != 0 &&
+                        dropTarget.GameObject.Q()
+                            .Component<IDropHandler>()
+                            .Lax()
+                            .TryGetValue(out var targetDropHandler)
+                        )
+                    {
+                        targetDropHandler.SendDropEvent(dragEv);
+                        break;
+                    }
+                }
             }
+
 
             element.RootElement.ReleasePointer(ev.pointerId);
 
