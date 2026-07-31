@@ -107,9 +107,9 @@ namespace CCEnvs.UnityX.UI.Elements
             else
             {
                 CCDisposable.Dispose(ref parentShowableRootElementBinding);
-                
+
                 if (visualTree != null &&
-                    bindedParentRootElement is not null && 
+                    bindedParentRootElement is not null &&
                     RootElement is not null &&
                     bindedParentRootElement.Contains(RootElement))
                 {
@@ -133,7 +133,7 @@ namespace CCEnvs.UnityX.UI.Elements
         public ShowableElement SetVisualTree(VisualTreeAsset? value)
         {
             visualTree = value;
-            return this;    
+            return this;
         }
 
         public void RegisterRendererChagnedCallbackOnce(Action<PanelRenderer> action)

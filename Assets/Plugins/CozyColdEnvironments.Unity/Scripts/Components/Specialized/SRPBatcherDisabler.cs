@@ -1,5 +1,5 @@
-using CCEnvs.UnityX.Components;
 using CCEnvs.UnityX.ComponentInjections;
+using CCEnvs.UnityX.Components;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 

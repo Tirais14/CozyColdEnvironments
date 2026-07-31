@@ -1,6 +1,5 @@
 using CommunityToolkit.Diagnostics;
 using System;
-using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.UnityX.UI.Elements
@@ -26,7 +25,7 @@ namespace CCEnvs.UnityX.UI.Elements
         public AnonymousDragPredicate(TState state, Func<TState, bool> predicate)
         {
             Guard.IsNotNull(predicate);
-            this.state = state; 
+            this.state = state;
             this.predicate = predicate;
         }
 

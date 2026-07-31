@@ -1,6 +1,6 @@
 #nullable enable
-using CCEnvs.UnityX.Components;
 using CCEnvs.UnityX.ComponentInjections;
+using CCEnvs.UnityX.Components;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.UI;

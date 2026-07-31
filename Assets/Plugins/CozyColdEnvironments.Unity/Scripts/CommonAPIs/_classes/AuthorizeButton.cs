@@ -1,7 +1,7 @@
 using CCEnvs.Attributes;
 using CCEnvs.Services;
-using CCEnvs.UnityX.Components;
 using CCEnvs.UnityX.ComponentInjections;
+using CCEnvs.UnityX.Components;
 using R3;
 using UnityEngine;
 using UnityEngine.UI;

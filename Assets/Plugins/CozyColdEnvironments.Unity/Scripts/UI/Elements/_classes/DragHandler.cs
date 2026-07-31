@@ -62,7 +62,7 @@ namespace CCEnvs.UnityX.UI.Elements
         protected override void OnEnable()
         {
             base.OnEnable();
-            element.ObserveRootElement().Subscribe(OnRootElementChangedInternal);   
+            element.ObserveRootElement().Subscribe(OnRootElementChangedInternal);
         }
 
         protected override void OnDisable()
@@ -191,7 +191,7 @@ namespace CCEnvs.UnityX.UI.Elements
             }
         }
 
-        private void OnPointerUp(PointerUpEvent ev) 
+        private void OnPointerUp(PointerUpEvent ev)
         {
             if (!IsDragging ||
                 element.RootElement is null ||

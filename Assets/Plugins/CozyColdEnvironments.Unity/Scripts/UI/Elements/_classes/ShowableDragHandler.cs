@@ -55,7 +55,7 @@ namespace CCEnvs.UnityX.UI.Elements
         public ShowableDragHandler SetDragPosition(DragPosition value)
         {
             if (value == DragPosition.None)
-                throw new System.ArgumentException(nameof(value));   
+                throw new System.ArgumentException(nameof(value));
 
             dragPosition = value;
             return this;

@@ -6,7 +6,6 @@ using CCEnvs.Threading;
 using CCEnvs.UnityX.ComponentInjections;
 using CCEnvs.UnityX.Snapshots.UI;
 using Cysharp.Threading.Tasks;
-using Humanizer;
 using System;
 using System.Collections.Generic;
 using System.Threading;

@@ -1,12 +1,9 @@
 using CCEnvs.Attributes;
 using CCEnvs.Caching;
-using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
-using CCEnvs.FuncLanguage;
 using CCEnvs.Pools;
 using CCEnvs.Reflection;
 using CCEnvs.UnityX.Components;
-using CCEnvs.UnityX.UI.Elements;
 using Humanizer;
 using System;
 using System.Collections.Generic;
@@ -44,7 +41,7 @@ namespace CCEnvs.UnityX.ComponentInjections
             try
             {
                 foreach (var injectable in injectableItems)
-                        TryInject(injectable, debugInfo);
+                    TryInject(injectable, debugInfo);
             }
             finally
             {

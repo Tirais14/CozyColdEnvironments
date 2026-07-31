@@ -421,7 +421,7 @@ namespace CCEnvs.UnityX.UI
                 if (transform.IsChildOf(monoShowable.transform))
                 {
                     _root = monoShowable;
-                    break;  
+                    break;
                 }
             }
         }

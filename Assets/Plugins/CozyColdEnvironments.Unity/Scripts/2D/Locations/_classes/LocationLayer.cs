@@ -1,7 +1,7 @@
 using CCEnvs.FuncLanguage;
 using CCEnvs.TypeMatching;
-using CCEnvs.UnityX.Components;
 using CCEnvs.UnityX.ComponentInjections;
+using CCEnvs.UnityX.Components;
 using System;
 using System.Collections;
 using System.Collections.Generic;

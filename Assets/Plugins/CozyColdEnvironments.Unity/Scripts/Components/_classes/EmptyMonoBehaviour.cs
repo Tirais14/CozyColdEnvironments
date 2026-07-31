@@ -5,6 +5,6 @@ namespace CCEnvs.UnityX.Components
 {
     public class EmptyMonoBehaviour : MonoBehaviour
     {
-    
+
     }
 }

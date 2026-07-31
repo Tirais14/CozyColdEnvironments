@@ -1,5 +1,3 @@
-using System;
-
 namespace CCEnvs
 {
     public enum CompareTypes
