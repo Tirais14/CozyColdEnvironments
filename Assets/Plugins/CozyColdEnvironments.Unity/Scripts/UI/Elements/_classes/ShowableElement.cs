@@ -1,8 +1,11 @@
 #nullable enable
 using CCEnvs.Diagnostics;
+using CCEnvs.Disposables;
 using CCEnvs.Patterns.Commands;
 using CCEnvs.UnityX.ComponentInjections;
 using Cysharp.Threading.Tasks;
+using R3;
+using System;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -10,21 +13,43 @@ using UnityEngine.UIElements;
 namespace CCEnvs.UnityX.UI.Elements
 {
     [DisallowMultipleComponent]
-    [RequireComponent(typeof(PanelRenderer))]
     public class ShowableElement
         :
         ShowableBase<IShowableElement>,
         IShowableElement
     {
         [SerializeField]
+        protected VisualTreeAsset? visualTree;
+
+        [SerializeField, Min(0f)]
         protected int showCommandDelayFramCount = 1;
+
+        private readonly ReactiveProperty<RootElementChangedEvent> rootElement = new();
 
         private bool isUIReloadBinded;
 
-        [field: GetBySelf]
+        private IDisposable? rootShowableRootElementBinding;
+
+        [field: GetByParent]
         public PanelRenderer Renderer { get; private set; } = null!;
 
-        public VisualElement? RendererRoot { get; private set; }
+        public VisualElement? RootElement {
+            get => rootElement.Value.Current;
+            private set
+            {
+                rootElement.Value = new RootElementChangedEvent(RootElement, value);
+            }
+        }
+
+        public int ShowCommandDelayFrameCount {
+            get => showCommandDelayFramCount;
+            set => SetShowCommandDelayFrameCount(value);
+        }
+
+        public VisualTreeAsset? VisualTree {
+            get => visualTree;
+            set => SetVisualTree(value);
+        }
 
         protected override void Start()
         {
@@ -35,15 +60,54 @@ namespace CCEnvs.UnityX.UI.Elements
         protected override void OnEnable()
         {
             base.OnEnable();
-            Renderer.RegisterUIReloadCallback(OnUIReload);
-            isUIReloadBinded = true;
+
+            if (Parent.IsNotNull() && Parent.Renderer == Renderer)
+            {
+                rootShowableRootElementBinding = Parent.ObserveRootElement()
+                    .Subscribe(OnParentShowableRootElementChanged);
+            }
+            else
+            {
+                if (CCDebug<ShowableElement>.IsEnabled && visualTree != null)
+                    this.PrintWarning($"Showable is not child. {nameof(VisualTreeAsset)} will be ignored");
+
+                Renderer.RegisterUIReloadCallback(OnUIReload);
+                isUIReloadBinded = true;
+            }
         }
 
         protected override void OnDisable()
         {
             base.OnDisable();
-            Renderer.UnregisterUIReloadCallback(OnUIReload);
-            isUIReloadBinded = false;
+
+            if (isUIReloadBinded)
+            {
+                Renderer.UnregisterUIReloadCallback(OnUIReload);
+                isUIReloadBinded = false;
+            }
+            else
+                CCDisposable.Dispose(ref rootShowableRootElementBinding);
+
+            RootElement = null;
+            
+        }
+
+        protected override void OnDestroy()
+        {
+            base.OnDestroy();
+            rootElement.Dispose();
+        }
+
+        public ShowableElement SetShowCommandDelayFrameCount(int value)
+        {
+            showCommandDelayFramCount = Math.Max(value, 0);
+            return this;
+        }
+
+        public ShowableElement SetVisualTree(VisualTreeAsset? value)
+        {
+            visualTree = value;
+            return this;    
         }
 
         public override void Redraw()
@@ -57,18 +121,22 @@ namespace CCEnvs.UnityX.UI.Elements
             ShowCore();
         }
 
+
+        public Observable<RootElementChangedEvent> ObserveRootElement() => rootElement;
+
         protected override void HideCore()
         {
-            if (RendererRoot is null)
+            if (RootElement is null)
                 return;
 
-            RendererRoot.visible = false;
+            RootElement.visible = false;
 
             if (CCDebug<ShowableElement>.IsEnabled)
             {
                 this.PrintLog(DebugMessageBuilder.CreatePooled()
                     .AddMessage("Root state changed")
-                    .AddProperty(nameof(RendererRoot.visible), RendererRoot.visible)
+                    .AddProperty(nameof(RootElement), RootElement)
+                    .AddProperty(nameof(RootElement.visible), RootElement.visible)
                     .ToStringAndDispose()
                     );
             }
@@ -76,16 +144,17 @@ namespace CCEnvs.UnityX.UI.Elements
 
         protected override void ShowCore()
         {
-            if (RendererRoot is null)
+            if (RootElement is null)
                 return;
 
-            RendererRoot.visible = true;
+            RootElement.visible = true;
 
             if (CCDebug<ShowableElement>.IsEnabled)
             {
                 this.PrintLog(DebugMessageBuilder.CreatePooled()
                     .AddMessage("Root state changed")
-                    .AddProperty(nameof(RendererRoot.visible), RendererRoot.visible)
+                    .AddProperty(nameof(RootElement), RootElement)
+                    .AddProperty(nameof(RootElement.visible), RootElement.visible)
                     .ToStringAndDispose()
                     );
             }
@@ -124,9 +193,31 @@ namespace CCEnvs.UnityX.UI.Elements
                 .WithCancellationToken(destroyCancellationToken);
         }
 
+        private void InitExistingRootElement()
+        {
+
+        }
+
+        private void OnParentShowableRootElementChanged(RootElementChangedEvent root)
+        {
+            if (root.Previous is not null)
+                RootElement?.Remove(root.Previous);
+
+            if (root.Current is not null)
+            {
+                if (visualTree == null)
+                    RootElement = root.Current.Q<VisualElement>(name);
+                else
+                {
+                    RootElement = visualTree.CloneTree();
+                    root.Current.Add(RootElement);
+                }
+            }
+        }
+
         private void OnUIReload(PanelRenderer _, VisualElement root)
         {
-            RendererRoot = root;
+            RootElement = root;
         }
 
         private async UniTask InitAsync()

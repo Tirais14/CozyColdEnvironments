@@ -85,8 +85,8 @@ namespace CCEnvs.UnityX.UI.Elements
                     GhostRoot.style.top = pos.y;
                     break;
                 case DragPosition.Center:
-                    float xOffset = showable.RendererRoot?.layout.size.x / 2 ?? 0;
-                    float yOffset = showable.RendererRoot?.layout.size.y / 2 ?? 0;
+                    float xOffset = showable.RootElement?.layout.size.x / 2 ?? 0;
+                    float yOffset = showable.RootElement?.layout.size.y / 2 ?? 0;
                     GhostRoot.style.left = pos.x - xOffset;
                     GhostRoot.style.top = pos.y - yOffset;
                     break;
@@ -99,14 +99,14 @@ namespace CCEnvs.UnityX.UI.Elements
         {
             base.OnBeginDragEvent(ev);
 
-            if (!enabled || showable.RendererRoot is null)
+            if (!enabled || showable.RootElement is null)
                 return;
 
             Ghost = Instantiate(ghostPrefab.IfNull(gameObject)).AddComponent<EmptyMonoBehaviour>();
             var ghostShowable = Ghost.Q().Component<IShowableElement>().Strict();
 
             ev.SetTarget(
-                ghostShowable.RendererRoot,
+                ghostShowable.RootElement,
                 ghostShowable.As<Component>().IfNotNull(x => x.gameObject)
                 );
 
@@ -143,18 +143,18 @@ namespace CCEnvs.UnityX.UI.Elements
 
             if (IsDragging)
             {
-                if (showable.RendererRoot is not null)
+                if (showable.RootElement is not null)
                 {
                     if (hideWhenDrag)
-                        showable.RendererRoot.visible = true;
+                        showable.RootElement.visible = true;
 
                     if (isMoveToDropPosition && GhostRoot is not null)
                     {
-                        StyleEnum<Position> showablePosition = showable.RendererRoot.style.position;
-                        showable.RendererRoot.style.position = Position.Absolute;
-                        showable.RendererRoot.style.left = GhostRoot.style.left;
-                        showable.RendererRoot.style.right = GhostRoot.style.right;
-                        showable.RendererRoot.style.position = showablePosition;
+                        StyleEnum<Position> showablePosition = showable.RootElement.style.position;
+                        showable.RootElement.style.position = Position.Absolute;
+                        showable.RootElement.style.left = GhostRoot.style.left;
+                        showable.RootElement.style.right = GhostRoot.style.right;
+                        showable.RootElement.style.position = showablePosition;
                     }
                 }
             }
@@ -181,7 +181,7 @@ namespace CCEnvs.UnityX.UI.Elements
             {
                 var task = UniTask.WaitUntil(
                     showableClone,
-                    static showableClone => showableClone.RendererRoot is not null,
+                    static showableClone => showableClone.RootElement is not null,
                     timing: PlayerLoopTiming.PreUpdate,
                     cancellationToken: linkedCancellationToken
                     );
@@ -192,13 +192,13 @@ namespace CCEnvs.UnityX.UI.Elements
                 await task;
             }
 
-            GhostRoot = showableClone.RendererRoot.ThrowIfNull(nameof(showableClone.RendererRoot));
+            GhostRoot = showableClone.RootElement.ThrowIfNull(nameof(showableClone.RootElement));
             GhostRoot.pickingMode = PickingMode.Ignore;
             GhostRoot.style.position = Position.Absolute;
             SetGhostRootPosition(ev.Info.position);
 
-            if (showable.RendererRoot is not null && hideWhenDrag)
-                showable.RendererRoot.visible = false;
+            if (showable.RootElement is not null && hideWhenDrag)
+                showable.RootElement.visible = false;
         }
     }
 }

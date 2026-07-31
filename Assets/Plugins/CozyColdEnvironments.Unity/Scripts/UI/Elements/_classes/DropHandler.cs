@@ -1,6 +1,7 @@
 using CCEnvs.Disposables;
 using CCEnvs.UnityX.ComponentInjections;
 using CCEnvs.UnityX.Components;
+using R3;
 using System;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -9,21 +10,19 @@ using UnityEngine.UIElements;
 namespace CCEnvs.UnityX.UI.Elements
 {
     [DisallowMultipleComponent]
-    [RequireComponent(typeof(PanelRenderer))]
     public class DropHandler
         :
         CCBehaviour,
-        IDropHandler,
-        IElement
+        IDropHandler
     {
         private LightDisposable<IEventHandler> registryHandle;
+
+        private IDisposable? rootElementBinding;
 
         public event Action<DropEvent>? OnDrop;
 
         [field: GetBySelf]
-        public PanelRenderer Renderer { get; private set; } = null!;
-
-        public VisualElement? RendererRoot { get; private set; }
+        protected IElement element { get; private set; } = null!;
 
         bool IToggleable.IsEnabled {
             get => enabled;
@@ -33,21 +32,13 @@ namespace CCEnvs.UnityX.UI.Elements
         protected override void OnEnable()
         {
             base.OnEnable();
-            Renderer.RegisterUIReloadCallback(OnUIReloadInternal);
+            rootElementBinding = element.ObserveRootElement().Subscribe(OnRootElementChangedInternal);
         }
 
         protected override void OnDisable()
         {
             base.OnDisable();
-            registryHandle.Dispose();
-            Renderer.UnregisterUIReloadCallback(OnUIReloadInternal);
-            RendererRoot = null;
-        }
-
-        public void Refresh()
-        {
-            enabled = !enabled;
-            enabled = !enabled;
+            CCDisposable.Dispose(ref rootElementBinding);
         }
 
         public void SendDropEvent(DragEvent dragEv)
@@ -82,14 +73,19 @@ namespace CCEnvs.UnityX.UI.Elements
 
         protected virtual void OnUIReload(PanelRenderer renderer, VisualElement root) { }
 
-        private void OnUIReloadInternal(PanelRenderer renderer, VisualElement root)
+        protected virtual void OnRootElementChanged(RootElementChangedEvent root) { }
+
+        private void OnRootElementChangedInternal(RootElementChangedEvent root)
         {
-            RendererRoot = root;
-            registryHandle = DropTargetRegistry.Register(root, gameObject);
+            if (root.Previous is not null)
+                registryHandle.Dispose();
+
+            if (root.Current is not null)
+                registryHandle = DropTargetRegistry.Register(root.Current, gameObject);
 
             try
             {
-                OnUIReload(renderer, root);
+                OnRootElementChanged(root);
             }
             catch (Exception ex)
             {

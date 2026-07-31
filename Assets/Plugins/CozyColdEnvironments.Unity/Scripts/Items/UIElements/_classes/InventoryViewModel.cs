@@ -1,4 +1,5 @@
 #nullable enable
+using CCEnvs.Collections;
 using CCEnvs.Disposables;
 using CCEnvs.Threading.Tasks;
 using CCEnvs.UnityX.UI.Elements;
@@ -21,14 +22,14 @@ namespace CCEnvs.UnityX.Items.UIElements
 
         where TModel : IInventory
     {
-        private readonly ObservableDictionary<IItemContainer, VisualElement> containerRendererRoots = new(4, new ReferenceEqualityComparer<IItemContainer>());
+        private readonly ObservableDictionary<IItemContainer, VisualElement> containerElements = new(4, new ReferenceEqualityComparer<IItemContainer>());
 
         private IDisposable? containerViewAddBinding;
         private IDisposable? containerViewRemoveBinding;
         private IDisposable? containerViewReplaceBinding;
         private IDisposable? containerViewClearBinding;
 
-        public IReadOnlyObservableDictionary<IItemContainer, VisualElement> ContainerRendererRoots => containerRendererRoots;
+        public IReadOnlyObservableDictionary<IItemContainer, VisualElement> ContainerElements => containerElements;
 
         public InventoryViewModel(
             TModel? model,
@@ -62,50 +63,43 @@ namespace CCEnvs.UnityX.Items.UIElements
             BindContainerViewsClear();
         }
 
-        private async ValueTask OnContainerViewAddAsync(
-            DictionaryAddEvent<IItemContainer, GameObject> addEv,
-            CancellationToken cancellationToken
+        private async void OnContainerViewAdd(
+            DictionaryAddEvent<IItemContainer, GameObject> addEv
             )
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
             var (container, containerViewGO) = addEv;
 
             if (!containerViewGO.Q()
-                    .Component<IShowableElement>()
+                    .Component<IElement>()
                     .Lax()
-                    .TryGetValue(out var containerView)
+                    .TryGetValue(out var containerElement)
                 )
             {
                 return;
             }
 
-            if (containerView.RendererRoot is null)
-            {
-                await UniTask.WaitUntil(
-                    containerView,
-                    static containerView =>
-                    {
-                        return containerView.RendererRoot is not null;
-                    },
-                    cancellationToken: cancellationToken
-                    );
-            }
-
-            containerRendererRoots.Add(container, containerView.RendererRoot!);
+            containerElement.ObserveRootElement()
+                .Where(root => root.Current is not null)
+                .Take(1)
+                .Subscribe((@this: this, container),
+                static (root, args) =>
+                {
+                    var (@this, container) = args;
+                    @this.containerElements.Add(container, root.Current!);
+                });
         }
 
         private void BindContainerViewAdd()
         {
             containerViewAddBinding = ContainerViews.ObserveDictionaryAdd(DisposeCancellationToken)
-                .SubscribeAwait(OnContainerViewAddAsync);
+                .Subscribe(OnContainerViewAdd);
         }
 
         private void OnContainerViewRemove(
             DictionaryRemoveEvent<IItemContainer, GameObject> removeEv
             )
         {
-            containerRendererRoots.Remove(removeEv.Key);
+            containerElements.Remove(removeEv.Key);
         }
 
         private void BindContainerViewRemove()
@@ -124,7 +118,7 @@ namespace CCEnvs.UnityX.Items.UIElements
             var removeEv = new DictionaryRemoveEvent<IItemContainer, GameObject>(container, newContainerViewGO);
 
             OnContainerViewRemove(removeEv);
-            OnContainerViewAddAsync(addEv, DisposeCancellationToken).Forget();
+            OnContainerViewAdd(addEv);
         }
 
         private void BindContainerViewsReplace()
@@ -135,7 +129,7 @@ namespace CCEnvs.UnityX.Items.UIElements
 
         private void OnContainersViewsClear(Unit _)
         {
-            containerRendererRoots.Clear();
+            containerElements.Clear();
         }
 
         private void BindContainerViewsClear()

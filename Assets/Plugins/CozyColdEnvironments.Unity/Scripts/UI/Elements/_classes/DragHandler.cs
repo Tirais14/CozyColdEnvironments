@@ -1,8 +1,8 @@
 using CCEnvs.Diagnostics;
-using CCEnvs.Pools;
+using CCEnvs.Disposables;
 using CCEnvs.UnityX.ComponentInjections;
 using CCEnvs.UnityX.Components;
-using CommunityToolkit.Diagnostics;
+using R3;
 using System;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -13,12 +13,10 @@ namespace CCEnvs.UnityX.UI.Elements
     public delegate void DragAction(DragEvent ev);
 
     [DisallowMultipleComponent]
-    [RequireComponent(typeof(PanelRenderer))]
     public class DragHandler
         :
         CCBehaviour,
-        IDragHandler,
-        IElement
+        IDragHandler
     {
         [SerializeField]
         protected string? dropTargetTag;
@@ -30,14 +28,11 @@ namespace CCEnvs.UnityX.UI.Elements
 
         private IDragPredicate? predicate;
 
+        private IDisposable? rootElementBinding;
+
         public event DragAction? OnBeginDrag;
         public event DragAction? OnDrag;
         public event DragAction? OnEndDrag;
-
-        [field: GetBySelf]
-        public PanelRenderer Renderer { get; private set; } = null!;
-
-        public VisualElement? RendererRoot { get; private set; }
 
         public bool IsDragging { get; private set; }
 
@@ -56,6 +51,9 @@ namespace CCEnvs.UnityX.UI.Elements
             set => SetDropTargetLayerMask(value);
         }
 
+        [field: GetBySelf]
+        protected IElement element { get; private set; } = null!;
+
         bool IToggleable.IsEnabled {
             get => enabled;
             set => enabled = value;
@@ -64,23 +62,14 @@ namespace CCEnvs.UnityX.UI.Elements
         protected override void OnEnable()
         {
             base.OnEnable();
-            Renderer.RegisterUIReloadCallback(OnUIReloadInternal);    
+            element.ObserveRootElement().Subscribe(OnRootElementChangedInternal);   
         }
 
         protected override void OnDisable()
         {
             base.OnDisable();
             IsDragging = false;
-            Renderer.UnregisterUIReloadCallback(OnUIReloadInternal);
-
-            if (RendererRoot is not null)
-            {
-                RendererRoot.UnregisterCallback<PointerDownEvent>(OnPointerDown);
-                RendererRoot.UnregisterCallback<PointerMoveEvent>(OnPointerMove);
-                RendererRoot.UnregisterCallback<PointerUpEvent>(OnPointerUp);
-            }
-
-            RendererRoot = null;
+            CCDisposable.Dispose(ref rootElementBinding);
         }
 
         public DragHandler SetDropTargetTag(string? tag)
@@ -101,31 +90,33 @@ namespace CCEnvs.UnityX.UI.Elements
             return this;
         }
 
-        public void Refresh()
-        {
-            enabled = !enabled;
-            enabled = !enabled;
-        }
-
-        protected virtual void OnUIReload(PanelRenderer renderer, VisualElement root) { }
-
         protected virtual void OnBeginDragEvent(DragEvent ev) { }
 
         protected virtual void OnDragEvent(DragEvent ev) { }
 
         protected virtual void OnEndDragEvent(DragEvent ev) { }
 
-        private void OnUIReloadInternal(PanelRenderer renderer, VisualElement root)
-        {
-            RendererRoot = root;
+        protected virtual void OnRootElementChanged(RootElementChangedEvent root) { }
 
-            root.RegisterCallback<PointerDownEvent>(OnPointerDown);
-            root.RegisterCallback<PointerMoveEvent>(OnPointerMove);
-            root.RegisterCallback<PointerUpEvent>(OnPointerUp);
+        private void OnRootElementChangedInternal(RootElementChangedEvent root)
+        {
+            if (root.Previous is not null)
+            {
+                root.Previous.UnregisterCallback<PointerDownEvent>(OnPointerDown);
+                root.Previous.UnregisterCallback<PointerMoveEvent>(OnPointerMove);
+                root.Previous.UnregisterCallback<PointerUpEvent>(OnPointerUp);
+            }
+
+            if (root.Current is not null)
+            {
+                root.Current.RegisterCallback<PointerDownEvent>(OnPointerDown);
+                root.Current.RegisterCallback<PointerMoveEvent>(OnPointerMove);
+                root.Current.RegisterCallback<PointerUpEvent>(OnPointerUp);
+            }
 
             try
             {
-                OnUIReload(renderer, root);
+                OnRootElementChanged(root);
             }
             catch (Exception ex)
             {
@@ -136,16 +127,16 @@ namespace CCEnvs.UnityX.UI.Elements
         private void OnPointerDown(PointerDownEvent pointerEv)
         {
             if (!enabled ||
-                RendererRoot is null ||
+                element.RootElement is null ||
                 (!Predicate?.Evaluate() ?? false))
             {
                 return;
             }
 
             IsDragging = true;
-            RendererRoot.CapturePointer(pointerEv.pointerId);
-            dragEv.SetSource(RendererRoot, gameObject)
-                .SetTarget(RendererRoot, gameObject)
+            element.RootElement.CapturePointer(pointerEv.pointerId);
+            dragEv.SetSource(element.RootElement, gameObject)
+                .SetTarget(element.RootElement, gameObject)
                 .SetInfo(pointerEv);
 
             try
@@ -173,12 +164,12 @@ namespace CCEnvs.UnityX.UI.Elements
         private void OnPointerMove(PointerMoveEvent ev)
         {
             if (!IsDragging ||
-                RendererRoot is null)
+                element.RootElement is null)
             {
                 return;
             }
 
-            dragEv.SetSource(RendererRoot, gameObject)
+            dragEv.SetSource(element.RootElement, gameObject)
                 .SetInfo(ev);
 
             try
@@ -202,17 +193,17 @@ namespace CCEnvs.UnityX.UI.Elements
 
         private void OnPointerUp(PointerUpEvent ev) 
         {
-            if (!IsDragging || 
-                RendererRoot is null ||
+            if (!IsDragging ||
+                element.RootElement is null ||
                 dragEv is null)
             {
                 return;
             }
 
-            dragEv.SetSource(RendererRoot, gameObject)
+            dragEv.SetSource(element.RootElement, gameObject)
                 .SetInfo(ev);
 
-            if (DropTargetRegistry.Targets.TryGetValue(ev.target, out DropTarget dropTarget) &&
+            if (DropTargetRegistry.Targets.TryGetValue(ev.currentTarget, out DropTarget dropTarget) &&
                 gameObject != dropTarget.GameObject &&
                 (dropTargetTag.IsNullOrWhiteSpace() || dropTarget.GameObject.CompareTag(dropTargetTag)) &&
                 (DropTargetLayerMask & (1 << dropTarget.GameObject.layer)) != 0 &&
@@ -225,7 +216,7 @@ namespace CCEnvs.UnityX.UI.Elements
                 targetDropHandler.SendDropEvent(dragEv);
             }
 
-            RendererRoot.ReleasePointer(ev.pointerId);
+            element.RootElement.ReleasePointer(ev.pointerId);
 
             try
             {

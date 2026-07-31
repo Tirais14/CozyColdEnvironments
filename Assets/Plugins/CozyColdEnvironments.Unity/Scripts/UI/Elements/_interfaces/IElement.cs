@@ -1,3 +1,5 @@
+using R3;
+using System;
 using UnityEngine.UIElements;
 
 #nullable enable
@@ -5,8 +7,8 @@ namespace CCEnvs.UnityX.UI.Elements
 {
     public interface IElement
     {
-        PanelRenderer Renderer { get; }
+        VisualElement? RootElement { get; }
 
-        VisualElement? RendererRoot { get; }
+        Observable<RootElementChangedEvent> ObserveRootElement();
     }
 }

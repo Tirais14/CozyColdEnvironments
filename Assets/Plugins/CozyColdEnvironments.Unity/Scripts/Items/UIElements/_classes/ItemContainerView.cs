@@ -1,5 +1,7 @@
 using CCEnvs.Disposables;
+using CCEnvs.UnityX.ComponentInjections;
 using CCEnvs.UnityX.UI;
+using CCEnvs.UnityX.UI.Elements;
 using R3;
 using System;
 using UnityEngine;
@@ -9,15 +11,18 @@ using UnityEngine.UIElements;
 namespace CCEnvs.UnityX.Items.UIElements
 {
     [DisallowMultipleComponent]
-    [RequireComponent(typeof(PanelRenderer))]
     public abstract class ItemContainerView<TViewModel>
         :
-        View<TViewModel>
+        View<TViewModel>,
+        IVisualTreeElement
 
         where TViewModel : IItemContainerViewModel
     {
         [Header("Container Settings")]
         [Space(5f)]
+
+        [SerializeField]
+        protected VisualTreeAsset visualTree = null!;
 
         [SerializeField]
         [Tooltip("Element must be Image type")]
@@ -28,6 +33,7 @@ namespace CCEnvs.UnityX.Items.UIElements
 
         private IDisposable? iconBinding;
         private IDisposable? countBinding;
+        private IDisposable? rootElementBinding;
 
         public string? IconViewName {
             get => iconViewName;
@@ -39,9 +45,17 @@ namespace CCEnvs.UnityX.Items.UIElements
             set => SetCounterElementName(value);
         }
 
+        public VisualTreeAsset VisualTree {
+            get => visualTree;
+            set => SetVisualTree(value);
+        }
+
         public Image? IconView { get; private set; }
 
         public Label? CounterView { get; private set; }
+
+        [field: GetBySelf]
+        protected IElement Element { get; private set; } = null!;
 
         public ItemContainerView<TViewModel> SetIconElementName(string? value)
         {
@@ -55,35 +69,54 @@ namespace CCEnvs.UnityX.Items.UIElements
             return this;
         }
 
+        public ItemContainerView<TViewModel> SetVisualTree(VisualTreeAsset value)
+        {
+            CC.Guard.IsNotNull(value);
+            visualTree = value;
+            return this;
+        }
+
         protected override void OnSetViewModel(TViewModel? vm)
         {
             if (vm.IsNull())
-                ElementShowable.Renderer.UnregisterUIReloadCallback(OnUIReload);
+            {
+                CCDisposable.Dispose(ref iconBinding);
+                CCDisposable.Dispose(ref countBinding);
+                CCDisposable.Dispose(ref rootElementBinding);
+            }
             else
-                ElementShowable.Renderer.RegisterUIReloadCallback(OnUIReload);
-
-            CCDisposable.Dispose(ref iconBinding);
-            CCDisposable.Dispose(ref countBinding);
+                rootElementBinding = Element.ObserveRootElement().Subscribe(OnRootElementChanged);
         }
 
         protected override void InitViewModel(TViewModel vm) { }
 
-        private void OnUIReload(PanelRenderer renderer, VisualElement root)
+        private void OnRootElementChanged(RootElementChangedEvent root)
         {
-            if (iconViewName.IsNotNullOrWhiteSpace())
+            if (root.Previous is not null)
             {
-                IconView = root.Q<Image>(iconViewName);
-
-                if (IconView is not null)
-                    BindIcon(GuardedViewModel);
+                CCDisposable.Dispose(ref iconBinding);
+                CCDisposable.Dispose(ref countBinding);
+                IconView = null;
+                CounterView = null;
             }
 
-            if (counterViewName.IsNotNullOrWhiteSpace())
+            if (root.Current is not null)
             {
-                CounterView = root.Q<Label>(counterViewName);
+                if (iconViewName.IsNotNullOrWhiteSpace())
+                {
+                    IconView = root.Current.Q<Image>(iconViewName);
 
-                if (CounterView is not null)
-                    BindCount(GuardedViewModel);
+                    if (IconView is not null)
+                        BindIcon(GuardedViewModel);
+                }
+
+                if (counterViewName.IsNotNullOrWhiteSpace())
+                {
+                    CounterView = root.Current.Q<Label>(counterViewName);
+
+                    if (CounterView is not null)
+                        BindCount(GuardedViewModel);
+                }
             }
         }
 
