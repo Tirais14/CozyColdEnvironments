@@ -34,11 +34,19 @@ namespace CCEnvs.UnityX.UI.Elements
 
         private IDisposable? parentShowableRootElementBinding;
 
+        private VisualElement? bindedParentRootElement;
+
         public PanelRenderer Renderer {
             get
             {
                 if (renderer == null)
-                    renderer = this.Q().FromParents().IncludeInactive().Component<PanelRenderer>().Strict();
+                {
+                    renderer = this.Q()
+                        .FromParents()
+                        .IncludeInactive()
+                        .Component<PanelRenderer>()
+                        .Strict();
+                }
 
                 return renderer;
             }
@@ -97,10 +105,17 @@ namespace CCEnvs.UnityX.UI.Elements
                 isUIReloadBinded = false;
             }
             else
+            {
                 CCDisposable.Dispose(ref parentShowableRootElementBinding);
-
-            RootElement = null;
-            
+                
+                if (visualTree != null &&
+                    bindedParentRootElement is not null && 
+                    RootElement is not null &&
+                    bindedParentRootElement.Contains(RootElement))
+                {
+                    bindedParentRootElement.Remove(RootElement);
+                }
+            }
         }
 
         protected override void OnDestroy()
@@ -143,7 +158,7 @@ namespace CCEnvs.UnityX.UI.Elements
                 return;
 
             RootElement.style.display = DisplayStyle.None;
-            //enabled = false;
+            enabled = false;
 
             if (CCDebug<ShowableElement>.IsEnabled)
             {
@@ -162,7 +177,7 @@ namespace CCEnvs.UnityX.UI.Elements
                 return;
 
             RootElement.style.display = DisplayStyle.Flex;
-            //enabled = true;
+            enabled = true;
 
             if (CCDebug<ShowableElement>.IsEnabled)
             {
@@ -220,6 +235,8 @@ namespace CCEnvs.UnityX.UI.Elements
 
             if (root.Current is not null)
             {
+                bindedParentRootElement = root.Current;
+
                 if (visualTree == null)
                     RootElement = root.Current.Q<VisualElement>(name);
                 else
