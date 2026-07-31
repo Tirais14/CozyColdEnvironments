@@ -1,15 +1,10 @@
 using CCEnvs.Attributes;
-using CCEnvs.Diagnostics;
-using CCEnvs.Disposables;
-using CCEnvs.Threading;
-using CCEnvs.UnityX.Async;
 using CCEnvs.UnityX.ComponentInjections;
 using CCEnvs.UnityX.Components;
 using CommunityToolkit.Diagnostics;
 using Cysharp.Threading.Tasks;
 using Humanizer;
-using System.Threading;
-using UnityEditor.Localization.Plugins.XLIFF.V12;
+using R3;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -35,6 +30,8 @@ namespace CCEnvs.UnityX.UI.Elements
         [GetBySelf]
         private IShowableElement showable = null!;
 
+        private bool isDragging;
+
         public VisualElement? GhostRoot { get; private set; }
 
         public MonoBehaviour? Ghost { get; private set; }
@@ -52,6 +49,8 @@ namespace CCEnvs.UnityX.UI.Elements
             get => dragPosition;
             set => SetDragPosition(value);
         }
+
+        public override bool IsDragging => isDragging && base.IsDragging;
 
         public ShowableDragHandler SetDragPosition(DragPosition value)
         {
@@ -105,11 +104,6 @@ namespace CCEnvs.UnityX.UI.Elements
             Ghost = Instantiate(ghostPrefab.IfNull(gameObject)).AddComponent<EmptyMonoBehaviour>();
             var ghostShowable = Ghost.Q().Component<IShowableElement>().Strict();
 
-            ev.SetTarget(
-                ghostShowable.RootElement,
-                ghostShowable.As<Component>().IfNotNull(x => x.gameObject)
-                );
-
             Destroy(Ghost.Q().Component<ShowableDragHandler>().Strict());
 
             Ghost.Q()
@@ -124,7 +118,32 @@ namespace CCEnvs.UnityX.UI.Elements
                 .Cast<Component>()
                 .Do(dragHandler => Destroy(dragHandler));
 
-            OnBeginDragCoreAsync(ev).ForgetByPrintException();
+            ghostShowable.ObserveRootElement()
+                .Select(root => root.Current)
+                .Where(root => root is not null)
+                .Take(1)
+                .Timeout(60.Seconds())
+                .Subscribe(
+                (this, ev, ghostShowable),
+                static (root, args) =>
+                {
+                    var (@this, ev, ghostShowable) = args;
+
+                    ev.SetTarget(
+                        ghostShowable.RootElement,
+                        ghostShowable.As<Component>().IfNotNull(x => x.gameObject)
+                        );
+
+                    @this.GhostRoot = root!;
+                    @this.GhostRoot.pickingMode = PickingMode.Ignore;
+                    @this.GhostRoot.style.position = Position.Absolute;
+                    @this.SetGhostRootPosition(ev.Info.position);
+
+                    if (@this.showable.RootElement is not null && @this.hideWhenDrag)
+                        @this.showable.RootElement.visible = false;
+
+                    @this.isDragging = true;
+                });
         }
 
         protected override void OnDragEvent(DragEvent ev)
@@ -165,40 +184,6 @@ namespace CCEnvs.UnityX.UI.Elements
                 Destroy(Ghost.gameObject);
 
             Ghost = null;
-        }
-
-        private async UniTask OnBeginDragCoreAsync(DragEvent ev)
-        {
-            if (Ghost == null)
-                return;
-
-            var showableClone = Ghost.Q().Component<IShowableElement>().Strict();
-
-            using (var linkedCancellationTokenSource = destroyCancellationToken.TryLinkTokens(
-                Ghost.destroyCancellationToken,
-                out CancellationToken linkedCancellationToken
-                ))
-            {
-                var task = UniTask.WaitUntil(
-                    showableClone,
-                    static showableClone => showableClone.RootElement is not null,
-                    timing: PlayerLoopTiming.PreUpdate,
-                    cancellationToken: linkedCancellationToken
-                    );
-
-                if (CCDebug<ShowableDragHandler>.IsEnabled)
-                    task = task.Timeout(60.Seconds());
-
-                await task;
-            }
-
-            GhostRoot = showableClone.RootElement.ThrowIfNull(nameof(showableClone.RootElement));
-            GhostRoot.pickingMode = PickingMode.Ignore;
-            GhostRoot.style.position = Position.Absolute;
-            SetGhostRootPosition(ev.Info.position);
-
-            if (showable.RootElement is not null && hideWhenDrag)
-                showable.RootElement.visible = false;
         }
     }
 }

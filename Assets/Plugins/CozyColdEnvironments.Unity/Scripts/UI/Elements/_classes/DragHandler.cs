@@ -34,7 +34,7 @@ namespace CCEnvs.UnityX.UI.Elements
         public event DragAction? OnDrag;
         public event DragAction? OnEndDrag;
 
-        public bool IsDragging { get; private set; }
+        public virtual bool IsDragging { get; private set; }
 
         public IDragPredicate? Predicate {
             get => predicate;
