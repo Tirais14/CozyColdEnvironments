@@ -56,7 +56,7 @@ namespace CCEnvs.UnityX.UI
                                                .FromChildrens()
                                                .IncludeInactive()
                                                .ExcludeSelf()
-                                               .FirstComponentsOnBranch()
+                                               .FirstComponentOnBranch()
                                                .Components<IShowable>())
             {
                 showableStates!.Add(new ShowableSnapshot(showable));

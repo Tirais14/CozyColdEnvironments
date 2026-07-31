@@ -112,7 +112,7 @@ namespace CCEnvs.UnityX.UI
 
                         foreach (var showable in this.Q()
                             .FromChildrens()
-                            .FirstComponentsOnBranch()
+                            .FirstComponentOnBranch()
                             .Components<IShowable>())
                         {
                             destroyCancellationToken.ThrowIfCancellationRequestedByIntervalAndMoveNext(ref iterationsPassed);

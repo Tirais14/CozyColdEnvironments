@@ -71,12 +71,6 @@ namespace CCEnvs.UnityX.UI
         {
             base.Awake();
             commandScheduler.Disable(); //disabling until IsInited
-            ObserveTransformParent();
-        }
-
-        protected override void Start()
-        {
-            base.Start();
             SetRoot();
             SetParent();
         }
@@ -86,6 +80,12 @@ namespace CCEnvs.UnityX.UI
             base.OnDestroy();
             commandScheduler.Dispose();
             isShown.Dispose();
+        }
+
+        protected virtual void OnTransformParentChanged()
+        {
+            SetRoot();
+            SetParent();
         }
 
         public async UniTask WaitUntilInited(CancellationToken cancellationToken = default)
@@ -259,7 +259,7 @@ namespace CCEnvs.UnityX.UI
             return this.Q()
                 .FromChildrens()
                 .ExcludeSelf()
-                .FirstComponentsOnBranch()
+                .FirstComponentOnBranch()
                 .Components<TSelf>()
                 .ToArray();
         }
@@ -409,7 +409,7 @@ namespace CCEnvs.UnityX.UI
             foreach (var showable in transform.root.Q()
                 .FromChildrens()
                 .IncludeInactive()
-                .FirstComponentsOnBranch()
+                .FirstComponentOnBranch()
                 .Components<IShowableBase>())
             {
                 if (showable.IsNot<MonoBehaviour>(out var monoShowable))
@@ -436,22 +436,6 @@ namespace CCEnvs.UnityX.UI
                 .Lax()
                 .Cast<MonoBehaviour>()
                 .GetValue();
-        }
-
-        private void ObserveTransformParent()
-        {
-            Observable.EveryValueChanged(cTransform,
-                static transform =>
-                {
-                    return transform.parent;
-                })
-                .Subscribe(this,
-                static (_, @this) =>
-                {
-                    @this.SetParent();
-                    @this.SetRoot();
-                })
-                .RegisterTo(destroyCancellationToken);
         }
     }
 }

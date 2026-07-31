@@ -28,7 +28,7 @@ namespace CCEnvs.UnityX
                     else
                         @this.modelSelection.Value = cmp.As<TModel>();
                 })
-                .AddDisposableTo(this);
+                .AddToBehaviour(this);
         }
 
         Observable<TModel> ISelectableController<TModel>.ObserveDeselected()

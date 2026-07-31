@@ -210,7 +210,7 @@ namespace CCEnvs.UnityX
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectQuery FirstComponentsOnBranch(bool state = true)
+        public GameObjectQuery FirstComponentOnBranch(bool state = true)
         {
             if (state)
                 settings |= Settings.FirstComponentsOnBranch;

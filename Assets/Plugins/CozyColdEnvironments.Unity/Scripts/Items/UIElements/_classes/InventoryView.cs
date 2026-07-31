@@ -36,13 +36,13 @@ namespace CCEnvs.UnityX.Items.UIElements
             CCDisposable.Dispose(ref viewModelContainerRootsClearBinding);
         }
 
-        protected override void InitViewModel(TViewModel vm)
+        protected override void InitViewModel(TViewModel viewModel)
         {
             containersView = ElementShowable.ShowableRoot.IfNull(ElementShowable).RootElement.Q<VisualElement>(containerElementName);
-            BindViewModelContainerRootAdd();
-            BindViewModelContainerRootRemove();
-            BindViewModelContainerRootReplace();
-            BindViewModelContainerRootsClear();
+            BindViewModelContainerRootAdd(viewModel);
+            BindViewModelContainerRootRemove(viewModel);
+            BindViewModelContainerRootReplace(viewModel);
+            BindViewModelContainerRootsClear(viewModel);
         }
 
         private void OnViewModelContainerRootAdd(
@@ -53,9 +53,9 @@ namespace CCEnvs.UnityX.Items.UIElements
             containersView.Add(addEv.Value);
         }
 
-        private void BindViewModelContainerRootAdd()
+        private void BindViewModelContainerRootAdd(TViewModel viewModel)
         {
-            viewModelContainerRootAddBinding = GuardedViewModel.ContainerElements.ObserveDictionaryAdd(destroyCancellationToken)
+            viewModelContainerRootAddBinding = viewModel.ContainerElements.ObserveDictionaryAdd(destroyCancellationToken)
                 .Subscribe(OnViewModelContainerRootAdd);
         }
 
@@ -66,9 +66,9 @@ namespace CCEnvs.UnityX.Items.UIElements
             containersView?.Remove(removeEv.Value);
         }
 
-        private void BindViewModelContainerRootRemove()
+        private void BindViewModelContainerRootRemove(TViewModel viewModel)
         {
-            viewModelContainerRootRemoveBinding = GuardedViewModel.ContainerElements.ObserveDictionaryRemove(destroyCancellationToken)
+            viewModelContainerRootRemoveBinding = viewModel.ContainerElements.ObserveDictionaryRemove(destroyCancellationToken)
                 .Subscribe(OnViewModelContainerRootRemove);
         }
 
@@ -81,9 +81,9 @@ namespace CCEnvs.UnityX.Items.UIElements
             OnViewModelContainerRootAdd(addEv);
         }
 
-        private void BindViewModelContainerRootReplace()
+        private void BindViewModelContainerRootReplace(TViewModel viewModel)
         {
-            viewModelContainerRootReplaceBinding = GuardedViewModel.ContainerElements.ObserveDictionaryReplace(destroyCancellationToken)
+            viewModelContainerRootReplaceBinding = viewModel.ContainerElements.ObserveDictionaryReplace(destroyCancellationToken)
                 .Subscribe(OnViewModelContainerRootReplace);
         }
 
@@ -92,9 +92,9 @@ namespace CCEnvs.UnityX.Items.UIElements
             containersView?.Clear();
         }
 
-        private void BindViewModelContainerRootsClear()
+        private void BindViewModelContainerRootsClear(TViewModel viewModel)
         {
-            viewModelContainerRootsClearBinding = GuardedViewModel.ContainerElements.ObserveClear(destroyCancellationToken)
+            viewModelContainerRootsClearBinding = viewModel.ContainerElements.ObserveClear(destroyCancellationToken)
                 .Subscribe(OnViewModelContainerRootsClear);
         }
     }

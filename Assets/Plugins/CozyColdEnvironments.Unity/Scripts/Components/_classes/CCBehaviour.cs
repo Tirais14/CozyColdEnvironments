@@ -113,7 +113,7 @@ namespace CCEnvs.UnityX.Components
         /// Disposes when <see cref="CCBehaviour"/> destroyed
         /// </summary>
         /// <returns>self</returns>
-        public static T AddDisposableTo<T>(this T source, CCBehaviour beh)
+        public static T AddToBehaviour<T>(this T source, CCBehaviour beh)
             where T : IDisposable
         {
             return beh.RegisterDisposable(source);

@@ -13,16 +13,12 @@ namespace CCEnvs.UnityX.Items.UIElements
     [DisallowMultipleComponent]
     public abstract class ItemContainerView<TViewModel>
         :
-        View<TViewModel>,
-        IVisualTreeElement
+        View<TViewModel>
 
         where TViewModel : IItemContainerViewModel
     {
         [Header("Container Settings")]
         [Space(5f)]
-
-        [SerializeField]
-        protected VisualTreeAsset visualTree = null!;
 
         [SerializeField]
         [Tooltip("Element must be Image type")]
@@ -45,11 +41,6 @@ namespace CCEnvs.UnityX.Items.UIElements
             set => SetCounterElementName(value);
         }
 
-        public VisualTreeAsset VisualTree {
-            get => visualTree;
-            set => SetVisualTree(value);
-        }
-
         public Image? IconView { get; private set; }
 
         public Label? CounterView { get; private set; }
@@ -66,13 +57,6 @@ namespace CCEnvs.UnityX.Items.UIElements
         public ItemContainerView<TViewModel> SetCounterElementName(string? value)
         {
             counterViewName = value;
-            return this;
-        }
-
-        public ItemContainerView<TViewModel> SetVisualTree(VisualTreeAsset value)
-        {
-            CC.Guard.IsNotNull(value);
-            visualTree = value;
             return this;
         }
 

@@ -181,8 +181,8 @@ namespace CCEnvs.Patterns.Commands
             if (Interlocked.Exchange(ref disposed, 1) != 0)
                 return;
 
-            if (CCDebug<CommandScheduler>.IsEnabled)
-                this.PrintLog("Disposed");
+            //if (CCDebug<CommandScheduler>.IsEnabled)
+            //    this.PrintLog("Disposed");
 
             try
             {
@@ -319,8 +319,8 @@ namespace CCEnvs.Patterns.Commands
 
         private void OnReset()
         {
-            if (CCDebug<CommandScheduler>.IsEnabled)
-                this.PrintLog("Reseted");
+            //if (CCDebug<CommandScheduler>.IsEnabled)
+            //    this.PrintLog("Reseted");
 
             EraseCurrentCommand();
 

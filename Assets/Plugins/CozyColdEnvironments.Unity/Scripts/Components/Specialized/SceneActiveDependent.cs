@@ -22,7 +22,7 @@ namespace CCEnvs.UnityX.Components.Specialized
                 {
                     @this.OnActiveSceneChanged(ev.current);
                 })
-                .AddDisposableTo(this);
+                .AddToBehaviour(this);
         }
 
         private void OnActiveSceneChanged(Scene currentScene)

@@ -3,6 +3,7 @@ using CCEnvs.Diagnostics;
 using CCEnvs.Disposables;
 using CCEnvs.Patterns.Commands;
 using CCEnvs.UnityX.ComponentInjections;
+using CommunityToolkit.Diagnostics;
 using Cysharp.Threading.Tasks;
 using R3;
 using System;
@@ -26,12 +27,22 @@ namespace CCEnvs.UnityX.UI.Elements
 
         private readonly ReactiveProperty<RootElementChangedEvent> rootElement = new();
 
+        [GetByParent]
+        private PanelRenderer renderer = null!;
+
         private bool isUIReloadBinded;
 
-        private IDisposable? rootShowableRootElementBinding;
+        private IDisposable? parentShowableRootElementBinding;
 
-        [field: GetByParent]
-        public PanelRenderer Renderer { get; private set; } = null!;
+        public PanelRenderer Renderer {
+            get
+            {
+                if (renderer == null)
+                    renderer = this.Q().FromParents().IncludeInactive().Component<PanelRenderer>().Strict();
+
+                return renderer;
+            }
+        }
 
         public VisualElement? RootElement {
             get => rootElement.Value.Current;
@@ -63,13 +74,13 @@ namespace CCEnvs.UnityX.UI.Elements
 
             if (Parent.IsNotNull() && Parent.Renderer == Renderer)
             {
-                rootShowableRootElementBinding = Parent.ObserveRootElement()
+                parentShowableRootElementBinding = Parent.ObserveRootElement()
                     .Subscribe(OnParentShowableRootElementChanged);
             }
             else
             {
                 if (CCDebug<ShowableElement>.IsEnabled && visualTree != null)
-                    this.PrintWarning($"Showable is not child. {nameof(VisualTreeAsset)} will be ignored");
+                    this.PrintWarning($"Showable is not child of a renderer. {nameof(VisualTree)} will be ignored");
 
                 Renderer.RegisterUIReloadCallback(OnUIReload);
                 isUIReloadBinded = true;
@@ -86,7 +97,7 @@ namespace CCEnvs.UnityX.UI.Elements
                 isUIReloadBinded = false;
             }
             else
-                CCDisposable.Dispose(ref rootShowableRootElementBinding);
+                CCDisposable.Dispose(ref parentShowableRootElementBinding);
 
             RootElement = null;
             
@@ -110,17 +121,19 @@ namespace CCEnvs.UnityX.UI.Elements
             return this;    
         }
 
-        public override void Redraw()
+        public void RegisterRendererChagnedCallbackOnce(Action<PanelRenderer> action)
         {
-            if (!isUIReloadBinded)
-                return;
+            Guard.IsNotNull(action);
 
-            HideCore();
-            Renderer.UnregisterUIReloadCallback(OnUIReload);
-            Renderer.RegisterUIReloadCallback(OnUIReload);
-            ShowCore();
+            if (Renderer != null)
+                action(Renderer);
         }
 
+        public override void Redraw()
+        {
+            HideCore();
+            ShowCore();
+        }
 
         public Observable<RootElementChangedEvent> ObserveRootElement() => rootElement;
 
@@ -129,7 +142,8 @@ namespace CCEnvs.UnityX.UI.Elements
             if (RootElement is null)
                 return;
 
-            RootElement.visible = false;
+            RootElement.style.display = DisplayStyle.None;
+            //enabled = false;
 
             if (CCDebug<ShowableElement>.IsEnabled)
             {
@@ -147,7 +161,8 @@ namespace CCEnvs.UnityX.UI.Elements
             if (RootElement is null)
                 return;
 
-            RootElement.visible = true;
+            RootElement.style.display = DisplayStyle.Flex;
+            //enabled = true;
 
             if (CCDebug<ShowableElement>.IsEnabled)
             {
@@ -211,6 +226,14 @@ namespace CCEnvs.UnityX.UI.Elements
                 {
                     RootElement = visualTree.CloneTree();
                     root.Current.Add(RootElement);
+
+                    if (CCDebug<ShowableElement>.IsEnabled)
+                    {
+                        this.PrintLog(DebugMessageBuilder.CreatePooled()
+                            .AddMessage("Visual tree cloned to parent root")
+                            .AddProperty("ParentRootElement", root.Current)
+                            .ToStringAndDispose());
+                    }
                 }
             }
         }

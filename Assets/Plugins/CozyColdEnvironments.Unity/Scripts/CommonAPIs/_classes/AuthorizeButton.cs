@@ -49,7 +49,7 @@ namespace CCEnvs.UnityX.CommonAPIs
                 .Where(x => x)
                 .Subscribe(this,
                 static (_, @this) => @this.OnAuthorized())
-                .AddDisposableTo(this);
+                .AddToBehaviour(this);
         }
 
         protected override void Start()

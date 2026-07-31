@@ -33,7 +33,7 @@ namespace CCEnvs.UnityX.CommonAPIs
                     if (state)
                         Destroy(@this);
                 })
-                .AddDisposableTo(this);
+                .AddToBehaviour(this);
         }
     }
 }

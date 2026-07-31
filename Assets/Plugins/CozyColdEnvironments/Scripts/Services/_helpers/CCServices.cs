@@ -14,9 +14,24 @@ namespace CCEnvs.Services
 {
     public static class CCServices
     {
+        public readonly struct BindHandle
+        {
+            public IEnumerable<Type> Contracts { get; }
+
+            public object? ID { get; }
+
+            public BindHandle(IEnumerable<Type> contracts, object? iD)
+            {
+                CC.Guard.IsNotNull(contracts, nameof(contracts));
+
+                Contracts = contracts;
+                ID = iD;
+            }
+        }
+
         private static readonly Dictionary<(Type Type, object? ID), object> bindings = new();
 
-        public static LightDisposable<(IEnumerable<Type> Contracts, object? ID)> Bind(ServiceBinderBase serviceBinder)
+        public static LightDisposable<BindHandle> Bind(ServiceBinderBase serviceBinder)
         {
             if (serviceBinder.Instance.IsNull())
                 return default;
@@ -32,11 +47,11 @@ namespace CCEnvs.Services
                 bindings.Add((contract, serviceBinder.ID), serviceBinder.Instance);
             }
 
-            return CCDisposable.CreateLight((serviceBinder.Contracts, serviceBinder.ID),
-                static (args) =>
+            return CCDisposable.CreateLight(new BindHandle(serviceBinder.Contracts, serviceBinder.ID),
+                static (handle) =>
                 {
-                    foreach (var contract in args.Contracts)
-                        Unbind(contract, args.ID);
+                    foreach (var contract in handle.Contracts)
+                        Unbind(contract, handle.ID);
                 });
         }
 
