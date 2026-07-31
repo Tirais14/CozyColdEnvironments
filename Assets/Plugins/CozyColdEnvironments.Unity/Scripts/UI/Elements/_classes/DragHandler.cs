@@ -31,12 +31,12 @@ namespace CCEnvs.UnityX.UI.Elements
 
         private readonly DragEvent dragEv = new();
 
+        [GetBySelf]
+        private IShowableElement showable = null!;
+
         private IDragPredicate? predicate;
 
         private IDisposable? rootElementBinding;
-
-        [GetBySelf]
-        private IShowableElement showable = null!;
 
         public event DragAction? OnBeginDrag;
         public event DragAction? OnDrag;
@@ -229,8 +229,10 @@ namespace CCEnvs.UnityX.UI.Elements
 
                 root.panel.PickAll(ev.position, dropElements);
 
-                foreach (var dropElement in dropElements)
+                for (int i = 0; i < dropElements.Count; i++)
                 {
+                    VisualElement dropElement = dropElements[i];
+
                     if (DropTargetRegistry.Targets.TryGetValue(dropElement, out DropTarget dropTarget) &&
                         gameObject != dropTarget.GameObject &&
                         (dropTargetTag.IsNullOrWhiteSpace() || dropTarget.GameObject.CompareTag(dropTargetTag)) &&
@@ -241,7 +243,15 @@ namespace CCEnvs.UnityX.UI.Elements
                             .TryGetValue(out var targetDropHandler)
                         )
                     {
-                        targetDropHandler.SendDropEvent(dragEv);
+                        try
+                        {
+                            targetDropHandler.SendDropEvent(dragEv);
+                        }
+                        catch (Exception ex)
+                        {
+                            this.PrintException(ex);
+                        }
+
                         break;
                     }
                 }
