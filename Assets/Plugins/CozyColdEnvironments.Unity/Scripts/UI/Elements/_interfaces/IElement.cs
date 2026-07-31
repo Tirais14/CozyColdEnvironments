@@ -8,6 +8,6 @@ namespace CCEnvs.UnityX.UI.Elements
     {
         VisualElement? RootElement { get; }
 
-        Observable<RootElementChangedEvent> ObserveRootElement();
+        Observable<VisualElement?> ObserveRootElement();
     }
 }

@@ -71,8 +71,8 @@ namespace CCEnvs.UnityX.Items.UI
 
         public void AddContainer(IItemContainer cnt)
         {
-            fromViewContainers.Value.Add(cnt);
             GuardedModel.AddContainer(cnt);
+            fromViewContainers.Value.Add(cnt);
         }
 
         public void RemoveContainer(int id) => GuardedModel.RemoveContainer(id);

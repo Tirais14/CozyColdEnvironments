@@ -73,15 +73,15 @@ namespace CCEnvs.UnityX.UI.Elements
 
         protected virtual void OnUIReload(PanelRenderer renderer, VisualElement root) { }
 
-        protected virtual void OnRootElementChanged(RootElementChangedEvent root) { }
+        protected virtual void OnRootElementChanged(VisualElement? root) { }
 
-        private void OnRootElementChangedInternal(RootElementChangedEvent root)
+        private void OnRootElementChangedInternal(VisualElement? root)
         {
-            if (root.Previous is not null)
-                registryHandle.Dispose();
+            registryHandle.Dispose();
+            registryHandle = default;
 
-            if (root.Current is not null)
-                registryHandle = DropTargetRegistry.Register(root.Current, gameObject);
+            if (root is not null)
+                registryHandle = DropTargetRegistry.Register(root, gameObject);
 
             try
             {

@@ -7,7 +7,5 @@ namespace CCEnvs.UnityX.UI.Elements
     public interface IPaneledElement : IElement
     {
         PanelRenderer Renderer { get; }
-
-        void RegisterRendererChagnedCallbackOnce(Action<PanelRenderer> action);
     }
 }

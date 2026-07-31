@@ -74,13 +74,13 @@ namespace CCEnvs.UnityX.Items.UIElements
             }
 
             containerElement.ObserveRootElement()
-                .Where(root => root.Current is not null)
+                .Where(root => root is not null)
                 .Take(1)
                 .Subscribe((@this: this, container),
                 static (root, args) =>
                 {
                     var (@this, container) = args;
-                    @this.containerElements.Add(container, root.Current!);
+                    @this.containerElements.Add(container, root!);
                 });
         }
 

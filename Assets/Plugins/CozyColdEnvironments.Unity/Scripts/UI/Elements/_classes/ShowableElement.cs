@@ -25,7 +25,7 @@ namespace CCEnvs.UnityX.UI.Elements
         [SerializeField, Min(0f)]
         protected int showCommandDelayFramCount = 1;
 
-        private readonly ReactiveProperty<RootElementChangedEvent> rootElement = new();
+        private readonly ReactiveProperty<VisualElement?> rootElement = new();
 
         [GetByParent]
         private PanelRenderer renderer = null!;
@@ -53,10 +53,10 @@ namespace CCEnvs.UnityX.UI.Elements
         }
 
         public VisualElement? RootElement {
-            get => rootElement.Value.Current;
+            get => rootElement.Value;
             private set
             {
-                rootElement.Value = new RootElementChangedEvent(RootElement, value);
+                rootElement.Value = value;
             }
         }
 
@@ -108,14 +108,12 @@ namespace CCEnvs.UnityX.UI.Elements
             {
                 CCDisposable.Dispose(ref parentShowableRootElementBinding);
 
-                if (visualTree != null &&
-                    bindedParentRootElement is not null &&
-                    RootElement is not null &&
-                    bindedParentRootElement.Contains(RootElement))
-                {
-                    bindedParentRootElement.Remove(RootElement);
-                }
+                if (visualTree != null)
+                    RootElement?.RemoveFromHierarchy();
             }
+
+            RootElement = null;
+            bindedParentRootElement = null;
         }
 
         protected override void OnDestroy()
@@ -150,7 +148,7 @@ namespace CCEnvs.UnityX.UI.Elements
             ShowCore();
         }
 
-        public Observable<RootElementChangedEvent> ObserveRootElement() => rootElement;
+        public Observable<VisualElement?> ObserveRootElement() => rootElement;
 
         protected override void HideCore()
         {
@@ -158,7 +156,6 @@ namespace CCEnvs.UnityX.UI.Elements
                 return;
 
             RootElement.style.display = DisplayStyle.None;
-            enabled = false;
 
             if (CCDebug<ShowableElement>.IsEnabled)
             {
@@ -177,7 +174,6 @@ namespace CCEnvs.UnityX.UI.Elements
                 return;
 
             RootElement.style.display = DisplayStyle.Flex;
-            enabled = true;
 
             if (CCDebug<ShowableElement>.IsEnabled)
             {
@@ -223,35 +219,37 @@ namespace CCEnvs.UnityX.UI.Elements
                 .WithCancellationToken(destroyCancellationToken);
         }
 
-        private void InitExistingRootElement()
+        private void OnParentShowableRootElementChanged(VisualElement? parentRoot)
         {
-
-        }
-
-        private void OnParentShowableRootElementChanged(RootElementChangedEvent root)
-        {
-            if (root.Previous is not null)
-                RootElement?.Remove(root.Previous);
-
-            if (root.Current is not null)
+            if (parentRoot is not null)
             {
-                bindedParentRootElement = root.Current;
+                if (RootElement is not null && RootElement.parent == parentRoot)
+                    return;
+
+                bindedParentRootElement = parentRoot;
 
                 if (visualTree == null)
-                    RootElement = root.Current.Q<VisualElement>(name);
+                    RootElement = parentRoot.Q<VisualElement>(name);
                 else
                 {
+                    RootElement?.RemoveFromHierarchy();
+
                     RootElement = visualTree.CloneTree();
-                    root.Current.Add(RootElement);
+                    parentRoot.Add(RootElement);
 
                     if (CCDebug<ShowableElement>.IsEnabled)
                     {
                         this.PrintLog(DebugMessageBuilder.CreatePooled()
                             .AddMessage("Visual tree cloned to parent root")
-                            .AddProperty("ParentRootElement", root.Current)
+                            .AddProperty("ParentRootElement", parentRoot)
                             .ToStringAndDispose());
                     }
                 }
+            }
+            else
+            {
+                RootElement = null;
+                bindedParentRootElement = null;
             }
         }
 

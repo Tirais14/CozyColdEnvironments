@@ -124,7 +124,6 @@ namespace CCEnvs.UnityX.UI.Elements
                 .Do(dragHandler => Destroy(dragHandler));
 
             ghostShowable.ObserveRootElement()
-                .Select(root => root.Current)
                 .Where(root => root is not null)
                 .Take(1)
                 .Timeout(60.Seconds())

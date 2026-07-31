@@ -109,20 +109,23 @@ namespace CCEnvs.UnityX.Items.UI
 
         protected virtual void InitItemContainers(TViewModel viewModel)
         {
+            if (!viewModel.HasModel())
+                return;
+
             var containerViews = containersRoot.Q()
                 .FromChildrens()
                 .ExcludeSelf()
                 .IncludeInactive()
                 .Components<IView>();
 
-            using var containers = ListPool<IItemContainer>.Shared.Get();
+            using var containers = new PooledList<IItemContainer>(null);
 
             foreach (var containerView in containerViews)
             {
                 if (containerView.Model.IsNot<IItemContainer>(out var container))
                     container = CreateItemContainer();
 
-                containers.Value.Add(container);
+                containers.Add(container);
             }
 
             foreach (var container in containers.Value)

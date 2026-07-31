@@ -37,6 +37,9 @@ namespace CCEnvs.UnityX.UI.Elements
         private IDragPredicate? predicate;
 
         private IDisposable? rootElementBinding;
+        private LightDisposable<(DragHandler, VisualElement)> pointerDownRegistration;
+        private LightDisposable<(DragHandler, VisualElement)> pointerMoveRegistration;
+        private LightDisposable<(DragHandler, VisualElement)> pointerUpRegistration;
 
         public event DragAction? OnBeginDrag;
         public event DragAction? OnDrag;
@@ -74,7 +77,7 @@ namespace CCEnvs.UnityX.UI.Elements
         protected override void OnEnable()
         {
             base.OnEnable();
-            element.ObserveRootElement().Subscribe(OnRootElementChangedInternal);
+            rootElementBinding = element.ObserveRootElement().Subscribe(OnRootElementChangedInternal);
         }
 
         protected override void OnDisable()
@@ -82,6 +85,7 @@ namespace CCEnvs.UnityX.UI.Elements
             base.OnDisable();
             IsDragging = false;
             CCDisposable.Dispose(ref rootElementBinding);
+            ClearRootElementBindings();
         }
 
         public DragHandler SetDropTargetTag(string? tag)
@@ -114,22 +118,41 @@ namespace CCEnvs.UnityX.UI.Elements
 
         protected virtual void OnEndDragEvent(DragEvent ev) { }
 
-        protected virtual void OnRootElementChanged(RootElementChangedEvent root) { }
+        protected virtual void OnRootElementChanged(VisualElement? root) { }
 
-        private void OnRootElementChangedInternal(RootElementChangedEvent root)
+        private void OnRootElementChangedInternal(VisualElement? root)
         {
-            if (root.Previous is not null)
-            {
-                root.Previous.UnregisterCallback<PointerDownEvent>(OnPointerDown);
-                root.Previous.UnregisterCallback<PointerMoveEvent>(OnPointerMove);
-                root.Previous.UnregisterCallback<PointerUpEvent>(OnPointerUp);
-            }
+            ClearRootElementBindings();
 
-            if (root.Current is not null)
+            if (root is not null)
             {
-                root.Current.RegisterCallback<PointerDownEvent>(OnPointerDown);
-                root.Current.RegisterCallback<PointerMoveEvent>(OnPointerMove);
-                root.Current.RegisterCallback<PointerUpEvent>(OnPointerUp);
+                root.RegisterCallback<PointerDownEvent>(OnPointerDown);
+                root.RegisterCallback<PointerMoveEvent>(OnPointerMove);
+                root.RegisterCallback<PointerUpEvent>(OnPointerUp);
+
+                pointerDownRegistration = CCDisposable.CreateLight(
+                    (@this: this, root),
+                    static (args) =>
+                    {
+                        var (@this, root) = args;
+                        root.UnregisterCallback<PointerDownEvent>(@this.OnPointerDown);
+                    });
+
+                pointerMoveRegistration = CCDisposable.CreateLight(
+                    (@this: this, root),
+                    static (args) =>
+                    {
+                        var (@this, root) = args;
+                        root.UnregisterCallback<PointerMoveEvent>(@this.OnPointerMove);
+                    });
+
+                pointerUpRegistration = CCDisposable.CreateLight(
+                    (@this: this, root),
+                    static (args) =>
+                    {
+                        var (@this, root) = args;
+                        root.UnregisterCallback<PointerUpEvent>(@this.OnPointerUp);
+                    });
             }
 
             try
@@ -140,6 +163,17 @@ namespace CCEnvs.UnityX.UI.Elements
             {
                 this.PrintException(ex);
             }
+        }
+
+        private void ClearRootElementBindings()
+        {
+            pointerDownRegistration.Dispose();
+            pointerMoveRegistration.Dispose();
+            pointerUpRegistration.Dispose();
+
+            pointerDownRegistration = default;
+            pointerMoveRegistration = default;
+            pointerUpRegistration = default;
         }
 
         private void OnPointerDown(PointerDownEvent pointerEv)

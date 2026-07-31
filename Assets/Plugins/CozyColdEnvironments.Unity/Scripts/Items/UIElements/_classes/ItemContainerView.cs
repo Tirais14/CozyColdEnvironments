@@ -74,21 +74,18 @@ namespace CCEnvs.UnityX.Items.UIElements
 
         protected override void InitViewModel(TViewModel vm) { }
 
-        private void OnRootElementChanged(RootElementChangedEvent root)
+        private void OnRootElementChanged(VisualElement? root)
         {
-            if (root.Previous is not null)
-            {
-                CCDisposable.Dispose(ref iconBinding);
-                CCDisposable.Dispose(ref countBinding);
-                IconView = null;
-                CounterView = null;
-            }
+            CCDisposable.Dispose(ref iconBinding);
+            CCDisposable.Dispose(ref countBinding);
+            IconView = null;
+            CounterView = null;
 
-            if (root.Current is not null)
+            if (root is not null)
             {
                 if (iconViewName.IsNotNullOrWhiteSpace())
                 {
-                    IconView = root.Current.Q<Image>(iconViewName);
+                    IconView = root.Q<Image>(iconViewName);
 
                     if (IconView is not null)
                         BindIcon(GuardedViewModel);
@@ -96,7 +93,7 @@ namespace CCEnvs.UnityX.Items.UIElements
 
                 if (counterViewName.IsNotNullOrWhiteSpace())
                 {
-                    CounterView = root.Current.Q<Label>(counterViewName);
+                    CounterView = root.Q<Label>(counterViewName);
 
                     if (CounterView is not null)
                         BindCount(GuardedViewModel);
