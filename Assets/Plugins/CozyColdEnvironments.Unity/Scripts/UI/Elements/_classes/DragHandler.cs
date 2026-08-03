@@ -1,11 +1,14 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.Disposables;
 using CCEnvs.Pools;
+using CCEnvs.Threading;
 using CCEnvs.TypeMatching;
 using CCEnvs.UnityX.ComponentInjections;
 using CCEnvs.UnityX.Components;
+using Cysharp.Threading.Tasks;
 using R3;
 using System;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -28,20 +31,28 @@ namespace CCEnvs.UnityX.UI.Elements
 
         [SerializeField]
         protected int pointerButton = 0;
+        [SerializeField, Range(1f, 3f)]
+        protected int clickCountThreshold = 1;
 
-        [SerializeField]
-        protected float dragThreshold = 0.2f;
+        [SerializeField, Range(0f, 2f)]
+        protected float dragTimeThreshold = 0.5f;
+        [SerializeField, Range(0f, 2f)]
+        protected float clickTimeThreshold = 0.1f;
 
         private readonly DragEvent dragEv = new();
+
+        private int clickCount;
 
         [GetBySelf]
         private IShowableElement showable = null!;
 
         private IDragPredicate? predicate;
 
-        private float secondsSincePointerDown;
+        private float pointerDownTime;
 
-        private bool isPointerLeaved;
+        private bool isPointerDown;
+
+        private CancellationTokenSource? pointerDownToken;
 
         private IDisposable? rootElementBinding;
         private LightDisposable<(DragHandler, VisualElement)> pointerDownRegistration;
@@ -86,6 +97,20 @@ namespace CCEnvs.UnityX.UI.Elements
         {
             base.Start();
             rootElementBinding = element.ObserveRootElement().Subscribe(OnRootElementChangedInternal);
+        }
+
+        protected virtual void Update()
+        {
+            if (isPointerDown)
+                pointerDownTime += Time.unscaledDeltaTime;
+
+            if (!IsDragging &&
+                pointerDownTime > clickTimeThreshold)
+            {
+                pointerDownTime = 0f;
+                clickCount = 0;
+                pointerDownToken?.CancelAndDispose();
+            }
         }
 
         protected override void OnDestroy()
@@ -141,23 +166,30 @@ namespace CCEnvs.UnityX.UI.Elements
             pointerLeaveRegistration = default;
         }
 
-        private void OnPointerDown(PointerDownEvent pointerEv)
+        private async UniTask ProcessPointerDownAsync(
+            PointerDownEvent pointerEv,
+            VisualElement root,
+            CancellationToken cancellationToken
+            )
         {
-            if (!enabled ||
-                pointerEv.button != pointerButton ||
-                element.RootElement is null ||
-                (!Predicate?.Evaluate() ?? false))
+            if (pointerDownTime < dragTimeThreshold)
             {
-                return;
+                using (var cancellationTokenSource = cancellationToken.LinkTokens(destroyCancellationToken))
+                {
+                    await UniTask.WaitUntil(
+                        this,
+                        @this => @this.pointerDownTime > @this.dragTimeThreshold,
+                        cancellationToken: cancellationTokenSource.Token
+                        );
+                }
             }
 
             element.RootElement.CapturePointer(pointerEv.pointerId);
-            dragEv.SetSource(element.RootElement, gameObject)
-                .SetTarget(element.RootElement, gameObject)
+            dragEv.SetSource(root, gameObject)
+                .SetTarget(root, gameObject)
                 .SetInfo(pointerEv);
 
-            IsDragging = secondsSincePointerDown > dragThreshold;
-            isPointerLeaved = false;
+            IsDragging = true;
 
             try
             {
@@ -181,16 +213,40 @@ namespace CCEnvs.UnityX.UI.Elements
                 this.PrintLog("Begin Drag");
         }
 
+        private void OnPointerDown(PointerDownEvent pointerEv)
+        {
+            if (!enabled ||
+                pointerEv.button != pointerButton ||
+                element.RootElement is null ||
+                (!(Predicate?.Evaluate() ?? true)))
+            {
+                return;
+            }
+
+            isPointerDown = true;
+            clickCount++;
+
+            if (clickCount < clickCountThreshold)
+                return;
+
+            pointerDownToken = new CancellationTokenSource();
+
+            ProcessPointerDownAsync(
+                pointerEv,
+                element.RootElement,
+                pointerDownToken.Token
+                )
+                .Forget();
+        }
+
         private void OnPointerMove(PointerMoveEvent ev)
         {
-            if (isPointerLeaved || element.RootElement is null)
+            if (!IsDragging ||
+                element.RootElement is null ||
+                pointerDownTime < dragTimeThreshold)
+            {
                 return;
-
-            secondsSincePointerDown += Time.unscaledDeltaTime;
-            IsDragging = secondsSincePointerDown > dragThreshold;
-
-            if (!IsDragging)
-                return;
+            }
 
             dragEv.SetSource(element.RootElement, gameObject)
                 .SetInfo(ev);
@@ -218,10 +274,9 @@ namespace CCEnvs.UnityX.UI.Elements
 
         private void OnPointerUp(PointerUpEvent ev)
         {
-            secondsSincePointerDown = 0f;
+            isPointerDown = false;
 
-            if (isPointerLeaved ||
-                !IsDragging ||
+            if (!IsDragging ||
                 element.RootElement is null ||
                 dragEv is null)
             {
@@ -299,7 +354,12 @@ namespace CCEnvs.UnityX.UI.Elements
 
         private void OnPointerLeave(PointerLeaveEvent ev)
         {
-            isPointerLeaved = true;
+            pointerDownToken?.CancelAndDispose();
+            pointerDownToken = null;
+            clickCount = 0;
+
+            if (!IsDragging)
+                pointerDownTime = 0f;
         }
 
         private void OnRootElementChangedInternal(VisualElement? root)

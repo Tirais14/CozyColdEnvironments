@@ -98,9 +98,6 @@ namespace CCEnvs.UnityX.UI.Elements
         {
             base.OnBeginDragEvent(ev);
 
-            if (!enabled || showable.RootElement is null)
-                return;
-
             Ghost = Instantiate(
                 ghostPrefab.IfNull(gameObject),
                 showable.Root.As<Component>().IfNotNull(root => root.transform)
@@ -141,7 +138,7 @@ namespace CCEnvs.UnityX.UI.Elements
                     @this.GhostRoot = root!;
                     @this.GhostRoot.pickingMode = PickingMode.Ignore;
                     @this.GhostRoot.style.position = Position.Absolute;
-                    //@this.SetGhostRootPosition(ev.Info.position);
+                    @this.SetGhostRootPosition(ev.Info.position);
 
                     if (@this.showable.RootElement is not null && @this.hideWhenDrag)
                         @this.showable.RootElement.style.display = DisplayStyle.None;
