@@ -16,8 +16,6 @@ using UnityEngine.UIElements;
 #nullable enable
 namespace CCEnvs.UnityX.UI.Elements
 {
-    public delegate void DragAction(DragEvent ev);
-
     [DisallowMultipleComponent]
     public class DragHandler
         :
@@ -40,7 +38,12 @@ namespace CCEnvs.UnityX.UI.Elements
         [SerializeField, Range(0f, 2f)]
         protected float clickTimeThreshold = 0.1f;
 
+        private readonly BeginDragEvent beginDragEv = new();
         private readonly DragEvent dragEv = new();
+        private readonly EndDragEvent endDragEv = new();
+        private readonly PointerEventSnapshot pointerDownEventSnapshot = new();
+
+        private bool hasDragEv;
 
         private int clickCount;
 
@@ -49,8 +52,6 @@ namespace CCEnvs.UnityX.UI.Elements
 
         private IDragPredicate? predicate;
 
-        private float pointerDownTime;
-
         private IDisposable? dragTimerHandle;
         private IDisposable? rootElementBinding;
         private LightDisposable<(DragHandler, VisualElement)> pointerDownRegistration;
@@ -58,9 +59,9 @@ namespace CCEnvs.UnityX.UI.Elements
         private LightDisposable<(DragHandler, VisualElement)> pointerUpRegistration;
         private LightDisposable<(DragHandler, VisualElement)> pointerLeaveRegistration;
 
-        public event DragAction? OnBeginDrag;
-        public event DragAction? OnDrag;
-        public event DragAction? OnEndDrag;
+        public event Action<BeginDragEvent>? OnBeginDrag;
+        public event Action<DragEvent>? OnDrag;
+        public event Action<EndDragEvent>? OnEndDrag;
 
         public virtual bool IsDragging { get; private set; }
 
@@ -130,11 +131,11 @@ namespace CCEnvs.UnityX.UI.Elements
             return this;
         }
 
-        protected virtual void OnBeginDragEvent(DragEvent ev) { }
+        protected virtual void OnBeginDragEvent(BeginDragEvent ev) { }
 
         protected virtual void OnDragEvent(DragEvent ev) { }
 
-        protected virtual void OnEndDragEvent(DragEvent ev) { }
+        protected virtual void OnEndDragEvent(EndDragEvent ev) { }
 
         protected virtual void OnRootElementChanged(VisualElement? root) { }
 
@@ -157,15 +158,15 @@ namespace CCEnvs.UnityX.UI.Elements
             )
         {
             element.RootElement.CapturePointer(pointerEv.pointerId);
-            dragEv.SetSource(root, gameObject)
+            beginDragEv.SetSource(root, gameObject)
                 .SetTarget(root, gameObject)
-                .SetInfo(pointerEv);
+                .SetInfo(pointerDownEventSnapshot);
 
             IsDragging = true;
 
             try
             {
-                OnBeginDragEvent(dragEv);
+                OnBeginDragEvent(beginDragEv);
             }
             catch (Exception ex)
             {
@@ -174,7 +175,7 @@ namespace CCEnvs.UnityX.UI.Elements
 
             try
             {
-                OnBeginDrag?.Invoke(dragEv);
+                OnBeginDrag?.Invoke(beginDragEv);
             }
             catch (Exception ex)
             {
@@ -187,6 +188,8 @@ namespace CCEnvs.UnityX.UI.Elements
 
         private void OnPointerDown(PointerDownEvent pointerEv)
         {
+            hasDragEv = false;
+
             if (!enabled ||
                 pointerEv.button != pointerButton ||
                 element.RootElement is null ||
@@ -200,11 +203,13 @@ namespace CCEnvs.UnityX.UI.Elements
             if (clickCount < clickCountThreshold)
                 return;
 
+            pointerDownEventSnapshot.CaptureFrom(pointerEv);
+
             if (dragTimeThreshold > 0f)
             {
                 dragTimerHandle = Observable.Timer(
                     ((double)dragTimeThreshold).Seconds(),
-                    UnityTimeProvider.Update,
+                    UnityTimeProvider.PreUpdate,
                     destroyCancellationToken
                     )
                     .Take(1)
@@ -226,7 +231,9 @@ namespace CCEnvs.UnityX.UI.Elements
                 return;
 
             dragEv.SetSource(element.RootElement, gameObject)
+                .SetTarget(beginDragEv.Target, beginDragEv.TargetGameObject)
                 .SetInfo(ev);
+            hasDragEv = true;
 
             try
             {
@@ -251,6 +258,8 @@ namespace CCEnvs.UnityX.UI.Elements
 
         private void OnPointerUp(PointerUpEvent ev)
         {
+            CCDisposable.Dispose(ref dragTimerHandle);
+
             if (!IsDragging ||
                 element.RootElement is null ||
                 dragEv is null)
@@ -258,7 +267,11 @@ namespace CCEnvs.UnityX.UI.Elements
                 return;
             }
 
-            dragEv.SetSource(element.RootElement, gameObject)
+            VisualElement? target = hasDragEv ? dragEv.Target : beginDragEv.Target;
+            GameObject? targetGameObject = hasDragEv ? dragEv.TargetGameObject : beginDragEv.TargetGameObject;
+
+            endDragEv.SetSource(element.RootElement, gameObject)
+                .SetTarget(target, targetGameObject)
                 .SetInfo(ev);
 
             using (var dropElements = new PooledList<VisualElement>(null))
@@ -281,9 +294,16 @@ namespace CCEnvs.UnityX.UI.Elements
                                 .TryGetValue(out var targetDropHandler)
                             )
                         {
+                            var dropEv = new DropEvent(
+                                endDragEv.Source,
+                                endDragEv.Target,
+                                endDragEv.SourceGameObject,
+                                endDragEv.TargetGameObject
+                                );
+
                             try
                             {
-                                targetDropHandler.SendDropEvent(dragEv);
+                                targetDropHandler.SendDropEvent(dropEv);
                             }
                             catch (Exception ex)
                             {
@@ -301,7 +321,7 @@ namespace CCEnvs.UnityX.UI.Elements
 
             try
             {
-                OnEndDragEvent(dragEv);
+                OnEndDragEvent(endDragEv);
             }
             catch (Exception ex)
             {
@@ -310,7 +330,7 @@ namespace CCEnvs.UnityX.UI.Elements
 
             try
             {
-                OnEndDrag?.Invoke(dragEv);
+                OnEndDrag?.Invoke(endDragEv);
             }
             catch (Exception ex)
             {
@@ -331,9 +351,6 @@ namespace CCEnvs.UnityX.UI.Elements
         {
             CCDisposable.Dispose(ref dragTimerHandle);
             clickCount = 0;
-
-            if (!IsDragging)
-                pointerDownTime = 0f;
         }
 
         private void OnRootElementChangedInternal(VisualElement? root)

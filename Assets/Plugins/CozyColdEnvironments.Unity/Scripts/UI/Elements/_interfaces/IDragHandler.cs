@@ -1,11 +1,13 @@
 #nullable enable
+using System;
+
 namespace CCEnvs.UnityX.UI.Elements
 {
     public interface IDragHandler : IToggleable
     {
-        event DragAction OnBeginDrag;
-        event DragAction OnDrag;
-        event DragAction OnEndDrag;
+        event Action<BeginDragEvent> OnBeginDrag;
+        event Action<DragEvent> OnDrag;
+        event Action<EndDragEvent> OnEndDrag;
 
         bool IsDragging { get; }
 

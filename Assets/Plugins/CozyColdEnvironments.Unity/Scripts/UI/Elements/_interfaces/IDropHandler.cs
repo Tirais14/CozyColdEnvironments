@@ -10,6 +10,6 @@ namespace CCEnvs.UnityX.UI.Elements
 
         GameObject gameObject { get; }
 
-        void SendDropEvent(DragEvent dragContext);
+        void SendDropEvent(DropEvent ev);
     }
 }

@@ -23,7 +23,7 @@ namespace CCEnvs.UnityX.UI.Elements
                 });
         }
 
-        protected override void OnBeginDragEvent(DragEvent ev)
+        protected override void OnBeginDragEvent(BeginDragEvent ev)
         {
             base.OnBeginDragEvent(ev);
 
@@ -42,7 +42,7 @@ namespace CCEnvs.UnityX.UI.Elements
             container.TakeItem().PutItemTo(dragContainer).PutItemTo(container);
         }
 
-        protected override void OnEndDragEvent(DragEvent ev)
+        protected override void OnEndDragEvent(EndDragEvent ev)
         {
             base.OnEndDragEvent(ev);
 

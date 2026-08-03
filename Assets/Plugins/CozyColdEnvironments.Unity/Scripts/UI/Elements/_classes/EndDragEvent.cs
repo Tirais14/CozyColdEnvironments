@@ -5,7 +5,7 @@ using UnityEngine.UIElements;
 #nullable enable
 namespace CCEnvs.UnityX.UI.Elements
 {
-    public sealed class DragEvent
+    public class EndDragEvent
     {
         public VisualElement Source { get; private set; } = null!;
         public VisualElement? Target { get; private set; } = null!;
@@ -15,7 +15,7 @@ namespace CCEnvs.UnityX.UI.Elements
 
         public IPointerEvent Info { get; private set; } = null!;
 
-        public DragEvent(
+        public EndDragEvent(
             VisualElement source,
             GameObject sourceGameObject,
             IPointerEvent ev
@@ -31,9 +31,9 @@ namespace CCEnvs.UnityX.UI.Elements
             Info = ev;
         }
 
-        public DragEvent() { }
+        public EndDragEvent() { }
 
-        public DragEvent SetSource(VisualElement source, GameObject sourceGameObject)
+        public EndDragEvent SetSource(VisualElement source, GameObject sourceGameObject)
         {
             Guard.IsNotNull(source);
             CC.Guard.IsNotNull(sourceGameObject, nameof(sourceGameObject));
@@ -42,14 +42,14 @@ namespace CCEnvs.UnityX.UI.Elements
             return this;
         }
 
-        public DragEvent SetTarget(VisualElement? target, GameObject? targetGameObject)
+        public EndDragEvent SetTarget(VisualElement? target, GameObject? targetGameObject)
         {
             Target = target.IfNull(Source);
             TargetGameObject = targetGameObject.IfNull(targetGameObject);
             return this;
         }
 
-        public DragEvent SetInfo(IPointerEvent info)
+        public EndDragEvent SetInfo(IPointerEvent info)
         {
             Info = info;
             return this;

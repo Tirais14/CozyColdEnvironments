@@ -41,18 +41,11 @@ namespace CCEnvs.UnityX.UI.Elements
             CCDisposable.Dispose(ref rootElementBinding);
         }
 
-        public void SendDropEvent(DragEvent dragEv)
+        public void SendDropEvent(DropEvent ev)
         {
-            var ev = new DropEvent(
-                dragEv.Source,
-                dragEv.Target,
-                dragEv.SourceGameObject,
-                dragEv.TargetGameObject
-                );
-
             try
             {
-                OnDrop?.Invoke(ev);
+                OnDropEvent(ev);
             }
             catch (Exception ex)
             {
@@ -61,7 +54,7 @@ namespace CCEnvs.UnityX.UI.Elements
 
             try
             {
-                OnDropEvent(ev);
+                OnDrop?.Invoke(ev);
             }
             catch (Exception ex)
             {
