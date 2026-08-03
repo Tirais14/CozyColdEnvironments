@@ -38,8 +38,8 @@ namespace CCEnvs.UnityX.UI.Elements
                 return;
             }
 
-            IItemContainer container = containerView.GetModel<IItemContainer>();
-            container.PutItem(dragContainer.PutItem(container.TakeItem()));
+            var container = containerView.GetModel<IItemContainer>();
+            container.TakeItem().PutItemTo(dragContainer).PutItemTo(container);
         }
 
         protected override void OnEndDragEvent(DragEvent ev)
@@ -58,7 +58,7 @@ namespace CCEnvs.UnityX.UI.Elements
             }
 
             var container = containerView.GetModel<IItemContainer>();
-            dragContainer.PutItem(container.PutItem(dragContainer.TakeItem()));
+            dragContainer.TakeItem().PutItemTo(container).PutItemTo(dragContainer);
         }
     }
 }

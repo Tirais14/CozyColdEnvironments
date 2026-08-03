@@ -60,17 +60,30 @@ namespace CCEnvs.UnityX.Items
             return new LargeReadOnlyItemContainer<TOutItem>(Item.As<TOutItem>(), ItemCount);
         }
 
-        public bool ContainsItem()
+        public readonly LargeReadOnlyItemContainer PutItemTo(IItemContainer? container)
+        {
+            if (container.IsNull())
+                return this;
+
+            return container.PutItem(Item, ItemCount);
+        }
+        public readonly LargeReadOnlyItemContainer PutItemTo(IItemContainer? container, int count)
+        {
+            if (container.IsNull())
+                return this;
+
+            return container.PutItem(Item, count);
+        }
+
+        public readonly bool ContainsItem()
         {
             return ItemCount >= 1 && Item.IsNotNull();
         }
-
-        public bool ContainsItem(IItem? item)
+        public readonly bool ContainsItem(IItem? item)
         {
             return ContainsItem() && EqualityComparer<IItem?>.Default.Equals(Item, item);
         }
-
-        public bool ContainsItem(IItem? item, int count)
+        public readonly bool ContainsItem(IItem? item, int count)
         {
             return ItemCount >= count && ContainsItem(item);
         }
@@ -181,17 +194,30 @@ namespace CCEnvs.UnityX.Items
             return new LargeReadOnlyItemContainer<TOutItem>(Item.As<TOutItem>(), ItemCount);
         }
 
-        public bool ContainsItem()
+        public readonly LargeReadOnlyItemContainer<TItem> PutItemTo(IItemContainer<TItem>? container)
+        {
+            if (container.IsNull())
+                return this;
+
+            return container.PutItem(Item, ItemCount);
+        }
+        public readonly LargeReadOnlyItemContainer<TItem> PutItemTo(IItemContainer<TItem>? container, int count)
+        {
+            if (container.IsNull())
+                return this;
+
+            return container.PutItem(Item, count);
+        }
+
+        public readonly bool ContainsItem()
         {
             return ItemCount >= 1 && Item.IsNotNull();
         }
-
-        public bool ContainsItem(IItem? item)
+        public readonly bool ContainsItem(IItem? item)
         {
             return ContainsItem() && EqualityComparer<IItem?>.Default.Equals((IItem?)Item, item);
         }
-
-        public bool ContainsItem(IItem? item, int count)
+        public readonly bool ContainsItem(IItem? item, int count)
         {
             return ItemCount >= count && ContainsItem(item);
         }

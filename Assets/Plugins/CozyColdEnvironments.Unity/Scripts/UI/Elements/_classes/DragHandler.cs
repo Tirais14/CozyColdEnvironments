@@ -29,6 +29,9 @@ namespace CCEnvs.UnityX.UI.Elements
         [SerializeField]
         protected int pointerButton = 0;
 
+        [SerializeField]
+        protected float dragThreshold = 0.2f;
+
         private readonly DragEvent dragEv = new();
 
         [GetBySelf]
@@ -36,10 +39,15 @@ namespace CCEnvs.UnityX.UI.Elements
 
         private IDragPredicate? predicate;
 
+        private float secondsSincePointerDown;
+
+        private bool isPointerLeaved;
+
         private IDisposable? rootElementBinding;
         private LightDisposable<(DragHandler, VisualElement)> pointerDownRegistration;
         private LightDisposable<(DragHandler, VisualElement)> pointerMoveRegistration;
         private LightDisposable<(DragHandler, VisualElement)> pointerUpRegistration;
+        private LightDisposable<(DragHandler, VisualElement)> pointerLeaveRegistration;
 
         public event DragAction? OnBeginDrag;
         public event DragAction? OnDrag;
@@ -74,15 +82,15 @@ namespace CCEnvs.UnityX.UI.Elements
             set => enabled = value;
         }
 
-        protected override void OnEnable()
+        protected override void Start()
         {
-            base.OnEnable();
+            base.Start();
             rootElementBinding = element.ObserveRootElement().Subscribe(OnRootElementChangedInternal);
         }
 
-        protected override void OnDisable()
+        protected override void OnDestroy()
         {
-            base.OnDisable();
+            base.OnDestroy();
             IsDragging = false;
             CCDisposable.Dispose(ref rootElementBinding);
             ClearRootElementBindings();
@@ -120,60 +128,17 @@ namespace CCEnvs.UnityX.UI.Elements
 
         protected virtual void OnRootElementChanged(VisualElement? root) { }
 
-        private void OnRootElementChangedInternal(VisualElement? root)
-        {
-            ClearRootElementBindings();
-
-            if (root is not null)
-            {
-                root.RegisterCallback<PointerDownEvent>(OnPointerDown);
-                root.RegisterCallback<PointerMoveEvent>(OnPointerMove);
-                root.RegisterCallback<PointerUpEvent>(OnPointerUp);
-
-                pointerDownRegistration = CCDisposable.CreateLight(
-                    (@this: this, root),
-                    static (args) =>
-                    {
-                        var (@this, root) = args;
-                        root.UnregisterCallback<PointerDownEvent>(@this.OnPointerDown);
-                    });
-
-                pointerMoveRegistration = CCDisposable.CreateLight(
-                    (@this: this, root),
-                    static (args) =>
-                    {
-                        var (@this, root) = args;
-                        root.UnregisterCallback<PointerMoveEvent>(@this.OnPointerMove);
-                    });
-
-                pointerUpRegistration = CCDisposable.CreateLight(
-                    (@this: this, root),
-                    static (args) =>
-                    {
-                        var (@this, root) = args;
-                        root.UnregisterCallback<PointerUpEvent>(@this.OnPointerUp);
-                    });
-            }
-
-            try
-            {
-                OnRootElementChanged(root);
-            }
-            catch (Exception ex)
-            {
-                this.PrintException(ex);
-            }
-        }
-
         private void ClearRootElementBindings()
         {
             pointerDownRegistration.Dispose();
             pointerMoveRegistration.Dispose();
             pointerUpRegistration.Dispose();
+            pointerLeaveRegistration.Dispose();
 
             pointerDownRegistration = default;
             pointerMoveRegistration = default;
             pointerUpRegistration = default;
+            pointerLeaveRegistration = default;
         }
 
         private void OnPointerDown(PointerDownEvent pointerEv)
@@ -186,11 +151,13 @@ namespace CCEnvs.UnityX.UI.Elements
                 return;
             }
 
-            IsDragging = true;
             element.RootElement.CapturePointer(pointerEv.pointerId);
             dragEv.SetSource(element.RootElement, gameObject)
                 .SetTarget(element.RootElement, gameObject)
                 .SetInfo(pointerEv);
+
+            IsDragging = secondsSincePointerDown > dragThreshold;
+            isPointerLeaved = false;
 
             try
             {
@@ -216,11 +183,14 @@ namespace CCEnvs.UnityX.UI.Elements
 
         private void OnPointerMove(PointerMoveEvent ev)
         {
-            if (!IsDragging ||
-                element.RootElement is null)
-            {
+            if (isPointerLeaved || element.RootElement is null)
                 return;
-            }
+
+            secondsSincePointerDown += Time.unscaledDeltaTime;
+            IsDragging = secondsSincePointerDown > dragThreshold;
+
+            if (!IsDragging)
+                return;
 
             dragEv.SetSource(element.RootElement, gameObject)
                 .SetInfo(ev);
@@ -242,11 +212,16 @@ namespace CCEnvs.UnityX.UI.Elements
             {
                 this.PrintException(ex);
             }
+
+            ev.StopPropagation();
         }
 
         private void OnPointerUp(PointerUpEvent ev)
         {
-            if (!IsDragging ||
+            secondsSincePointerDown = 0f;
+
+            if (isPointerLeaved ||
+                !IsDragging ||
                 element.RootElement is null ||
                 dragEv is null)
             {
@@ -258,35 +233,35 @@ namespace CCEnvs.UnityX.UI.Elements
 
             using (var dropElements = new PooledList<VisualElement>(null))
             {
-                if (showable.Root.IfNull(showable).RootElement.IsNot(out VisualElement? root))
-                    return;
-
-                root.panel.PickAll(ev.position, dropElements);
-
-                for (int i = 0; i < dropElements.Count; i++)
+                if (showable.Root.IfNull(showable).RootElement.Is(out VisualElement? root))
                 {
-                    VisualElement dropElement = dropElements[i];
+                    root.panel.PickAll(ev.position, dropElements);
 
-                    if (DropTargetRegistry.Targets.TryGetValue(dropElement, out DropTarget dropTarget) &&
-                        gameObject != dropTarget.GameObject &&
-                        (dropTargetTag.IsNullOrWhiteSpace() || dropTarget.GameObject.CompareTag(dropTargetTag)) &&
-                        (DropTargetLayerMask & (1 << dropTarget.GameObject.layer)) != 0 &&
-                        dropTarget.GameObject.Q()
-                            .Component<IDropHandler>()
-                            .Lax()
-                            .TryGetValue(out var targetDropHandler)
-                        )
+                    for (int i = 0; i < dropElements.Count; i++)
                     {
-                        try
-                        {
-                            targetDropHandler.SendDropEvent(dragEv);
-                        }
-                        catch (Exception ex)
-                        {
-                            this.PrintException(ex);
-                        }
+                        VisualElement dropElement = dropElements[i];
 
-                        break;
+                        if (DropTargetRegistry.Targets.TryGetValue(dropElement, out DropTarget dropTarget) &&
+                            gameObject != dropTarget.GameObject &&
+                            (dropTargetTag.IsNullOrWhiteSpace() || dropTarget.GameObject.CompareTag(dropTargetTag)) &&
+                            (DropTargetLayerMask & (1 << dropTarget.GameObject.layer)) != 0 &&
+                            dropTarget.GameObject.Q()
+                                .Component<IDropHandler>()
+                                .Lax()
+                                .TryGetValue(out var targetDropHandler)
+                            )
+                        {
+                            try
+                            {
+                                targetDropHandler.SendDropEvent(dragEv);
+                            }
+                            catch (Exception ex)
+                            {
+                                this.PrintException(ex);
+                            }
+
+                            break;
+                        }
                     }
                 }
             }
@@ -318,6 +293,67 @@ namespace CCEnvs.UnityX.UI.Elements
                 this.PrintLog("End Drag");
 
             dragEv.SetTarget(null, null);
+
+            ev.StopPropagation();
+        }
+
+        private void OnPointerLeave(PointerLeaveEvent ev)
+        {
+            isPointerLeaved = true;
+        }
+
+        private void OnRootElementChangedInternal(VisualElement? root)
+        {
+            ClearRootElementBindings();
+
+            if (root is not null)
+            {
+                root.RegisterCallback<PointerDownEvent>(OnPointerDown);
+                root.RegisterCallback<PointerMoveEvent>(OnPointerMove);
+                root.RegisterCallback<PointerUpEvent>(OnPointerUp);
+                root.RegisterCallback<PointerLeaveEvent>(OnPointerLeave);
+
+                pointerDownRegistration = CCDisposable.CreateLight(
+                    (@this: this, root),
+                    static (args) =>
+                    {
+                        var (@this, root) = args;
+                        root.UnregisterCallback<PointerDownEvent>(@this.OnPointerDown);
+                    });
+
+                pointerMoveRegistration = CCDisposable.CreateLight(
+                    (@this: this, root),
+                    static (args) =>
+                    {
+                        var (@this, root) = args;
+                        root.UnregisterCallback<PointerMoveEvent>(@this.OnPointerMove);
+                    });
+
+                pointerUpRegistration = CCDisposable.CreateLight(
+                    (@this: this, root),
+                    static (args) =>
+                    {
+                        var (@this, root) = args;
+                        root.UnregisterCallback<PointerUpEvent>(@this.OnPointerUp);
+                    });
+
+                pointerLeaveRegistration = CCDisposable.CreateLight(
+                    (@this: this, root),
+                    static (args) =>
+                    {
+                        var (@this, root) = args;
+                        root.UnregisterCallback<PointerLeaveEvent>(@this.OnPointerLeave);
+                    });
+            }
+
+            try
+            {
+                OnRootElementChanged(root);
+            }
+            catch (Exception ex)
+            {
+                this.PrintException(ex);
+            }
         }
     }
 }

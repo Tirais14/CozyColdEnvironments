@@ -50,6 +50,22 @@ namespace CCEnvs.UnityX.Items
             return !(left == right);
         }
 
+        public readonly ReadOnlyItemContainer PutItemTo(IItemContainer? container)
+        {
+            if (container.IsNull())
+                return this;
+
+            return container.PutItem(Item, ItemCount);
+        }
+
+        public readonly ReadOnlyItemContainer PutItemTo(IItemContainer? container, int count)
+        {
+            if (container.IsNull())
+                return this;
+
+            return container.PutItem(Item, count);
+        }
+
         public readonly bool ContainsItem() => !IsEmpty;
         public readonly bool ContainsItem(IItem? item)
         {
@@ -161,6 +177,22 @@ namespace CCEnvs.UnityX.Items
         public static bool operator !=(ReadOnlyItemContainer<TItem> left, ReadOnlyItemContainer<TItem> right)
         {
             return !(left == right);
+        }
+
+        public readonly ReadOnlyItemContainer<TItem> PutItemTo(IItemContainer<TItem>? container)
+        {
+            if (container.IsNull())
+                return this;
+
+            return container.PutItem(container.Item, container.ItemCount);
+        }
+
+        public readonly ReadOnlyItemContainer<TItem> PutItemTo(IItemContainer<TItem>? container, int count)
+        {
+            if (container.IsNull())
+                return this;
+
+            return container.PutItem(container.Item, count);
         }
 
         public readonly bool ContainsItem() => !IsEmpty;

@@ -141,10 +141,10 @@ namespace CCEnvs.UnityX.UI.Elements
                     @this.GhostRoot = root!;
                     @this.GhostRoot.pickingMode = PickingMode.Ignore;
                     @this.GhostRoot.style.position = Position.Absolute;
-                    @this.SetGhostRootPosition(ev.Info.position);
+                    //@this.SetGhostRootPosition(ev.Info.position);
 
                     if (@this.showable.RootElement is not null && @this.hideWhenDrag)
-                        @this.showable.RootElement.visible = false;
+                        @this.showable.RootElement.style.display = DisplayStyle.None;
 
                     @this.isDragging = true;
                 });
@@ -169,7 +169,7 @@ namespace CCEnvs.UnityX.UI.Elements
                 if (showable.RootElement is not null)
                 {
                     if (hideWhenDrag)
-                        showable.RootElement.visible = true;
+                        showable.RootElement.style.display = DisplayStyle.Flex;
 
                     if (isMoveToDropPosition && GhostRoot is not null)
                     {

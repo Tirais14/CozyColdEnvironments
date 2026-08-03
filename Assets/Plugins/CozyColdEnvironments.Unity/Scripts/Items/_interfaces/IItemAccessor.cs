@@ -13,8 +13,11 @@ namespace CCEnvs.UnityX.Items
         LargeReadOnlyItemContainer PutItem(IItem? item, long count);
         LargeReadOnlyItemContainer PutItem(LargeReadOnlyItemContainer largeReadOnlyContainer);
 
-        ReadOnlyItemContainer PutItemFrom(IItemContainer? itemContainer, int count);
-        ReadOnlyItemContainer PutItemFrom(IItemContainer? itemContainer);
+        ReadOnlyItemContainer PutItemFrom(IItemContainer? container, int count);
+        ReadOnlyItemContainer PutItemFrom(IItemContainer? container);
+
+        //ReadOnlyItemContainer PutItemTo(IItemContainer? container);
+        //ReadOnlyItemContainer PutItemTo(IItemContainer? container, int count);
 
         ReadOnlyItemContainer TakeItem();
         ReadOnlyItemContainer TakeItem(int count);
@@ -38,22 +41,25 @@ namespace CCEnvs.UnityX.Items
         LargeReadOnlyItemContainer<TItem> PutItem(TItem? item, long count);
         LargeReadOnlyItemContainer<TItem> PutItem(LargeReadOnlyItemContainer<TItem> largeReadOnlyContainer);
 
-        ReadOnlyItemContainer<TItem> PutItemFrom(IItemContainer<TItem>? itemContainer, int count);
-        ReadOnlyItemContainer<TItem> PutItemFrom(IItemContainer<TItem>? itemContainer);
+        ReadOnlyItemContainer<TItem> PutItemFrom(IItemContainer<TItem>? container, int count);
+        ReadOnlyItemContainer<TItem> PutItemFrom(IItemContainer<TItem>? container);
+
+        //ReadOnlyItemContainer PutItemTo(IItemContainer<TItem>? container);
+        //ReadOnlyItemContainer PutItemTo(IItemContainer<TItem>? container, int count);
 
         new ReadOnlyItemContainer<TItem> TakeItem();
         new ReadOnlyItemContainer<TItem> TakeItem(int count);
         ReadOnlyItemContainer<TItem> TakeItem(TItem? item, int count);
 
-        void CopyItemFrom(IItemContainer<TItem> itemContainer);
+        void CopyItemFrom(IItemContainer<TItem> container);
 
         new Observable<ItemAccessorPutItemEvent<TItem>> ObservePutItem();
 
         new Observable<ItemAccessorTakeItemEvent<TItem>> ObserveTakeItem();
 
-        void IItemAccessor.CopyItemFrom(IItemContainer itemContainer)
+        void IItemAccessor.CopyItemFrom(IItemContainer container)
         {
-            if (itemContainer.IsNot<IItemContainer<TItem>>(out var typed))
+            if (container.IsNot<IItemContainer<TItem>>(out var typed))
                 return;
 
             CopyItemFrom(typed);
@@ -91,20 +97,35 @@ namespace CCEnvs.UnityX.Items
             return PutItem(typedLargeReadOnlyContainer);
         }
 
-        ReadOnlyItemContainer IItemAccessor.PutItemFrom(IItemContainer? itemContainer)
+        ReadOnlyItemContainer IItemAccessor.PutItemFrom(IItemContainer? container)
         {
-            if (itemContainer.IsNot<IItemContainer<TItem>>(out var typedContainer))
+            if (container.IsNot<IItemContainer<TItem>>(out var typedContainer))
                 return default;
 
             return PutItemFrom(typedContainer);
         }
-        ReadOnlyItemContainer IItemAccessor.PutItemFrom(IItemContainer? itemContainer, int count)
+        ReadOnlyItemContainer IItemAccessor.PutItemFrom(IItemContainer? container, int count)
         {
-            if (itemContainer.IsNot<IItemContainer<TItem>>(out var typedContainer))
+            if (container.IsNot<IItemContainer<TItem>>(out var typedContainer))
                 return default;
 
             return PutItemFrom(typedContainer, count);
         }
+
+        //ReadOnlyItemContainer IItemAccessor.PutItemTo(IItemContainer? container)
+        //{
+        //    if (container.IsNot<IItemContainer<TItem>>(out var typedContainer))
+        //        return this;
+
+        //    return PutItemTo(typedContainer);
+        //}
+        //ReadOnlyItemContainer IItemAccessor.PutItemTo(IItemContainer? container, int count)
+        //{
+        //    if (container.IsNot<IItemContainer<TItem>>(out var typedContainer))
+        //        return this;
+
+        //    return PutItemTo(typedContainer, count);
+        //}
 
         ReadOnlyItemContainer IItemAccessor.TakeItem() => TakeItem();
         ReadOnlyItemContainer IItemAccessor.TakeItem(int count) => TakeItem(count);
