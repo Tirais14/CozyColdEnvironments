@@ -145,22 +145,22 @@ namespace CCEnvs.UnityX.UI
         /// <summary>
         /// Don't use previous <see cref="ViewModel"/>, it has been disposed and don't use cached <see cref="ViewModel"/> by the same reason.
         /// </summary>
-        /// <param name="vm"></param>
-        public void SetViewModel(TViewModel? vm)
+        /// <param name="viewModel"></param>
+        public void SetViewModel(TViewModel? viewModel)
         {
-            if (!EqualityComparer<TViewModel?>.Default.Equals(viewModel, vm))
+            if (!EqualityComparer<TViewModel?>.Default.Equals(this.viewModel, viewModel))
                 TryDisposeViewModel();
 
             viewModelFactoryReturnsValue = true;
-            viewModel = vm;
-            OnSetViewModel(vm);
+            this.viewModel = viewModel;
+            OnSetViewModel(viewModel);
 
-            if (vm.IsNotNull())
+            if (viewModel.IsNotNull())
             {
                 if (!didStart)
-                    InitViewModelCoreAsync(vm).Forget();
+                    InitViewModelCoreAsync(viewModel).Forget();
                 else
-                    InitViewModelCore(vm);
+                    InitViewModelCore(viewModel);
 
                 viewModelCreated = true;
             }
@@ -218,7 +218,7 @@ namespace CCEnvs.UnityX.UI
         /// <summary>
         /// Invokes in <see cref="Start"/>, <see cref="SetViewModel(TViewModel)"/>, <see cref="SetModelUnsafe(TModel)"/>
         /// </summary>
-        protected virtual void InitViewModel(TViewModel vm)
+        protected virtual void InitViewModel(TViewModel viewModel)
         {
             throw new NotImplementedException(nameof(InitViewModel));
         }
@@ -226,9 +226,9 @@ namespace CCEnvs.UnityX.UI
         /// <summary>
         /// Invokes in <see cref="SetViewModel(TViewModel?)"/> with value or in Dispose with null
         /// </summary>
-        /// <param name="vm"></param>
+        /// <param name="viewModel"></param>
         /// <exception cref="NotImplementedException"></exception>
-        protected virtual void OnSetViewModel(TViewModel? vm)
+        protected virtual void OnSetViewModel(TViewModel? viewModel)
         {
             throw new NotImplementedException(nameof(OnSetViewModel));
         }
@@ -254,14 +254,14 @@ namespace CCEnvs.UnityX.UI
             InitViewModel(ViewModel);
         }
 
-        private void BindModel(TViewModel vm)
+        private void BindModel(TViewModel viewModel)
         {
-            modelBinding = vm.ObserveModel()
+            modelBinding = viewModel.ObserveModel()
                 .Skip(1)
                 .Subscribe(OnModelChanged);
         }
 
-        private async UniTaskVoid InitViewModelCoreAsync(TViewModel vm)
+        private async UniTaskVoid InitViewModelCoreAsync(TViewModel viewModel)
         {
             await UniTask.WaitUntil(
                 this,
@@ -272,8 +272,8 @@ namespace CCEnvs.UnityX.UI
 
             try
             {
-                InitViewModel(vm);
-                BindModel(vm);
+                InitViewModel(viewModel);
+                BindModel(viewModel);
             }
             catch (Exception ex)
             {
@@ -281,10 +281,10 @@ namespace CCEnvs.UnityX.UI
             }
         }
 
-        private void InitViewModelCore(TViewModel vm)
+        private void InitViewModelCore(TViewModel viewModel)
         {
-            InitViewModel(vm);
-            BindModel(vm);
+            InitViewModel(viewModel);
+            BindModel(viewModel);
         }
     }
 }

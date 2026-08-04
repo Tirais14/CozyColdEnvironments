@@ -1,5 +1,6 @@
 using CCEnvs.Patterns.Factories;
 using CCEnvs.Pools;
+using System;
 using System.Threading;
 using UnityEngine;
 
@@ -8,6 +9,10 @@ namespace CCEnvs.UnityX.Pools
 {
     public class GameObjectPool : ObjectPool<GameObject>
     {
+        private static readonly Lazy<GameObjectPool> shared = new(() => new());
+
+        public static GameObjectPool Shared => shared.Value;    
+
         public GameObjectPool(
             IFactory<GameObject>? factory = null,
             int capacity = 4,

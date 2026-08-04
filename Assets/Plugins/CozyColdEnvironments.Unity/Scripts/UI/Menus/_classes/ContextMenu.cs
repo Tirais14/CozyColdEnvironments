@@ -1,29 +1,41 @@
+using CCEnvs.Linq;
 using CCEnvs.TypeMatching;
+using ObservableCollections;
+using R3;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
+using CCEnvs.Threading;
 
 #nullable enable
 namespace CCEnvs.UnityX.UI.Menus
 {
-    public class ContextMenu : IContextMenu
+    public class ContextMenu : IContextMenu, IDisposable
     {
-        private readonly Dictionary<string, IContextMenuItem> items = new();
+        private readonly ObservableDictionary<string, IContextMenuItem> items = new();
+
+        private readonly CancellationTokenSource disposeCancellationTokenSource = new();
 
         public IContextMenuItem this[string key] {
             get => items[key];
             set => items[key] = value;
         }
 
-        public ICollection<string> Names => items.Keys;
+        public IEnumerable<string> Names => items.SelectKey();
 
-        public ICollection<IContextMenuItem> Items => items.Values;
+        public IEnumerable<IContextMenuItem> Items => items.SelectValue();
 
         public int Count => items.Count;
 
+        protected CancellationToken DisposeCancellationToken => disposeCancellationTokenSource.Token;
+
         bool ICollection<KeyValuePair<string, IContextMenuItem>>.IsReadOnly => false;
 
-        void Add(IContextMenuItem item)
+        ~ContextMenu() => Dispose();
+
+        public void Add(IContextMenuItem item)
         {
             CC.Guard.IsNotNull(item, nameof(item));
             items.Add(item.Name, item);
@@ -40,7 +52,7 @@ namespace CCEnvs.UnityX.UI.Menus
             )
             where T : IContextMenuItem
         {
-            if (!items.TryGetValue(name, out IContextMenuItem item)
+            if (!items.TryGetValue(name, out IContextMenuItem? item)
                 ||
                 item.IsNot<T>(out var typedItem))
             {
@@ -51,7 +63,7 @@ namespace CCEnvs.UnityX.UI.Menus
             result = typedItem;
             return true;
         }
-        public bool TryGetValue(string key, out IContextMenuItem value)
+        public bool TryGetValue(string key, [NotNullWhen(true)] out IContextMenuItem? value)
         {
             return items.TryGetValue(key, out value);
         }
@@ -63,9 +75,13 @@ namespace CCEnvs.UnityX.UI.Menus
             return items.ContainsKey(key);
         }
 
-        public bool ContainsItem(IContextMenuItem item)
+        public bool ContainsItem(IContextMenuItem otherItem)
         {
-            return items.ContainsValue(item);
+            foreach (var (_, item) in items)
+                if (item.Equals(otherItem))
+                    return true;
+
+            return false;
         }
 
         public bool TryFind(
@@ -74,7 +90,7 @@ namespace CCEnvs.UnityX.UI.Menus
             StringMatchSettings matchSettings = StringMatchSettings.Ordinal
             )
         {
-            foreach (var item in items.Values)
+            foreach (var (_, item) in items)
             {
                 if (!item.Name.Match(name, matchSettings))
                     continue;
@@ -89,12 +105,56 @@ namespace CCEnvs.UnityX.UI.Menus
 
         public bool Remove(string key) => items.Remove(key);
 
+        public Observable<IContextMenuItem> ObserveAdd()
+        {
+            return items.ObserveAdd(DisposeCancellationToken)
+                .Select(ev => ev.Value.Value);
+        }
+
+        public Observable<IContextMenuItem> ObserveRemove()
+        {
+            return items.ObserveRemove(DisposeCancellationToken)
+                .Select(ev => ev.Value.Value);
+        }
+
+        public Observable<PreviousCurrentPair<IContextMenuItem>> ObserveReplace()
+        {
+            return items.ObserveDictionaryReplace(DisposeCancellationToken)
+                .Select(ev => PreviousCurrentPair.Create(ev.OldValue, ev.NewValue));
+        }
+
+        public Observable<Unit> ObserveClear()
+        {
+            return items.ObserveClear(DisposeCancellationToken);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        private int disposed;
+        protected virtual void Dispose(bool disposing)
+        {
+            if (Interlocked.Exchange(ref disposed, 1) != 0)
+                return;
+
+            if (disposing)
+                disposeCancellationTokenSource?.CancelAndDispose();
+        }
+
         public IEnumerator<KeyValuePair<string, IContextMenuItem>> GetEnumerator()
         {
             return items.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        void ICollection<KeyValuePair<string, IContextMenuItem>>.Add(KeyValuePair<string, IContextMenuItem> item)
+        {
+            Add(item.Value);
+        }
 
         bool ICollection<KeyValuePair<string, IContextMenuItem>>.Contains(KeyValuePair<string, IContextMenuItem> item)
         {

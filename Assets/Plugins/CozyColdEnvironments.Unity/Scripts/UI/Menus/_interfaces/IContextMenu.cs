@@ -1,3 +1,4 @@
+using R3;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
@@ -8,9 +9,9 @@ namespace CCEnvs.UnityX.UI.Menus
     {
         IContextMenuItem this[string name] { get; set; }
 
-        ICollection<string> Names { get; }
+        IEnumerable<string> Names { get; }
 
-        ICollection<IContextMenuItem> Items { get; }
+        IEnumerable<IContextMenuItem> Items { get; }
 
         void Add(IContextMenuItem item);
 
@@ -27,5 +28,13 @@ namespace CCEnvs.UnityX.UI.Menus
             [NotNullWhen(true)] out IContextMenuItem? result,
             StringMatchSettings matchSettings = StringMatchSettings.Ordinal
             );
+
+        Observable<IContextMenuItem> ObserveAdd();
+
+        Observable<IContextMenuItem> ObserveRemove();
+
+        Observable<PreviousCurrentPair<IContextMenuItem>> ObserveReplace();
+
+        Observable<Unit> ObserveClear();
     }
 }

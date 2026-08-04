@@ -1,4 +1,6 @@
 using CCEnvs.TypeMatching;
+using System;
+using System.Threading;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -23,6 +25,42 @@ namespace CCEnvs.UnityX
             }
 
             return false;
+        }
+
+        public static async
+#if UNITASK_PLUGIN
+            Cysharp.Threading.Tasks.UniTask
+#else
+            System.Threading.Tasks.ValueTask
+#endif
+            <T[]> InstantiateAsync<T>(
+            T instance,
+            int count = 1,
+            InstantiateParameters parameters = default,
+            CancellationToken cancellationToken = default
+            )
+            where T : Object
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            AsyncInstantiateOperation<T> instantiateOperation = Object.InstantiateAsync(
+                instance,
+                count,
+                parameters,
+                cancellationToken
+                );
+
+            try
+            {
+                return await instantiateOperation;
+            }
+            catch (OperationCanceledException)
+            {
+                for (int i = 0; i < instantiateOperation.Result.Length; i++)
+                    DestroyByGameObject(instantiateOperation.Result[i]);
+
+                throw;
+            }
         }
     }
 }
