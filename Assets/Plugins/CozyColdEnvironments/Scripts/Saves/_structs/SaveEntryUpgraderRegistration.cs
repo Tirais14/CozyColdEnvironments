@@ -10,11 +10,11 @@ namespace CCEnvs.Saves
         IEquatable<SaveEntryUpgraderRegistration>,
         IDisposable
     {
-        private readonly LightDisposable<SaveEntryUpgradeVersionInfo> core;
+        private readonly DisposableLight<SaveEntryUpgradeVersionInfo> core;
 
         public SaveEntryUpgraderRegistration(SaveEntryUpgradeVersionInfo info)
         {
-            core = new LightDisposable<SaveEntryUpgradeVersionInfo>(
+            core = new DisposableLight<SaveEntryUpgradeVersionInfo>(
                 info,
                 static info =>
                 {
@@ -22,7 +22,7 @@ namespace CCEnvs.Saves
                 });
         }
 
-        public static implicit operator LightDisposable<SaveEntryUpgradeVersionInfo>(SaveEntryUpgraderRegistration instance)
+        public static implicit operator DisposableLight<SaveEntryUpgradeVersionInfo>(SaveEntryUpgraderRegistration instance)
         {
             return instance.core;
         }

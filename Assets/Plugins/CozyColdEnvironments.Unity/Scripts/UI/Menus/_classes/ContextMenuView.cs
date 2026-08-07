@@ -1,3 +1,5 @@
+using CCEnvs.Disposables;
+using System;
 using UnityEngine;
 
 #nullable enable
@@ -9,25 +11,43 @@ namespace CCEnvs.UnityX.UI.Menus
         [SerializeField]
         protected Transform itemsRoot = null!;
 
+        private DisposableLight<(TViewModel, Action<IContextMenuItem>)> itemInvokeBinding;
+
         public Transform ItemsRoot {
             get => itemsRoot;
-            set => SetItemsRoot(value);
+            set => itemsRoot = value.IfNull(transform);
         }
 
         protected override void Start()
         {
             base.Start();
-            SetItemsRoot(itemsRoot);
+            ItemsRoot = ItemsRoot;
         }
 
-        protected override void OnSetViewModel(TViewModel? viewModel) { }
+        protected virtual void OnItemInvoke(IContextMenuItem item) { }
 
-        protected override void InitViewModel(TViewModel viewModel) { }
-
-        public ContextMenuView<TViewModel> SetItemsRoot(Transform? value)
+        protected override void OnSetViewModel(TViewModel? viewModel)
         {
-            itemsRoot = value.IfNull(transform);
-            return this;
+            CCDisposable.Dispose(ref itemInvokeBinding);
+        }
+
+        protected override void InitViewModel(TViewModel viewModel)
+        {
+            viewModel.OnItemInvoke += OnItemInvokeInternal;
+
+            itemInvokeBinding = CCDisposable.CreateLight(
+                (viewModel, callback: (Action<IContextMenuItem>)OnItemInvokeInternal),
+                static (args) => args.viewModel.OnItemInvoke -= args.callback
+                );
+        }
+
+        private void OnItemInvokeInternal(IContextMenuItem item)
+        {
+            if (TryGetModel<IContextMenu>(out var contextMenu))
+                contextMenu.Clear();
+
+            Showable.Hide();
+            OnItemInvoke(item);
         }
     }
 }

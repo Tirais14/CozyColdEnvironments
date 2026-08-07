@@ -31,7 +31,7 @@ namespace CCEnvs.Services
 
         private static readonly Dictionary<(Type Type, object? ID), object> bindings = new();
 
-        public static LightDisposable<BindHandle> Bind(ServiceBinderBase serviceBinder)
+        public static DisposableLight<BindHandle> Bind(ServiceBinderBase serviceBinder)
         {
             if (serviceBinder.Instance.IsNull())
                 return default;

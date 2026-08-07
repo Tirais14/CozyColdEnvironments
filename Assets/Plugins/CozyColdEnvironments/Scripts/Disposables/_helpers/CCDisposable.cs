@@ -8,18 +8,18 @@ namespace CCEnvs.Disposables
     public static class CCDisposable
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static LightDisposable<TState> CreateLight<TState>(
+        public static DisposableLight<TState> CreateLight<TState>(
             TState state,
             Action<TState> disposeAction
             )
         {
-            return new LightDisposable<TState>(state, disposeAction);
+            return new DisposableLight<TState>(state, disposeAction);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static LightDisposable CreateLight(Action disposeAction)
+        public static DisposableLight CreateLight(Action disposeAction)
         {
-            return new LightDisposable(disposeAction);
+            return new DisposableLight(disposeAction);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -82,6 +82,13 @@ namespace CCEnvs.Disposables
             if (disposable.IsNull())
                 return;
 
+            disposable.Dispose();
+            disposable = default;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Dispose<T>(ref DisposableLight<T> disposable)
+        {
             disposable.Dispose();
             disposable = default;
         }

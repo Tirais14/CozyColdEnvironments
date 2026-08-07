@@ -15,7 +15,7 @@ namespace CCEnvs.UnityX.UI.Elements
         CCBehaviour,
         IDropHandler
     {
-        private LightDisposable<IEventHandler> registryHandle;
+        private DisposableLight<IEventHandler> registryHandle;
 
         private IDisposable? rootElementBinding;
 

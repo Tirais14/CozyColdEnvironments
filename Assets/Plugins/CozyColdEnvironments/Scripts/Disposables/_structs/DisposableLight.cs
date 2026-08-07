@@ -5,14 +5,14 @@ using System.Collections.Generic;
 #nullable enable
 namespace CCEnvs.Disposables
 {
-    public struct LightDisposable
+    public struct DisposableLight
         :
-        IEquatable<LightDisposable>,
+        IEquatable<DisposableLight>,
         IDisposable
     {
         public Action DisposeAction { get; }
 
-        public LightDisposable(Action disposeAction)
+        public DisposableLight(Action disposeAction)
             :
             this()
         {
@@ -21,22 +21,22 @@ namespace CCEnvs.Disposables
             DisposeAction = disposeAction;
         }
 
-        public static bool operator ==(LightDisposable left, LightDisposable right)
+        public static bool operator ==(DisposableLight left, DisposableLight right)
         {
             return left.Equals(right);
         }
 
-        public static bool operator !=(LightDisposable left, LightDisposable right)
+        public static bool operator !=(DisposableLight left, DisposableLight right)
         {
             return !(left == right);
         }
 
         public readonly override bool Equals(object? obj)
         {
-            return obj is LightDisposable disposable && Equals(disposable);
+            return obj is DisposableLight disposable && Equals(disposable);
         }
 
-        public readonly bool Equals(LightDisposable other)
+        public readonly bool Equals(DisposableLight other)
         {
             return DisposeAction == other.DisposeAction
                    &&
@@ -68,16 +68,16 @@ namespace CCEnvs.Disposables
         }
     }
 
-    public struct LightDisposable<TState>
+    public struct DisposableLight<TState>
         :
-        IEquatable<LightDisposable<TState>>,
+        IEquatable<DisposableLight<TState>>,
         IDisposable
     {
         public TState State { get; }
 
         public Action<TState> DisposeAction { get; }
 
-        public LightDisposable(TState state, Action<TState> disposeAction)
+        public DisposableLight(TState state, Action<TState> disposeAction)
             :
             this()
         {
@@ -87,22 +87,22 @@ namespace CCEnvs.Disposables
             DisposeAction = disposeAction;
         }
 
-        public static bool operator ==(LightDisposable<TState> left, LightDisposable<TState> right)
+        public static bool operator ==(DisposableLight<TState> left, DisposableLight<TState> right)
         {
             return left.Equals(right);
         }
 
-        public static bool operator !=(LightDisposable<TState> left, LightDisposable<TState> right)
+        public static bool operator !=(DisposableLight<TState> left, DisposableLight<TState> right)
         {
             return !(left == right);
         }
 
         public readonly override bool Equals(object? obj)
         {
-            return obj is LightDisposable<TState> disposable && Equals(disposable);
+            return obj is DisposableLight<TState> disposable && Equals(disposable);
         }
 
-        public readonly bool Equals(LightDisposable<TState> other)
+        public readonly bool Equals(DisposableLight<TState> other)
         {
             return EqualityComparer<TState>.Default.Equals(State, other.State)
                    &&

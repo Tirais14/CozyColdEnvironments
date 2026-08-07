@@ -10,7 +10,7 @@ namespace CCEnvs.Saves
         IEquatable<SaveGroupRegistration>,
         IDisposable
     {
-        private readonly LightDisposable<(SaveGroup Group, string Key)> core;
+        private readonly DisposableLight<(SaveGroup Group, string Key)> core;
 
         public SaveGroupRegistration(SaveGroup group, string key)
             :
@@ -27,7 +27,7 @@ namespace CCEnvs.Saves
                 });
         }
 
-        public static implicit operator LightDisposable<(SaveGroup Group, string Key)>(SaveGroupRegistration instance)
+        public static implicit operator DisposableLight<(SaveGroup Group, string Key)>(SaveGroupRegistration instance)
         {
             return instance.core;
         }

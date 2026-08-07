@@ -3,7 +3,7 @@ using UnityEngine;
 #nullable enable
 namespace CCEnvs.UnityX
 {
-    public sealed class GameObjectReferenceContainer
+    public sealed class GameObjectReferenceContainer : IGameObjectReferenceContainer
     {
         public GameObject gameObject { get; }
 

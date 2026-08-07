@@ -50,7 +50,7 @@ namespace CCEnvs.Services
             return new ServiceBinderBase(typeof(TContract));
         }
 
-        public LightDisposable<CCServices.BindHandle> AsSingle()
+        public DisposableLight<CCServices.BindHandle> AsSingle()
         {
             return CCServices.Bind(this);
         }

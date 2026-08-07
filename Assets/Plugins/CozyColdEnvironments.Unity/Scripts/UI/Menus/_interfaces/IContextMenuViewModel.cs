@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,6 +7,8 @@ namespace CCEnvs.UnityX.UI.Menus
 {
     public interface IContextMenuViewModel : IViewModel
     {
+        event Action<IContextMenuItem> OnItemInvoke;
+
         IDictionary<string, GameObject> ItemViewPrefabs { get; }
     }
 }

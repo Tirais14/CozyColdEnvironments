@@ -14,14 +14,14 @@ namespace CCEnvs.UnityX.Services
 
         public bool BindGameObject;
 
-        private LightDisposable<CCServices.BindHandle>[]? bindings;
+        private DisposableLight<CCServices.BindHandle>[]? bindings;
 
         private void Awake()
         {
             if (Infos is null)
                 return;
 
-            var bindingList = new List<LightDisposable<CCServices.BindHandle>>(BindGameObject ? Infos.Length + 1 : Infos.Length);
+            var bindingList = new List<DisposableLight<CCServices.BindHandle>>(BindGameObject ? Infos.Length + 1 : Infos.Length);
 
             for (int i = 0; i < Infos.Length; i++)
             {

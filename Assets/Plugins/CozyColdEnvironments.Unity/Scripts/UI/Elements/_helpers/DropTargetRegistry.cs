@@ -17,7 +17,7 @@ namespace CCEnvs.UnityX.UI.Elements
             return targets.Remove(handler);
         }
 
-        public static LightDisposable<IEventHandler> Register(
+        public static DisposableLight<IEventHandler> Register(
             IEventHandler handler,
             GameObject gameObject
             )

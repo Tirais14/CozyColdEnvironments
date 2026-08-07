@@ -18,10 +18,14 @@ namespace CCEnvs.UnityX.UI.Menus
     {
         private readonly Dictionary<IContextMenuItem, IView> itemViews = new(ReferenceEqualityComparer<IContextMenuItem>.Default);
 
+        private readonly Dictionary<IContextMenuItem, Action> itemCallbacks = new(ReferenceEqualityComparer<IContextMenuItem>.Default);
+
         private IDisposable? addBinding;
         private IDisposable? removeBinding;
         private IDisposable? replaceBinding;
         private IDisposable? clearBinding;
+
+        public event Action<IContextMenuItem>? OnItemInvoke;
 
         public IDictionary<string, GameObject> ItemViewPrefabs { get; } = new Dictionary<string, GameObject>();
 
@@ -106,6 +110,10 @@ namespace CCEnvs.UnityX.UI.Menus
 
             itemViews.Add(item, itemView);
             itemViewModel.SetModel(item);
+
+            void itemCallback() => OnItemInvoke?.Invoke(item);
+            itemCallbacks.Add(item, itemCallback);
+            item.OnInvoke += itemCallback;
         }
 
         private void OnItemAddInternal(IContextMenuItem item)
@@ -130,6 +138,9 @@ namespace CCEnvs.UnityX.UI.Menus
         {
             if (itemViews.Remove(item, out IView? itemView))
                 OnItemViewRemove(itemView);
+
+            if (itemCallbacks.Remove(item, out Action? itemCallback))
+                item.OnInvoke -= itemCallback;
         }
 
         private void OnItemRemoveInternal(IContextMenuItem item)
@@ -165,6 +176,7 @@ namespace CCEnvs.UnityX.UI.Menus
                 OnItemViewRemove(itemView);
 
             itemViews.Clear();
+            itemCallbacks.Clear();
 
             OnItemsClear();
         }

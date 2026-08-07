@@ -51,10 +51,10 @@ namespace CCEnvs.UnityX.UI.Elements
 
         private IDisposable? dragTimerHandle;
         private IDisposable? rootElementBinding;
-        private LightDisposable<(DragHandler, VisualElement)> pointerDownRegistration;
-        private LightDisposable<(DragHandler, VisualElement)> pointerMoveRegistration;
-        private LightDisposable<(DragHandler, VisualElement)> pointerUpRegistration;
-        private LightDisposable<(DragHandler, VisualElement)> pointerLeaveRegistration;
+        private DisposableLight<(DragHandler, VisualElement)> pointerDownRegistration;
+        private DisposableLight<(DragHandler, VisualElement)> pointerMoveRegistration;
+        private DisposableLight<(DragHandler, VisualElement)> pointerUpRegistration;
+        private DisposableLight<(DragHandler, VisualElement)> pointerLeaveRegistration;
 
         public event Action<BeginDragEvent>? OnBeginDrag;
         public event Action<DragEvent>? OnDrag;
