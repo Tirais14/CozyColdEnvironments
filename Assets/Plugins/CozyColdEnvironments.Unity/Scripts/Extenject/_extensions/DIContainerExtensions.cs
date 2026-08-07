@@ -1,6 +1,7 @@
 using CCEnvs.Linq;
 using CCEnvs.Reflection;
 using CCEnvs.TypeMatching;
+using CCEnvs.UnityX;
 using CCEnvs.UnityX.InputSystem.Rx;
 using CommunityToolkit.Diagnostics;
 using System;
@@ -208,6 +209,14 @@ namespace CCEnvs.Zenject
             container.BindLifetimeInterfacesTo(typeof(TContract));
 
             return container.Bind<TContract>();
+        }
+
+        public static ScopeConcreteIdArgConditionCopyNonLazyBinder FromComponentInHierarchyCustom<T>(
+            this ConcreteBinderGeneric<T> binder,
+            bool includeInactive = true
+            )
+        {
+            return binder.FromMethod(() => GameObjectQuery.Scene.IncludeInactive(includeInactive).Component<T>().Strict());
         }
     }
 }

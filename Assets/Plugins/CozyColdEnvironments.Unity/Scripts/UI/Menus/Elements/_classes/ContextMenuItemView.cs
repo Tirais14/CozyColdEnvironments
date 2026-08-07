@@ -1,4 +1,5 @@
 using CCEnvs.Disposables;
+using CCEnvs.FuncLanguage;
 using CommunityToolkit.Diagnostics;
 using R3;
 using System;
@@ -12,17 +13,34 @@ namespace CCEnvs.UnityX.UI.Menus.Elements
         where TViewModel : IContextMenuItemViewModel
     {
         [SerializeField]
-        protected string nameElementName;
+        protected string nameElementName = "function";
+
+        [SerializeField]
+        protected string buttonElementName = "function";
 
         private IDisposable? rootElementBinding;
         private IDisposable? nameBinding;
 
         public string NameElementName {
             get => nameElementName;
-            set => SetNameElementName(value);
+            set
+            {
+                Guard.IsNotNullOrWhiteSpace(value);
+                nameElementName = value;
+            }
+        }
+        public string ButtonElementName {
+            get => buttonElementName;
+            set
+            {
+                Guard.IsNotNullOrWhiteSpace(value);
+                buttonElementName = value;
+            }
         }
 
-        protected Label? NameElement { get; private set; }
+        protected TextElement? NameElement { get; private set; }
+
+        protected Button? ButtonElement { get; private set; }
 
         protected override void Start()
         {
@@ -35,13 +53,9 @@ namespace CCEnvs.UnityX.UI.Menus.Elements
         {
             base.OnDestroy();
             CCDisposable.Dispose(ref rootElementBinding);
-        }
 
-        public ContextMenuItemView<TViewModel> SetNameElementName(string value)
-        {
-            Guard.IsNotNullOrWhiteSpace(value);
-            nameElementName = value;
-            return this;
+            if (ButtonElement is not null)
+                ButtonElement.clicked -= OnButtonClickedInternal;
         }
 
         protected override void OnSetViewModel(TViewModel? viewModel)
@@ -58,10 +72,31 @@ namespace CCEnvs.UnityX.UI.Menus.Elements
 
         protected virtual void OnNameChanged(string name) { }
 
+        protected virtual void OnButtonClicked() { }
+
+        private void OnButtonClickedInternal()
+        {
+            ViewModel.Maybe()
+                .Map(x => x.Model)
+                .Cast<IContextMenuItem>()
+                .IfSome(model => model.Invoke());
+
+            OnButtonClicked();
+        }
+
         private void OnRootElementChangedInternal(VisualElement? root)
         {
+            if (ButtonElement is not null)
+                ButtonElement.clicked -= OnButtonClickedInternal;
+
             if (root is not null)
-                NameElement = root.Q<Label>(nameElementName);
+            {
+                NameElement = root.Q<TextElement>(nameElementName);
+                ButtonElement = root.Q<Button>(buttonElementName);
+
+                if (ButtonElement is not null)
+                    ButtonElement.clicked += OnButtonClickedInternal;
+            }
 
             OnRootElementChanged(root);
         }
@@ -72,7 +107,6 @@ namespace CCEnvs.UnityX.UI.Menus.Elements
                 return;
 
             NameElement.text = name;
-
             OnNameChanged(name);
         }
 

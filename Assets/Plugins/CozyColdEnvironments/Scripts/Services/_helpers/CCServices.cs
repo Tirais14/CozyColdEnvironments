@@ -185,9 +185,7 @@ namespace CCEnvs.Services
         [OnInstallExecutable]
         private static void OnInstall()
         {
-            foreach (var binding in bindings.Values.OfType<IDisposable>())
-                binding.Dispose();
-
+            bindings.Values.OfType<IDisposable>().DisposeEach();
             bindings.Clear();
         }
     }

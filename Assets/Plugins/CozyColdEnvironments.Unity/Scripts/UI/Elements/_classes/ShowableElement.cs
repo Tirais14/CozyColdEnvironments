@@ -34,8 +34,6 @@ namespace CCEnvs.UnityX.UI.Elements
 
         private IDisposable? parentShowableRootElementBinding;
 
-        private VisualElement? bindedParentRootElement;
-
         public PanelRenderer Renderer {
             get
             {
@@ -99,6 +97,9 @@ namespace CCEnvs.UnityX.UI.Elements
         {
             base.OnDisable();
 
+            if (RootElement is not null)
+                RootElement.userData = null;
+
             if (isUIReloadBinded)
             {
                 Renderer.UnregisterUIReloadCallback(OnUIReload);
@@ -113,7 +114,6 @@ namespace CCEnvs.UnityX.UI.Elements
             }
 
             RootElement = null;
-            bindedParentRootElement = null;
         }
 
         protected override void OnDestroy()
@@ -226,8 +226,6 @@ namespace CCEnvs.UnityX.UI.Elements
                 if (RootElement is not null && RootElement.parent == parentRoot)
                     return;
 
-                bindedParentRootElement = parentRoot;
-
                 if (visualTree == null)
                     RootElement = parentRoot.Q<VisualElement>(name);
                 else
@@ -245,17 +243,20 @@ namespace CCEnvs.UnityX.UI.Elements
                             .ToStringAndDispose());
                     }
                 }
+
+                if (RootElement is not null)
+                    RootElement.userData = new GameObjectReferenceContainer(gameObject);
             }
             else
             {
                 RootElement = null;
-                bindedParentRootElement = null;
             }
         }
 
         private void OnUIReload(PanelRenderer _, VisualElement root)
         {
             RootElement = root;
+            RootElement.userData = new GameObjectReferenceContainer(gameObject);
         }
 
         private async UniTask InitAsync()
