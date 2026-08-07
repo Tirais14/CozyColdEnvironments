@@ -1,6 +1,7 @@
 #nullable enable
 #pragma warning disable IDE1006
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CCEnvs.UnityX.UI
 {
@@ -26,6 +27,13 @@ namespace CCEnvs.UnityX.UI
         T GetModel<T>();
 
         T GetViewModel<T>() where T : IViewModel;
+
+        bool TryGetModel([NotNullWhen(true)] out object? result);
+        bool TryGetModel<T>([NotNullWhen(true)] out T? result);
+
+        bool TryGetViewModel([NotNullWhen(true)] out IViewModel? result);
+        bool TryGetViewModel<T>([NotNullWhen(true)] out T? result)
+            where T : IViewModel;
     }
     public interface IView<TViewModel> : IView
         where TViewModel : IViewModel

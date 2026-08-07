@@ -8,6 +8,7 @@ using Cysharp.Threading.Tasks;
 using R3;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 
 #nullable enable
@@ -213,6 +214,26 @@ namespace CCEnvs.UnityX.UI
             where T : IViewModel
         {
             return ViewModel.CastTo<T>();
+        }
+
+        public bool TryGetModel([NotNullWhen(true)] out object? result)
+        {
+            result = Model;
+            return Model.IsNotNull();
+        }
+        public bool TryGetModel<T>([NotNullWhen(true)] out T? result)
+        {
+            return Model.As<T>().Let(out result).IsNotNull();
+        }
+
+        public bool TryGetViewModel([NotNullWhen(true)] out IViewModel? result)
+        {
+            result = ViewModel;
+            return ViewModel.IsNotNull();
+        }
+        public bool TryGetViewModel<T>([NotNullWhen(true)] out T? result) where T : IViewModel
+        {
+            return ViewModel.As<T>().Let(out result).IsNotNull();
         }
 
         /// <summary>

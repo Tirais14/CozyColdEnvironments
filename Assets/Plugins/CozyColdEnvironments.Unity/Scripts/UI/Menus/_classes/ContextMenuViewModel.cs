@@ -107,7 +107,7 @@ namespace CCEnvs.UnityX.UI.Menus
                 if (!itemView.HasViewModel<IContextMenuItemViewModel>())
                 {
                     this.PrintError(DebugMessageBuilder.CreatePooled()
-                        .AddMessage("Item view hasn't expected view model")
+                        .AddMessage("Cannot find required view model")
                         .AddProperty(nameof(itemView), itemView)
                         .ToStringAndDispose()
                         );
@@ -119,14 +119,7 @@ namespace CCEnvs.UnityX.UI.Menus
                 itemView.GetViewModel<IContextMenuItemViewModel>().SetModel(item);
             }
 
-            try
-            {
-                OnItemAdd(item);
-            }
-            catch (Exception ex)
-            {
-                this.PrintException(ex);
-            }
+            OnItemAdd(item);
         }
 
         private void BindItemAdd(TModel model)
@@ -145,14 +138,7 @@ namespace CCEnvs.UnityX.UI.Menus
             if (itemViews.Remove(item, out IView? itemView))
                 OnItemViewRemove(itemView);
 
-            try
-            {
-                OnItemRemove(item);
-            }
-            catch (Exception ex)
-            {
-                this.PrintException(ex);
-            }
+            OnItemRemove(item);
         }
 
         private void BindItemRemove(TModel model)
@@ -164,15 +150,7 @@ namespace CCEnvs.UnityX.UI.Menus
         {
             OnItemRemove(item.Previous);
             OnItemAdd(item.Current);
-
-            try
-            {
-                OnItemReplace(item);
-            }
-            catch (Exception ex)
-            {
-                this.PrintException(ex);
-            }
+            OnItemReplace(item);
         }
 
         private void BindItemReplace(TModel model)
@@ -189,14 +167,9 @@ namespace CCEnvs.UnityX.UI.Menus
             foreach (var itemView in itemViews.Values)
                 OnItemViewRemove(itemView);
 
-            try
-            {
-                OnItemsClear();
-            }
-            catch (Exception ex)
-            {
-                this.PrintException(ex);
-            }
+            itemViews.Clear();
+
+            OnItemsClear();
         }
 
         private void BindItemsClear(TModel model)

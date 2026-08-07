@@ -1,6 +1,7 @@
 #nullable enable
 #pragma warning disable IDE1006
 using R3;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
 namespace CCEnvs.UnityX.UI
@@ -15,6 +16,9 @@ namespace CCEnvs.UnityX.UI
 
         bool HasModel();
         bool HasModel<T>();
+
+        bool TryGetModel([NotNullWhen(true)] out object? result);
+        bool TryGetModel<T>([NotNullWhen(true)] out T? result);
 
         Observable<object?> ObserveModel();
     }

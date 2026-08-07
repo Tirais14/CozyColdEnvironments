@@ -6,6 +6,7 @@ using CCEnvs.TypeMatching;
 using R3;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
 #pragma warning disable S1699
@@ -61,6 +62,16 @@ namespace CCEnvs.UnityX.UI
 
         public bool HasModel() => Model.IsNotNull();
         public bool HasModel<T>() => Model.Is<T>();
+
+        public bool TryGetModel([NotNullWhen(true)] out object? result)
+        {
+            result = Model;
+            return Model.IsNotNull();
+        }
+        public bool TryGetModel<T>([NotNullWhen(true)] out T? result)
+        {
+            return Model.As<T>().Let(out result).IsNotNull();
+        }
 
         public Observable<TModel?> ObserveModel() => model;
 

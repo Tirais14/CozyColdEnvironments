@@ -54,23 +54,31 @@ namespace CCEnvs.UnityX.UI.Menus.Elements
             BindName(viewModel);
         }
 
+        protected virtual void OnRootElementChanged(VisualElement? root) { }
+
+        protected virtual void OnNameChanged(string name) { }
+
         private void OnRootElementChangedInternal(VisualElement? root)
         {
             if (root is not null)
                 NameElement = root.Q<Label>(nameElementName);
+
+            OnRootElementChanged(root);
         }
 
-        private void OnNameChanged(string name)
+        private void OnNameChangedInternal(string name)
         {
             if (NameElement is null)
                 return;
 
             NameElement.text = name;
+
+            OnNameChanged(name);
         }
 
         private void BindName(TViewModel viewModel)
         {
-            nameBinding = viewModel.Name.Subscribe(OnNameChanged);
+            nameBinding = viewModel.Name.Subscribe(OnNameChangedInternal);
         }
     }
 }
