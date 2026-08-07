@@ -47,7 +47,6 @@ namespace CCEnvs.Pools
         }
 
         public abstract bool HasFactory { get; }
-
         protected bool IsPoolableObject { get; }
 
         protected ObjectPoolBase(int capacity, int? maxSize)
@@ -56,12 +55,8 @@ namespace CCEnvs.Pools
             _ = maxSize;
 
             inactiveItems = new ConcurrentStack<T>();
-
             activeItems = new ConcurrentDictionary<T, PooledObject<T>>();
-
-            Type objType = typeof(T);
-
-            IsPoolableObject = objType.IsType<IPoolable>();
+            IsPoolableObject = typeof(T).IsType<IPoolable>();
         }
 
         ~ObjectPoolBase() => Dispose();
@@ -78,9 +73,9 @@ namespace CCEnvs.Pools
 
 #if CC_DEBUG_ENABLED
 
-            if (ReferenceEqualityComparer<T?>.Default.Equals(obj, fastObject)
+            if (ReferenceEqualityComparer<T>.Default.Equals(obj, fastObject!)
                 ||
-                inactiveItems.Where(static x => x.IsNotNull()).Contains(obj, ReferenceEqualityComparer<T>.Default))
+                inactiveItems.Contains(obj, ReferenceEqualityComparer<T>.Default))
             {
                 throw new InvalidOperationException($"Object: {obj} is already pooled");
             }
@@ -102,14 +97,12 @@ namespace CCEnvs.Pools
         public Observable<T> ObserveReturn()
         {
             returnCmd ??= new ReactiveCommand<T>();
-
             return returnCmd;
         }
 
         public Observable<T> ObserveGet()
         {
             getCmd ??= new ReactiveCommand<T>();
-
             return getCmd;
         }
 
@@ -134,6 +127,7 @@ namespace CCEnvs.Pools
 
                 getCmd?.Dispose();
                 returnCmd?.Dispose();
+                fastObject.As<IDisposable>().IfNotNull(x => x.Dispose());
                 fastObject = null;
             }
 
@@ -157,7 +151,6 @@ namespace CCEnvs.Pools
         protected virtual void ReturnCore(T obj)
         {
             activeItems.TryRemove(obj, out _);
-
             TryProcessPoolableObjectOnReturn(obj);
         }
 
@@ -192,11 +185,11 @@ namespace CCEnvs.Pools
 
         protected bool TryGetFromInactive([NotNullWhen(true)] out T? result)
         {
-            var succes = Interlocked.CompareExchange(ref fastObject, null, fastObject).Is(out result)
+            var success = Interlocked.CompareExchange(ref fastObject, null, fastObject).Is(out result)
                          ||
                          inactiveItems.TryPop(out result);
 
-            return succes && IsPoolableValid(result);
+            return success && IsPoolableValid(result);
         }
 
         protected bool IsObjectValid([NotNullWhen(true)] T? obj)
@@ -227,11 +220,7 @@ namespace CCEnvs.Pools
 
         private void OnPoolableReturn(IPoolable poolable)
         {
-            //if (poolable.PoolHandle.IsSome)
-            //    throw new InvalidOperationException("Invalid pool handle. Maybe is object controlls by other pool.");
-
             poolable.PoolHandle = Maybe<PooledObject>.None;
-
             poolable.OnDespawned();
         }
     }

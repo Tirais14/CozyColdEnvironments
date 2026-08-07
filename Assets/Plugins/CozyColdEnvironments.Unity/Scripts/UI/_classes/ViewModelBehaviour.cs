@@ -4,6 +4,7 @@ using CCEnvs.UnityX.Components;
 using R3;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
 #nullable enable
@@ -51,6 +52,16 @@ namespace CCEnvs.UnityX.UI
 
         public bool HasModel() => Model.IsNotNull();
         public bool HasModel<T>() => Model.Is<T>();
+
+        public bool TryGetModel([NotNullWhen(true)] out object? result)
+        {
+            result = Model;
+            return Model.IsNotNull();
+        }
+        public bool TryGetModel<T>([NotNullWhen(true)] out T? result)
+        {
+            return Model.Is<T>(out result);
+        }
 
         public Observable<TModel?> ObserveModel() => model;
 

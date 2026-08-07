@@ -1,13 +1,8 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.Disposables;
-using CCEnvs.UnityX.Pools;
-using Cysharp.Threading.Tasks;
 using R3;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -63,12 +58,13 @@ namespace CCEnvs.UnityX.UI.Menus
 
         protected virtual void OnItemsClear() { }
 
-        private async ValueTask OnItemAddInternal(
-            IContextMenuItem item,
-            CancellationToken cancellationToken
-            )
+        private void OnItemAddCore(IContextMenuItem item)
         {
-            cancellationToken.ThrowIfCancellationRequested();
+            if (itemViews.TryGetValue(item, out IView? itemView))
+            {
+                itemView.Showable.Show();
+                return;
+            }
 
             if (!ItemViewPrefabs.TryGetValue(item.Name, out GameObject? itemViewPrefab))
             {
@@ -80,64 +76,65 @@ namespace CCEnvs.UnityX.UI.Menus
                 return;
             }
 
-            GameObject[] itemViewGameObjects = await UnityObjectHelper.InstantiateAsync(
-                itemViewPrefab,
-                parameters: new InstantiateParameters
-                {
-                    parent = ItemsRoot
-                },
-                cancellationToken: DisposeCancellationToken
-                );
+            GameObject itemViewGameObject = Object.Instantiate(itemViewPrefab, ItemsRoot);
 
-            for (int i = 0; i < itemViewGameObjects.Length; i++)
+            if (!itemViewGameObject.Q().Component<IView>().Lax().TryGetValue(out itemView))
             {
-                GameObject itemViewGameObject = itemViewGameObjects[i];
+                this.PrintError(DebugMessageBuilder.CreatePooled()
+                    .AddMessage("Cannot find item view")
+                    .AddProperty(nameof(itemViewGameObject), itemViewGameObject)
+                    .ToStringAndDispose()
+                    );
 
-                if (!itemViewGameObject.Q().Component<IView>().Lax().TryGetValue(out var itemView))
-                {
-                    this.PrintError(DebugMessageBuilder.CreatePooled()
-                        .AddMessage("Cannot find item view")
-                        .AddProperty(nameof(itemViewGameObject), itemViewGameObject)
-                        .ToStringAndDispose()
-                        );
-
-                    continue;
-                }
-
-                if (!itemView.HasViewModel<IContextMenuItemViewModel>())
-                {
-                    this.PrintError(DebugMessageBuilder.CreatePooled()
-                        .AddMessage("Cannot find required view model")
-                        .AddProperty(nameof(itemView), itemView)
-                        .ToStringAndDispose()
-                        );
-
-                    continue;
-                }
-
-                itemViews.Add(item, itemView);
-                itemView.GetViewModel<IContextMenuItemViewModel>().SetModel(item);
+                Object.Destroy(itemViewGameObject);
+                return;
             }
 
+            itemView.Showable.Show();
+
+            if (!itemView.TryGetViewModel<IContextMenuItemViewModel>(out var itemViewModel))
+            {
+                this.PrintError(DebugMessageBuilder.CreatePooled()
+                    .AddMessage("Cannot find required view model")
+                    .AddProperty(nameof(itemView), itemView)
+                    .ToStringAndDispose()
+                    );
+
+                Object.Destroy(itemViewGameObject);
+                return;
+            }
+
+            itemViews.Add(item, itemView);
+            itemViewModel.SetModel(item);
+        }
+
+        private void OnItemAddInternal(IContextMenuItem item)
+        {
+            OnItemAddCore(item);
             OnItemAdd(item);
         }
 
         private void BindItemAdd(TModel model)
         {
             addBinding = model.ObserveAdd()
-                .SubscribeAwait(OnItemAddInternal);
+                .Subscribe(OnItemAddInternal);
         }
 
         private void OnItemViewRemove(IView itemView)
         {
-            itemView.As<Component>().IfNotNull(x => Object.Destroy(x));
+            itemView.IfNotNull(x => x.ViewModel).IfNotNull(viewModel => viewModel.SetModel(null));
+            itemView.Showable.Hide();
+        }
+
+        private void OnItemRemoveCore(IContextMenuItem item)
+        {
+            if (itemViews.Remove(item, out IView? itemView))
+                OnItemViewRemove(itemView);
         }
 
         private void OnItemRemoveInternal(IContextMenuItem item)
         {
-            if (itemViews.Remove(item, out IView? itemView))
-                OnItemViewRemove(itemView);
-
+            OnItemRemoveCore(item);
             OnItemRemove(item);
         }
 
@@ -148,8 +145,8 @@ namespace CCEnvs.UnityX.UI.Menus
 
         private void OnItemReplaceInternal(PreviousCurrentPair<IContextMenuItem> item)
         {
-            OnItemRemove(item.Previous);
-            OnItemAdd(item.Current);
+            OnItemAddCore(item.Previous);
+            OnItemRemoveCore(item.Current);
             OnItemReplace(item);
         }
 
@@ -161,8 +158,8 @@ namespace CCEnvs.UnityX.UI.Menus
         private void OnItemsClearInternal(Unit _)
         {
             foreach (var itemView in itemViews.Values)
-                if (itemView.HasModel<IContextMenuItem>())
-                    OnItemRemove(itemView.GetModel<IContextMenuItem>());
+                if (itemView.TryGetModel<IContextMenuItem>(out var item))
+                    OnItemRemove(item);
 
             foreach (var itemView in itemViews.Values)
                 OnItemViewRemove(itemView);

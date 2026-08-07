@@ -50,7 +50,6 @@ namespace CCEnvs
             memberTypes &= ~MemberTypes.NestedType;
 
             var assemblyNames = GetDefaultAssemblyNames().ConcatToArray(additionalAssemblyNames ?? new arr<string>());
-
             var assemblyNamesPartial = processAssemblyNames(assemblyNames);
 
             return (from assembly in AppDomain.CurrentDomain.GetAssemblies().AsParallel()
@@ -75,9 +74,7 @@ namespace CCEnvs
                 for (int i = 0; i < assemblyNames.Length; i++)
                 {
                     assemblyName = assemblyNames[i];
-
                     assemblyNamesPartial[i] = assemblyName.EndsWith('*');
-
                     assemblyNames[i] = assemblyName.TrimEnd('*');
                 }
 

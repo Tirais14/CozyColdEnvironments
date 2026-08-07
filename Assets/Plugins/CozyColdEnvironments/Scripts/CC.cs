@@ -58,8 +58,8 @@ namespace CCEnvs
                 |
                 MemberTypes.Property
                 |
-                MemberTypes.Method
-                , additionalAssemblyNames
+                MemberTypes.Method,
+                additionalAssemblyNames
                 );
 
             CCProjectHelper.Install(domainMembers);

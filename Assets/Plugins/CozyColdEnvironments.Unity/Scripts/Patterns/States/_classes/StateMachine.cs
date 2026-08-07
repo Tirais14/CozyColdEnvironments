@@ -54,7 +54,7 @@ namespace CCEnvs.UnityX.States
             {
                 currentNode.State.Exit();
 
-                if (CCDebug.Instance.IsEnabled)
+                if (CCDebug<StateMachine>.IsEnabled)
                     this.PrintLog($"State exited. State: {currentNode}");
             }
 
@@ -69,7 +69,7 @@ namespace CCEnvs.UnityX.States
             {
                 nextNode.State.Enter();
 
-                if (CCDebug.Instance.IsEnabled)
+                if (CCDebug<StateMachine>.IsEnabled)
                     this.PrintLog($"State entered. State: {nextNode}");
             }
 
