@@ -35,7 +35,7 @@ namespace CCEnvs.UnityX.UI.Menus
         {
             viewModel.OnItemInvoke += OnItemInvokeInternal;
 
-            itemInvokeBinding = CCDisposable.CreateLight(
+            itemInvokeBinding = CCDisposable.Light(
                 (viewModel, callback: (Action<IContextMenuItem>)OnItemInvokeInternal),
                 static (args) => args.viewModel.OnItemInvoke -= args.callback
                 );

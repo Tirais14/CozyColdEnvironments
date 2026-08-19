@@ -361,7 +361,7 @@ namespace CCEnvs.UnityX.UI.Elements
                 root.RegisterCallback<PointerUpEvent>(OnPointerUp);
                 root.RegisterCallback<PointerLeaveEvent>(OnPointerLeave);
 
-                pointerDownRegistration = CCDisposable.CreateLight(
+                pointerDownRegistration = CCDisposable.Light(
                     (@this: this, root),
                     static (args) =>
                     {
@@ -369,7 +369,7 @@ namespace CCEnvs.UnityX.UI.Elements
                         root.UnregisterCallback<PointerDownEvent>(@this.OnPointerDown);
                     });
 
-                pointerMoveRegistration = CCDisposable.CreateLight(
+                pointerMoveRegistration = CCDisposable.Light(
                     (@this: this, root),
                     static (args) =>
                     {
@@ -377,7 +377,7 @@ namespace CCEnvs.UnityX.UI.Elements
                         root.UnregisterCallback<PointerMoveEvent>(@this.OnPointerMove);
                     });
 
-                pointerUpRegistration = CCDisposable.CreateLight(
+                pointerUpRegistration = CCDisposable.Light(
                     (@this: this, root),
                     static (args) =>
                     {
@@ -385,7 +385,7 @@ namespace CCEnvs.UnityX.UI.Elements
                         root.UnregisterCallback<PointerUpEvent>(@this.OnPointerUp);
                     });
 
-                pointerLeaveRegistration = CCDisposable.CreateLight(
+                pointerLeaveRegistration = CCDisposable.Light(
                     (@this: this, root),
                     static (args) =>
                     {

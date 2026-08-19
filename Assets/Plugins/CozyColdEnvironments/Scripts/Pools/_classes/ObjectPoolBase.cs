@@ -214,7 +214,6 @@ namespace CCEnvs.Pools
                 throw new InvalidOperationException($"Object: {handledObj.Value} already has pool handle");
 
             poolable.PoolHandle = (PooledObject)handledObj;
-
             poolable.OnSpawned();
         }
 

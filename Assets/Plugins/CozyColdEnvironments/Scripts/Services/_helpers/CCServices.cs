@@ -47,7 +47,7 @@ namespace CCEnvs.Services
                 bindings.Add((contract, serviceBinder.ID), serviceBinder.Instance);
             }
 
-            return CCDisposable.CreateLight(new BindHandle(serviceBinder.Contracts, serviceBinder.ID),
+            return CCDisposable.Light(new BindHandle(serviceBinder.Contracts, serviceBinder.ID),
                 static (handle) =>
                 {
                     foreach (var contract in handle.Contracts)

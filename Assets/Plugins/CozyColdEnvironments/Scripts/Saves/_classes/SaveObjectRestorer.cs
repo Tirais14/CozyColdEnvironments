@@ -53,27 +53,21 @@ namespace CCEnvs.Saves
             if (obj.IsNull())
             {
                 this.PrintError($"Argument: {nameof(obj)} is null");
-
                 callback?.Invoke(callbackState, false);
-
                 return;
             }
 
             if (key.IsNull())
             {
                 this.PrintError($"Argument: {nameof(key)} is null");
-
                 callback?.Invoke(callbackState, false);
-
                 return;
             }
 
             if (groupName.IsNull())
             {
                 this.PrintError($"Argument: {nameof(groupName)} is null");
-
                 callback?.Invoke(callbackState, false);
-
                 return;
             }
 
@@ -203,8 +197,7 @@ namespace CCEnvs.Saves
 
         internal bool TryRestoreObjectCore(object obj, string objKey, string groupName)
         {
-            if (!groupSaveDatas.TryGetValue(groupName, out var saveData)
-                ||
+            if (!groupSaveDatas.TryGetValue(groupName, out var saveData) ||
                 !saveData.SaveEntries.TryGetValue(objKey, out var saveUnit))
             {
                 TryCallOnSaveRestoringCallback(obj);

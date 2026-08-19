@@ -27,7 +27,7 @@ namespace CCEnvs.UnityX.UI.Elements
 
             targets.Add(handler, new DropTarget(gameObject));
 
-            return CCDisposable.CreateLight(handler, static handler => Unregister(handler));
+            return CCDisposable.Light(handler, static handler => Unregister(handler));
         }
     }
 }

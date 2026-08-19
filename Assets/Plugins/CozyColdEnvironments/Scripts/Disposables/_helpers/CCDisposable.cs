@@ -8,7 +8,7 @@ namespace CCEnvs.Disposables
     public static class CCDisposable
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static DisposableLight<TState> CreateLight<TState>(
+        public static DisposableLight<TState> Light<TState>(
             TState state,
             Action<TState> disposeAction
             )
@@ -17,7 +17,7 @@ namespace CCEnvs.Disposables
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static DisposableLight CreateLight(Action disposeAction)
+        public static DisposableLight Light(Action disposeAction)
         {
             return new DisposableLight(disposeAction);
         }

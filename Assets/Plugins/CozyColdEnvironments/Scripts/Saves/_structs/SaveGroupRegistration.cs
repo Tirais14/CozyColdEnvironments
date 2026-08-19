@@ -19,7 +19,7 @@ namespace CCEnvs.Saves
             Guard.IsNotNull(group, nameof(group));
             Guard.IsNotNull(key, nameof(key));
 
-            core = CCDisposable.CreateLight(
+            core = CCDisposable.Light(
                 (group, key),
                 args =>
                 {

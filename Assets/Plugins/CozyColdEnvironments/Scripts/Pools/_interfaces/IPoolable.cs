@@ -1,13 +1,10 @@
 #nullable enable
 using CCEnvs.FuncLanguage;
-using System;
 
 namespace CCEnvs.Pools
 {
     public interface IPoolable : IUtilizable
     {
-        event Action<IPoolable> OnDespawnCallback;
-
         Maybe<PooledObject> PoolHandle { get; set; }
 
         bool IsValid { get; }
