@@ -84,8 +84,6 @@ namespace CCEnvs.Saves
             cancellationToken.ThrowIfCancellationRequested();
             CCDisposable.ThrowIfDisposed(this, disposed);
 
-            using var toProcessGroups = QueuePool<SaveGroup>.Shared.Get();
-
             PooledArray<SaveCatalog> catalogsCopy;
 
             lock (Archive.Catalogs.SyncRoot)
