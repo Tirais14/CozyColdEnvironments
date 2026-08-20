@@ -1,28 +1,20 @@
 #nullable enable
+using System;
+
 namespace CCEnvs.Patterns.States
 {
     public interface IState
     {
-        string ID { get; }
+        Type StateType { get; }
 
-        void Enter()
-        {
-        }
+        void Enter() { }
 
-        void Tick()
-        {
-        }
+        void Tick() { }
 
-        void FixedTick()
-        {
-        }
+        void FixedTick() { }
 
-        void LateTick()
-        {
-        }
+        void LateTick() { }
 
-        void Exit()
-        {
-        }
+        void Exit() { }
     }
 }

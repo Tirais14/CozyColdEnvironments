@@ -1,21 +1,33 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.Patterns.States;
 using CommunityToolkit.Diagnostics;
+using R3;
+using System;
 using System.Collections.Generic;
+using System.Threading;
 
 #nullable enable
 namespace CCEnvs.UnityX.States
 {
-    public class StateMachine : IStateMachine
+    public class StateMachine : IStateMachine, IDisposable
     {
-        private readonly Dictionary<string, IStateNode> nodes = new();
+        private readonly Dictionary<Type, IStateNode> nodes = new();
         private readonly List<IStateTransition> anyTransitions = new();
 
-        private IStateNode? currentNode;
+        private readonly ReactiveProperty<IStateNode?> _currentNode = new();
 
-        public IReadOnlyDictionary<string, IStateNode> Nodes => nodes;
+        public IReadOnlyDictionary<Type, IStateNode> Nodes => nodes;
 
         public IReadOnlyList<IStateTransition> AnyTransitions => anyTransitions;
+
+        public Type? CurrentStateType => currentNode?.State.StateType;
+
+        protected IStateNode? currentNode {
+            get => _currentNode.Value;
+            private set => _currentNode.Value = value;
+        }
+
+        ~StateMachine() => Dispose();
 
         public void Tick()
         {
@@ -48,7 +60,7 @@ namespace CCEnvs.UnityX.States
             return null;
         }
 
-        public void SetState(string? id)
+        public void SetState(Type? stateType)
         {
             if (currentNode.IsNotNull())
             {
@@ -60,14 +72,14 @@ namespace CCEnvs.UnityX.States
 
             currentNode = null;
 
-            if (id is null)
+            if (stateType is null)
                 return;
 
-            var nextNode = nodes[id];
+            var nextNode = nodes[stateType];
 
             if (nextNode.IsNotNull())
             {
-                nextNode.State.Enter();
+                nextNode.State.Enter(); 
 
                 if (CCDebug<StateMachine>.IsEnabled)
                     this.PrintLog($"State entered. State: {nextNode}");
@@ -75,17 +87,18 @@ namespace CCEnvs.UnityX.States
 
             currentNode = nextNode;
         }
+        public void SetState<T>() => SetState(typeof(T));)
 
         public void SetState(IState? state)
         {
-            SetState(state?.ID);
+            SetState(state?.StateType);
         }
 
         public IStateMachine AddNode(IStateNode node)
         {
             CC.Guard.IsNotNull(node, nameof(node));
 
-            nodes[node.State.ID] = node;
+            nodes[node.State.StateType] = node;
             return this;
         }
 
@@ -111,19 +124,19 @@ namespace CCEnvs.UnityX.States
             return this;
         }
 
-        public bool RemoveNode(string id)
+        public bool RemoveNode(Type stateType)
         {
-            Guard.IsNotNull(id, nameof(id));
+            Guard.IsNotNull(stateType, nameof(stateType));
 
-            return nodes.Remove(id);
+            return nodes.Remove(stateType);
         }
 
-        public bool ContainsNode(string? id)
+        public bool ContainsNode(Type? stateType)
         {
-            if (id is null)
+            if (stateType is null)
                 return false;
 
-            return nodes.ContainsKey(id);
+            return nodes.ContainsKey(stateType);
         }
 
         public IStateMachine AddTransition(IStateTransition transition)
@@ -147,6 +160,26 @@ namespace CCEnvs.UnityX.States
                 return false;
 
             return anyTransitions.Contains(transition);
+        }
+
+        public Observable<Type?> ObserveCurrentStateType()
+        {
+            return _currentNode.Select(node => node?.State.GetType());
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+        private int disposed;
+        protected virtual void Dispose(bool disposing)
+        {
+            if (Interlocked.Exchange(ref disposed, 1) != 0)
+                return;
+
+            if (disposing)
+                _currentNode.Dispose();
         }
     }
 }

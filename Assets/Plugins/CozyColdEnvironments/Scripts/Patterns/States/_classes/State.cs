@@ -50,11 +50,11 @@ namespace CCEnvs.Patterns.States
 
     public partial class State : IState
     {
-        public string ID { get; }
+        public Type StateType { get; }
 
         public State()
         {
-            ID = GetIDFromType(GetType());
+            StateType = GetType();
         }
 
         public virtual void Enter()
@@ -80,11 +80,6 @@ namespace CCEnvs.Patterns.States
         public virtual void Exit()
         {
 
-        }
-
-        public override string ToString()
-        {
-            return $"{nameof(ID)}: {ID}";
         }
     }
 }

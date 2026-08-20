@@ -27,7 +27,7 @@ namespace CCEnvs.Services
 
         public static T GetValue(object? id = null)
         {
-            if (!IsResolved)
+            if (!IsResolved || value.IsNull())
             {
                 value = CCServices.Resolve<T>(id);
                 IsResolved = true;
@@ -45,7 +45,7 @@ namespace CCEnvs.Services
 
         public static bool TryGetValue([NotNullWhen(true)] out T? result, object? id = null)
         {
-            if (!IsResolved)
+            if (!IsResolved || value.IsNull())
             {
                 if (CCServices.TryResolveOut(out value, id))
                 {

@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 #nullable enable
@@ -5,7 +6,7 @@ namespace CCEnvs.Proeprties
 {
     public class Trigger<T>
     {
-        private T? @default;
+        private readonly T? @default;
         private T? value;
 
         public Trigger()
@@ -19,19 +20,31 @@ namespace CCEnvs.Proeprties
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public T PeekValue() => value!;
+        public T? PeekValue() => value;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public T GetValue()
+        public T? GetValue()
         {
             var t = value;
             value = @default;
-            return t!;
+            return t;
+        }
+
+        public bool TryGetValue([NotNullWhen(true)] out T? result)
+        {
+            if (value.IsNull())
+            {
+                result = default;
+                return false;
+            }
+
+            result = GetValue()!;
+            return true;
         }
 
         public void SetValue(T value)
         {
-
+            this.value = value;
         }
     }
 }
