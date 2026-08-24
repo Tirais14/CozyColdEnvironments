@@ -5,13 +5,13 @@ using System.Threading;
 #nullable enable
 namespace CCEnvs.Proeprties
 {
-    public class Toggle : IDisposable
+    public class Toggle : IToggle, IDisposable
     {
         private readonly ReactiveProperty<bool> state = new();
 
         public bool State {
             get => state.Value;
-            private set => state.Value = value;
+            set => state.Value = value;
         }
 
         public Toggle() { }
@@ -28,7 +28,11 @@ namespace CCEnvs.Proeprties
             return instance.State;
         }
 
-        public void Trigger() => State = !State;
+        public bool Trigger()
+        {
+            State = !State;
+            return State;
+        }
 
         public Observable<bool> ObserveState() => state;
 
@@ -45,5 +49,7 @@ namespace CCEnvs.Proeprties
             if (disposing)
                 state.Dispose();
         }
+
+        public override string ToString() => State.ToString();
     }
 }

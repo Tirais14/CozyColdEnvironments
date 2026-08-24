@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
@@ -7,11 +8,9 @@ namespace CCEnvs.Services
     public class GlobalService<T>
         where T : class
     {
-        private static T? value;
+        private static readonly WeakReference<T?> valueRef = new(default);
 
-#if CC_DEBUG_ENABLED
         private static object? resolvedID;
-#endif
 
         public static bool IsResolved { get; private set; }
 
@@ -20,56 +19,49 @@ namespace CCEnvs.Services
             CCProjectHelper.SubscribeOnInstallIfNot<GlobalService<T>>(
                 () =>
                 {
-                    value = default;
+                    valueRef.SetTarget(default);
                     IsResolved = false;
                 });
         }
 
         public static T GetValue(object? id = null)
         {
-            if (!IsResolved || value.IsNull())
+            if (!IsResolved ||
+                !valueRef.TryGetTarget(out T? value) ||
+                value.IsNull() ||
+                IsIDChanged(id))
             {
                 value = CCServices.Resolve<T>(id);
-                IsResolved = true;
-
-#if CC_DEBUG_ENABLED
-                resolvedID = value;
-#endif
+                valueRef.SetTarget(value);
+                IsResolved = value.IsNotNull();
+                resolvedID = id;
             }
-#if CC_DEBUG_ENABLED
-            else ValidateID(id);
-#endif
 
             return value!;
         }
 
         public static bool TryGetValue([NotNullWhen(true)] out T? result, object? id = null)
         {
-            if (!IsResolved || value.IsNull())
+            if (!IsResolved ||
+                !valueRef.TryGetTarget(out T? value) ||
+                value.IsNull() ||
+                IsIDChanged(id))
             {
                 if (CCServices.TryResolveOut(out value, id))
                 {
-                    IsResolved = true;
-
-#if CC_DEBUG_ENABLED
-                    resolvedID = value;
-#endif
+                    valueRef.SetTarget(value);
+                    IsResolved = value.IsNotNull();
+                    resolvedID = id;
                 }
             }
-#if CC_DEBUG_ENABLED
-            else ValidateID(id);
-#endif
 
             result = value;
             return IsResolved;
         }
 
-#if CC_DEBUG_ENABLED
-        private static void ValidateID(object? otherID)
+        private static bool IsIDChanged(object? otherID)
         {
-            if (otherID.IsNotNull() && !EqualityComparer<object?>.Default.Equals(resolvedID, otherID))
-                typeof(GlobalService<T>).PrintWarning("Static service ignores other id after resolve. It must be null or the same id");
+            return !EqualityComparer<object?>.Default.Equals(otherID, resolvedID);
         }
-#endif
     }
 }

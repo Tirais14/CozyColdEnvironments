@@ -6,6 +6,24 @@ namespace CCEnvs.UnityX.ECS
 {
     public static class FloatExtensions
     {
+        public static float2 ToFloat2(this in float3 source)
+        {
+            return new float2
+            {
+                x = source.x,
+                y = source.y
+            };
+        }
+
+        public static float3 ToFloat3(this in float2 source)
+        {
+            return new float3
+            {
+                x = source.x,
+                y = source.y
+            };
+        }
+
         public static Vector2 AsVector2(this in float2 source)
         {
             return new Vector2(source.x, source.y);

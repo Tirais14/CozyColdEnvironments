@@ -7,38 +7,37 @@ namespace CCEnvs.Patterns.States
 {
     public partial class State
     {
-        public static IState Combine(string id, IState state, IState state1)
-        {
-            Guard.IsNotNull(id, nameof(id));
-            CC.Guard.IsNotNull(state, nameof(state));
-            CC.Guard.IsNotNull(state1, nameof(state1));
+        //public static IState Combine(string id, IState state, IState state1)
+        //{
+        //    Guard.IsNotNull(id, nameof(id));
+        //    CC.Guard.IsNotNull(state, nameof(state));
+        //    CC.Guard.IsNotNull(state1, nameof(state1));
 
-            var composite = new CompositeState(id);
+        //    var composite = new CompositeState(id);
 
-            composite.Add(state)
-                .Add(state1);
+        //    composite.Add(state)
+        //        .Add(state1);
 
-            return composite;
-        }
+        //    return composite;
+        //}
 
-        public static IState Combine(string id, IState state, params IState[] states)
-        {
-            Guard.IsNotNull(id, nameof(id));
-            CC.Guard.IsNotNull(state, nameof(state));
-            Guard.IsNotNull(states, nameof(states));
+        //public static IState Combine(string id, IState state, params IState[] states)
+        //{
+        //    Guard.IsNotNull(id, nameof(id));
+        //    CC.Guard.IsNotNull(state, nameof(state));
+        //    Guard.IsNotNull(states, nameof(states));
 
-            var composite = new CompositeState(id);
+        //    var composite = new CompositeState(id);
 
-            composite.Add(state)
-                .AddRange(states);
+        //    composite.Add(state)
+        //        .AddRange(states);
 
-            return composite;
-        }
+        //    return composite;
+        //}
 
         public static string GetIDFromType(Type type)
         {
             Guard.IsNotNull(type, nameof(type));
-
             return type.FullName;
         }
 

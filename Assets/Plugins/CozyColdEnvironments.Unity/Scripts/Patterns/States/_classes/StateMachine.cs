@@ -87,7 +87,7 @@ namespace CCEnvs.UnityX.States
 
             currentNode = nextNode;
         }
-        public void SetState<T>() => SetState(typeof(T));)
+        public void SetState<T>() => SetState(typeof(T));
 
         public void SetState(IState? state)
         {
