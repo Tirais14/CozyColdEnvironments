@@ -102,5 +102,13 @@ namespace CCEnvs.UnityX.ECS
         {
             return new Enumerator(this);
         }
+
+        public override string ToString()
+        {
+            return ToStringBuilder.CreatePooled()
+                .AddProperty(nameof(Position), Position)
+                .AddProperty(nameof(Size), Size)
+                .ToStringAndDispose();
+        }
     }
 }

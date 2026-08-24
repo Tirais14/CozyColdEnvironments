@@ -6,6 +6,16 @@ namespace CCEnvs.UnityX.ECS
 {
     public static class FloatExtensions
     {
+        public static int2 FloorToInt(this in float2 source)
+        {
+            return (int2)math.floor(source);
+        }
+
+        public static int3 FloorToInt(this in float3 source)
+        {
+            return (int3)math.floor(source);
+        }
+
         public static float2 ToFloat2(this in float3 source)
         {
             return new float2

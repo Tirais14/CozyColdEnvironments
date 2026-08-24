@@ -291,6 +291,9 @@ namespace CCEnvs.Diagnostics
 
         void IDebugLogger.AssertLog(bool condition, object message, object? context)
         {
+            if (condition)
+                return;
+
 #if UNITY_2017_1_OR_NEWER
             Debug.Log(GetMessage(message, context), context as Object);
 #else
@@ -300,6 +303,9 @@ namespace CCEnvs.Diagnostics
 
         void IDebugLogger.AssertWarning(bool condition, object message, object? context)
         {
+            if (condition)
+                return;
+
 #if UNITY_2017_1_OR_NEWER
             Debug.LogWarning(GetMessage(message, context), context as Object);
 #else
