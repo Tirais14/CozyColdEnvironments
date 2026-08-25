@@ -14,7 +14,7 @@ namespace CCEnvs.UnityX.ECS
             return new RaycastInput
             {
                 Start = source.origin,
-                End = source.direction * distance,
+                End = source.origin + source.direction * distance,
                 Filter = filter ?? new CollisionFilter
                 {
                     BelongsTo = ~0u,
