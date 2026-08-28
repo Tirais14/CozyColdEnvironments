@@ -2,11 +2,13 @@ using CCEnvs.Attributes;
 using CCEnvs.Caching;
 using CCEnvs.Collections;
 using CCEnvs.Reflection;
+using CCEnvs.TypeMatching;
 using CommunityToolkit.Diagnostics;
 using Humanizer;
 using System;
 using System.IO;
 using System.Text.RegularExpressions;
+using UnityEditor;
 
 #nullable enable
 namespace CCEnvs
@@ -140,13 +142,7 @@ namespace CCEnvs
             return declonizedAssetName;
         }
 
-        public static string? ResolvePrefix(UnityEngine.Object asset)
-        {
-            Guard.IsNotNull(asset);
-
-            return ResolvePrefix(asset.GetType());
-        }
-
+#if UNITY_2017_1_OR_NEWER
         public static string? ResolvePrefix(Type assetType)
         {
             if (assetType.IsType<UnityEngine.Texture>()
@@ -167,6 +163,20 @@ namespace CCEnvs
                 return "CFG_";
 
             return null;
+        }
+
+        public static string? ResolvePrefix(UnityEngine.Object asset)
+        {
+#if UNITY_EDITOR
+            string assetPath = Path.GetExtension(AssetDatabase.GetAssetPath(asset));
+
+            if (assetPath.IsNotNullOrEmpty() &&
+                asset.Is<UnityEngine.GameObject>() &&
+                assetPath != ".prefab")
+                return "MD_";
+#endif
+
+            return ResolvePrefix(asset.GetType());
         }
 
         public static string AddTypePrefixToPath(Type type, string path)
@@ -223,6 +233,7 @@ namespace CCEnvs
 
             return name[prefix.Length..];
         }
+#endif
 
         [OnInstallExecutable]
         private static void OnInstall()

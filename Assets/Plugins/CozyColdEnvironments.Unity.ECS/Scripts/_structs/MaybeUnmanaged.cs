@@ -64,6 +64,22 @@ namespace CCEnvs.UnityX.ECS
             return HasValue;
         }
 
+        public readonly T GetValueOrThrow()
+        {
+            if (!HasValue)
+                throw new NullReferenceException();
+
+            return Value;
+        }
+
+        public readonly T GetValueOrDefault(T @default)
+        {
+            if (!HasValue)
+                return @default;
+
+            return Value;
+        }
+
         [BurstCompile]
         public MaybeUnmanaged<TInterpret> Reinterpret<TInterpret>()
             where TInterpret : unmanaged

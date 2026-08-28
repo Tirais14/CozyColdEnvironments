@@ -1,7 +1,9 @@
 #if UNITY_EDITOR
 using CCEnvs.Attributes;
+using CCEnvs.Reflection;
 using CCEnvs.UnityX.ComponentInjections;
 using CCEnvs.UnityX.Components;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using UnityEditor;
 using UnityEditor.UIElements;
@@ -91,8 +93,9 @@ namespace CCEnvs.UnityXEditor
 
         private static void ProccessOptionalAttribute(FieldInfo targetField, PropertyField propertyField)
         {
-            if (targetField.GetCustomAttribute(typeof(OptionalAttribute)) is OptionalAttribute)
-            {
+            if (targetField.IsDefined<MaybeNullAttribute>(true) ||
+                targetField.IsDefined<OptionalAttribute>(true))
+                {
                 propertyField.label += "?";
                 //propertyField.style.backgroundColor = new Color(0f, 0f, 1f, 0.05f);
             }
