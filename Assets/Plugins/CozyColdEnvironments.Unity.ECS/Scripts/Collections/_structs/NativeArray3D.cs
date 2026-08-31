@@ -2,8 +2,8 @@ using CCEnvs.Collections;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Unity.Burst;
 using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
 using Unity.Mathematics;
 
@@ -21,27 +21,27 @@ namespace CCEnvs.UnityX.ECS.Collections
     {
         public readonly struct ReadOnly : IEnumerable<T>, IEquatable<ReadOnly>
         {
-            private readonly NativeArray3D<T> array;
+            private readonly NativeArray3D<T> core;
 
-            public T this[int index] => array[index];
+            public T this[int index] => core[index];
 
             public T this[int x, int y, int z] {
-                get => array[x, y, z];
+                get => core[x, y, z];
             }
 
             public T this[int3 pos] {
-                get => array[pos];
+                get => core[pos];
             }
 
-            public int Length => array.Length;
+            public int Length => core.Length;
 
-            public int3 Size => array.Size;
+            public int3 Size => core.Size;
 
-            public bool IsCreated => array.IsCreated;
+            public bool IsCreated => core.IsCreated;
 
             public ReadOnly(in NativeArray3D<T> array)
             {
-                this.array = array;
+                this.core = array;
             }
 
             public static bool operator ==(in ReadOnly left, in ReadOnly right)
@@ -52,6 +52,55 @@ namespace CCEnvs.UnityX.ECS.Collections
             public static bool operator !=(in ReadOnly left, in ReadOnly right)
             {
                 return !(left == right);
+            }
+
+            public unsafe ref T ElementAt(int x, int y, int z)
+            {
+                var arrayPtr = core.array.GetUnsafePtr();
+
+                if (x <= -1 || x >= Size.x)
+                    throw CC.ThrowHelper.IndexOutOfRangeException(x, nameof(x));
+                if (y <= -1 || y >= Size.y)
+                    throw CC.ThrowHelper.IndexOutOfRangeException(y, nameof(y));
+                if (z <= -1 || z >= Size.z)
+                    throw CC.ThrowHelper.IndexOutOfRangeException(z, nameof(z));
+
+                return ref UnsafeUtility.ArrayElementAsRef<T>(arrayPtr, CalculateIndex(x, y, z));
+            }
+
+            public readonly int CalculateIndex(int x, int y, int z)
+            {
+                return core.CalculateIndex(x, y, z);
+            }
+
+            public readonly int CalculateIndex(int3 position)
+            {
+                return core.CalculateIndex(position);
+            }
+
+            public readonly T GetValue(int x, int y, int z)
+            {
+                return core.GetValue(x, y, z);
+            }
+            public readonly T GetValue(int3 position)
+            {
+                return core.GetValue(position);
+            }
+
+            public readonly bool TryGetValue(int x, int y, int z, out T result)
+            {
+                if (!IsInBounds(x, y, z))
+                {
+                    result = default;
+                    return false;
+                }
+
+                result = this[x, y, z];
+                return true;
+            }
+            public readonly bool TryGetValue(int3 position, out T result)
+            {
+                return TryGetValue(position.x, position.y, position.z, out result);
             }
 
             public readonly bool IsInBounds(int x, int y, int z)
@@ -72,17 +121,17 @@ namespace CCEnvs.UnityX.ECS.Collections
 
             public bool Equals(ReadOnly other)
             {
-                return array.Equals(other.array);
+                return core.Equals(other.core);
             }
 
             public override int GetHashCode()
             {
-                return HashCode.Combine(array);
+                return HashCode.Combine(core);
             }
 
             public IEnumerator<T> GetEnumerator()
             {
-                return array.array.GetEnumerator();
+                return core.array.GetEnumerator();
             }
 
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -90,17 +139,17 @@ namespace CCEnvs.UnityX.ECS.Collections
 
         private NativeArray<T> array;
 
-        public T this[int index] {
+        public readonly T this[int index] {
             get => array[index];
         }
 
         public T this[int x, int y, int z] {
-            get => array[CalculateIndex(x, y, z)];
-            set => array[CalculateIndex(x, y, z)] = value;
+            readonly get => GetValue(x, y, z);
+            set => SetValue(x, y, z, value);
         }
 
         public T this[int3 position] {
-            get => this[position.x, position.y, position.z];
+            readonly get => this[position.x, position.y, position.z];
             set => this[position.x, position.y, position.z] = value;
         }
 
@@ -130,6 +179,64 @@ namespace CCEnvs.UnityX.ECS.Collections
         public static bool operator !=(in NativeArray3D<T> left, in NativeArray3D<T> right)
         {
             return !(left == right);
+        }
+
+        public readonly int CalculateIndex(int x, int y, int z)
+        {
+            return x + y * Size.x + z * Size.x * Size.y;
+        }
+
+        public readonly int CalculateIndex(int3 position)
+        {
+            return CalculateIndex(position.x, position.y, position.z);
+        }
+
+        public void SetValue(int x, int y, int z, T value)
+        {
+            if (x <= -1 || x >= Size.x)
+                throw CC.ThrowHelper.IndexOutOfRangeException(x, nameof(x));
+            if (y <= -1 || y >= Size.y)
+                throw CC.ThrowHelper.IndexOutOfRangeException(y, nameof(y));
+            if (z <= -1 || z >= Size.z)
+                throw CC.ThrowHelper.IndexOutOfRangeException(z, nameof(z));
+
+            array[CalculateIndex(x, y, z)] = value;
+        }
+        public void SetValue(int3 position, T value)
+        {
+            SetValue(position.x, position.y, position.z, value);
+        }
+
+        public readonly T GetValue(int x, int y, int z)
+        {
+            if (x <= -1 || x >= Size.x)
+                throw CC.ThrowHelper.IndexOutOfRangeException(x, nameof(x));
+            if (y <= -1 || y >= Size.y)
+                throw CC.ThrowHelper.IndexOutOfRangeException(y, nameof(y));
+            if (z <= -1 || z >= Size.z)
+                throw CC.ThrowHelper.IndexOutOfRangeException(z, nameof(z));
+
+            return array[CalculateIndex(x, y, z)];
+        }
+        public readonly T GetValue(int3 position)
+        {
+            return GetValue(position.x, position.y, position.z);
+        }
+
+        public readonly bool TryGetValue(int x, int y, int z, out T result)
+        {
+            if (!IsInBounds(x, y, z))
+            {
+                result = default;
+                return false;
+            }
+
+            result = this[x, y, z];
+            return true;
+        }
+        public readonly bool TryGetValue(int3 position, out T result)
+        {
+            return TryGetValue(position.x, position.y, position.z, out result);
         }
 
         public readonly bool IsInBounds(int x, int y, int z)
@@ -177,11 +284,6 @@ namespace CCEnvs.UnityX.ECS.Collections
                 return Array.Empty<T>().GetEnumeratorT();
 
             return array.GetEnumerator();
-        }
-
-        private readonly int CalculateIndex(int x, int y, int z)
-        {
-            return Size.x + x * (Size.y + y * z);
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

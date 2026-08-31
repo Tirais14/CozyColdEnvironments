@@ -117,6 +117,10 @@ namespace CCEnvs
             {
                 return new IndexOutOfRangeException($"Index = {index}.");
             }
+            public static IndexOutOfRangeException IndexOutOfRangeException(long index, string indexName)
+            {
+                return new IndexOutOfRangeException($"{indexName}: {index}.");
+            }
 
             public static ArgumentException ArgumentExceptionException(object argument, string argName)
             {
