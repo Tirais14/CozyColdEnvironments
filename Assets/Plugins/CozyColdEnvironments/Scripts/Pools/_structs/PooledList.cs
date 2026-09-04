@@ -270,9 +270,9 @@ namespace CCEnvs.Pools
             IsInitialized = true;
         }
 
-        public static PooledList<TValue> Create()
+        public static PooledList<TValue> Create(int? capacity = null)
         {
-            return new PooledList<TValue>(null);
+            return new PooledList<TValue>(capacity);
         }
 
         public static implicit operator List<TValue>(PooledList<TValue> instance)
