@@ -1,6 +1,8 @@
 using CCEnvs.Attributes;
 using CommunityToolkit.Diagnostics;
 using System;
+using System.Reflection;
+using UnityEngine;
 
 #nullable enable
 #pragma warning disable IDE0044
@@ -11,7 +13,8 @@ namespace CCEnvs.UnityX.EditorSerialization
     public abstract class EditorSerialized<T>
         :
         IEditorSerialized<T>,
-        IMutableType<T>
+        IMutableType<T>,
+        IShallowCloneable<EditorSerialized<T>>
     {
         [NonSerialized]
         private T? data;
@@ -46,6 +49,39 @@ namespace CCEnvs.UnityX.EditorSerialization
         public static implicit operator T(EditorSerialized<T> source)
         {
             return source.Data;
+        }
+
+        public virtual void ResetData()
+        {
+            data = default;
+            isValueCreated = false;
+        }
+
+        public virtual EditorSerialized<T> ShallowClone()
+        {
+            Type type = GetType();
+
+            ConstructorInfo ctor = type.GetConstructor(Type.EmptyTypes) ??
+                throw new InvalidOperationException("Not found empty constructor");
+
+            object cloned = ctor.Invoke(Array.Empty<object>());
+
+            var fields = type.GetFields(BindingFlagsDefault.InstanceAll);
+
+            for (int i = 0; i < fields.Length; i++)
+            {
+                FieldInfo field = fields[i];
+
+                if (field.IsInitOnly ||
+                    field.Name == nameof(isValueCreated) ||
+                    field.Name == nameof(data))
+                    continue;
+
+                object fieldValue = field.GetValue(this);
+                field.SetValue(cloned, fieldValue);
+            }
+
+            return (EditorSerialized<T>)cloned;
         }
 
         protected abstract T CreateValue();

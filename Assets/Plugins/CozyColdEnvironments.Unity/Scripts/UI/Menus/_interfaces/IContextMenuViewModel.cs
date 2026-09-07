@@ -9,6 +9,8 @@ namespace CCEnvs.UnityX.UI.Menus
     {
         event Action<IContextMenuItem> OnItemInvoke;
 
+        GameObject? DefaultItemViewPrefab { get; set; }
+
         IDictionary<string, GameObject> ItemViewPrefabs { get; }
     }
 }

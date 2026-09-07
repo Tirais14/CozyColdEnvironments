@@ -307,7 +307,9 @@ namespace CCEnvs
         {
             return new string[]
             {
-                "CCEnvs*"
+                "CCEnvs*",
+                "Core*",
+                "Game*"
             };
         }
     }

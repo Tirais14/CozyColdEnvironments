@@ -42,10 +42,11 @@ namespace CCEnvs.UnityX.Items
         where TPutItemEvent : struct
         where TTakeItemEvent : struct
     {
+        protected readonly Dictionary<TContainer, CompositeDisposable> containerDisposables;
+
         private readonly ObservableDictionary<int, TContainer> containers;
 
         private readonly Dictionary<TItem, List<TContainer>> occupiedContainers = new();
-        private readonly Dictionary<TContainer, CompositeDisposable> containerDisposables;
 
         private readonly CancellationTokenSource disposeCancellationTokenSource = new();
 
@@ -985,9 +986,9 @@ namespace CCEnvs.UnityX.Items
                 &&
                 container.Item.Is<TItem>(out var item)
                 &&
-                occupiedContainers.TryGetValue(item, out var cnts))
+                occupiedContainers.TryGetValue(item, out var containers))
             {
-                cnts.Remove(container);
+                containers.Remove(container);
             }
         }
 

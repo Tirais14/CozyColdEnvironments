@@ -242,8 +242,11 @@ namespace CCEnvs.UnityX.ECS.Collections
         public readonly bool IsInBounds(int x, int y, int z)
         {
             return x < Size.x &&
-                   y < Size.y &&
-                   z < Size.z;
+                   x >= 0 &&
+                   y < Size.y && 
+                   y >= 0 &&
+                   z < Size.z &&
+                   z >= 0;
         }
         public readonly bool IsInBounds(int3 position)
         {

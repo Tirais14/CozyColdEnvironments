@@ -2,272 +2,74 @@ using CCEnvs.Collections;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Threading;
 
 #nullable enable
 namespace CCEnvs.Pools
 {
-    public struct PooledList<TList, TValue, TState>
+    public struct PooledList<TValue>
         :
-        IDisposable,
         IList<TValue>,
         IReadOnlyList<TValue>,
-        IEquatable<PooledList<TList, TValue, TState>>
-
-        where TList : IList<TValue>
+        IDisposable, 
+        IEquatable<PooledList<TValue>>
     {
-        private readonly TState? state;
-        private readonly Action<TList, TState?> returnAction;
+        private PooledObject<List<TValue>> handle;
 
         public readonly TValue this[int index] {
-            [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => guardedSelf.Value[index];
-            [DebuggerStepThrough]
+            get => handle.Value[index];
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set => guardedSelf.Value[index] = value;
-        }
-
-        public TList Value { get; }
-
-        public readonly int Count {
-            [DebuggerStepThrough]
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => guardedSelf.Value.Count;
-        }
-
-        public readonly bool IsInitialized { get; }
-        public readonly bool IsReadOnly {
-            [DebuggerStepThrough]
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => guardedSelf.Value.IsReadOnly;
-        }
-
-        private readonly PooledList<TList, TValue, TState> guardedSelf {
-            [DebuggerStepThrough]
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get
-            {
-                if (!IsInitialized)
-                    throw new InvalidOperationException($"Is not initialized");
-
-                return this;
-            }
-        }
-
-        public PooledList(
-            TList list,
-            TState? state,
-            Action<TList, TState?> returnAction
-            )
-            :
-            this()
-        {
-            Value = list;
-            this.state = state;
-            this.returnAction = returnAction;
-
-            IsInitialized = true;
-        }
-
-        public static bool operator ==(PooledList<TList, TValue, TState> left, PooledList<TList, TValue, TState> right)
-        {
-            return left.Equals(right);
-        }
-
-        public static bool operator !=(PooledList<TList, TValue, TState> left, PooledList<TList, TValue, TState> right)
-        {
-            return !(left == right);
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly int IndexOf(TValue item)
-        {
-            if (!IsInitialized)
-                return -1;
-
-            return Value.IndexOf(item);
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly void Insert(int index, TValue item)
-        {
-            guardedSelf.Value.Insert(index, item);
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly void RemoveAt(int index) => guardedSelf.Value.RemoveAt(index);
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly void Add(TValue item) => guardedSelf.Value.Add(item);
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly void Clear()
-        {
-            if (!IsInitialized)
-                return;
-
-            Value.Clear();
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool Contains(TValue item)
-        {
-            if (!IsInitialized)
-                return false;
-
-            return Value.Contains(item);
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly void CopyTo(TValue[] array, int arrayIndex)
-        {
-            guardedSelf.Value.CopyTo(array, arrayIndex);
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool Remove(TValue item)
-        {
-            if (!IsInitialized)
-                return false;
-
-            return Value.Remove(item);
-        }
-
-        public readonly IEnumerator<TValue> GetEnumerator()
-        {
-            if (!IsInitialized)
-                return Array.Empty<TValue>().GetEnumeratorT();
-
-            return Value.GetEnumerator();
-        }
-        readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-        private int disposed;
-        public void Dispose()
-        {
-            if (Interlocked.Exchange(ref disposed, 1) != 0)
-                return;
-
-            try
-            {
-                returnAction?.Invoke(Value, state);
-            }
-            catch (Exception ex)
-            {
-                this.PrintException(ex);
-            }
-        }
-
-        public readonly override bool Equals(object? obj)
-        {
-            return obj is PooledList<TList, TValue, TState> list && Equals(list);
-        }
-
-        public readonly bool Equals(PooledList<TList, TValue, TState> other)
-        {
-            return IsInitialized == other.IsInitialized
-                   &&
-                   disposed == other.disposed
-                   &&
-                   EqualityComparer<TState?>.Default.Equals(state, other.state)
-                   &&
-                   EqualityComparer<Action<TList, TState?>>.Default.Equals(returnAction, other.returnAction)
-                   &&
-                   EqualityComparer<TList>.Default.Equals(Value, other.Value)
-                   &&
-                   Count == other.Count
-                   &&
-                   IsReadOnly == other.IsReadOnly;
-        }
-
-        public readonly override int GetHashCode()
-        {
-            return HashCode.Combine(
-                IsInitialized,
-                disposed,
-                state,
-                returnAction,
-                Value,
-                Count,
-                IsReadOnly
-                );
-        }
-    }
-
-    public readonly struct PooledList<TValue>
-        :
-        IDisposable,
-        IList<TValue>,
-        IReadOnlyList<TValue>
-    {
-        private readonly PooledList<List<TValue>, TValue, PooledObject<List<TValue>>> core;
-
-        public readonly TValue this[int index] {
-            [DebuggerStepThrough]
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => guardedSelf.Value[index];
-            [DebuggerStepThrough]
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set => guardedSelf.Value[index] = value;
+            set => handle.Value[index] = value;
         }
 
         public readonly int Count {
-            [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => guardedSelf.Value.Count;
+            get => handle.Value.Count;
+        }
+
+        public readonly int Capacity {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => handle.Value.Capacity;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => handle.Value.Capacity = value;
         }
 
         public readonly bool IsInitialized { get; }
 
         public readonly List<TValue> Value {
-            [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => core.Value;
+            get => handle.Value;
         }
 
-        private readonly PooledList<TValue> guardedSelf {
-            [DebuggerStepThrough]
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get
-            {
-                if (!IsInitialized)
-                    throw new InvalidOperationException($"Is not initialized");
-
-                return this;
-            }
-        }
-
-        readonly bool ICollection<TValue>.IsReadOnly {
-            [DebuggerStepThrough]
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => guardedSelf.Value.CastTo<ICollection<TValue>>().IsReadOnly;
-        }
+        readonly bool ICollection<TValue>.IsReadOnly => false;
 
         public PooledList(int? capacity)
         {
-            var listHandle = ListPool<TValue>.Shared.Get();
+            handle = ListPool<TValue>.Shared.Get();
 
             if (capacity.HasValue)
-                listHandle.Value.TryIncreaseCapacity(capacity.Value);
-
-            core = new PooledList<List<TValue>, TValue, PooledObject<List<TValue>>>(
-                listHandle.Value,
-                listHandle,
-                static (_, handle) => handle.Dispose()
-                );
+                handle.Value.TryIncreaseCapacity(capacity.Value);
 
             IsInitialized = true;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator ==(PooledList<TValue> left, PooledList<TValue> right)
+        {
+            return left.Equals(right);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator !=(PooledList<TValue> left, PooledList<TValue> right)
+        {
+            return !(left == right);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static implicit operator List<TValue>(PooledList<TValue> instance)
+        {
+            return instance.Value;   
         }
 
         public static PooledList<TValue> Create(int? capacity = null)
@@ -275,82 +77,69 @@ namespace CCEnvs.Pools
             return new PooledList<TValue>(capacity);
         }
 
-        public static implicit operator List<TValue>(PooledList<TValue> instance)
-        {
-            return instance.Value;
-        }
-
-        [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly int IndexOf(TValue item)
-        {
-            if (!IsInitialized)
-                return -1;
+        public readonly void Add(TValue item) => handle.Value.Add(item);
 
-            return Value.IndexOf(item);
-        }
-
-        [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly void Insert(int index, TValue item)
-        {
-            guardedSelf.Value.Insert(index, item);
-        }
+        public readonly void Clear() => handle.Value.Clear();
 
-        [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly void RemoveAt(int index) => guardedSelf.Value.RemoveAt(index);
+        public readonly bool Contains(TValue item) => handle.Value.Contains(item);
 
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly void Add(TValue item) => guardedSelf.Value.Add(item);
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly void Clear()
-        {
-            if (!IsInitialized)
-                return;
-
-            Value.Clear();
-        }
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool Contains(TValue item)
-        {
-            if (!IsInitialized)
-                return false;
-
-            return Value.Contains(item);
-        }
-
-        [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly void CopyTo(TValue[] array, int arrayIndex)
         {
-            guardedSelf.Value.CopyTo(array, arrayIndex);
+            handle.Value.CopyTo(array, arrayIndex);
         }
 
-        [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool Remove(TValue item)
-        {
-            if (!IsInitialized)
-                return false;
+        public readonly int IndexOf(TValue item) => handle.Value.IndexOf(item);
 
-            return Value.Remove(item);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly void Insert(int index, TValue item) => handle.Value.Insert(index, item);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly bool Remove(TValue item) => handle.Value.Remove(item);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly void RemoveAt(int index) => handle.Value.RemoveAt(index);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly TValue[] ToArray() => handle.Value.ToArray();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Dispose()
+        {
+            handle.Dispose();
+            handle = default;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly IEnumerator<TValue> GetEnumerator()
         {
-            if (!IsInitialized)
+            if (!handle.IsValid)
                 return Array.Empty<TValue>().GetEnumeratorT();
 
-            return Value.GetEnumerator();
+            return handle.Value.GetEnumerator();
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        public readonly void Dispose() => core.Dispose();
+        public readonly override bool Equals(object? obj)
+        {
+            return obj is PooledList<TValue> list && Equals(list);
+        }
+
+        public readonly bool Equals(PooledList<TValue> other)
+        {
+            return handle.Equals(other.handle) &&
+                   IsInitialized == other.IsInitialized;
+        }
+
+        public readonly override int GetHashCode()
+        {
+            return HashCode.Combine(handle, IsInitialized);
+        }
     }
 }

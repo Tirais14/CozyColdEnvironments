@@ -20,12 +20,19 @@ namespace CCEnvs.UnityX.UI.Menus
 
         private readonly Dictionary<IContextMenuItem, Action> itemCallbacks = new(ReferenceEqualityComparer<IContextMenuItem>.Default);
 
+        private GameObject? defaultItemViewPrefab;
+
         private IDisposable? addBinding;
         private IDisposable? removeBinding;
         private IDisposable? replaceBinding;
         private IDisposable? clearBinding;
 
         public event Action<IContextMenuItem>? OnItemInvoke;
+
+        public GameObject? DefaultItemViewPrefab {
+            get => defaultItemViewPrefab;
+            set => defaultItemViewPrefab = value;
+        }
 
         public IDictionary<string, GameObject> ItemViewPrefabs { get; } = new Dictionary<string, GameObject>();
 
@@ -72,12 +79,17 @@ namespace CCEnvs.UnityX.UI.Menus
 
             if (!ItemViewPrefabs.TryGetValue(item.Name, out GameObject? itemViewPrefab))
             {
-                this.PrintError(DebugMessageBuilder.CreatePooled()
+                if (DefaultItemViewPrefab == null)
+                {
+                    this.PrintError(DebugMessageBuilder.CreatePooled()
                     .AddMessage("Cannot find item prefab")
                     .AddProperty(nameof(item), item)
                     .ToStringAndDispose()
                     );
-                return;
+                    return;
+                }
+
+                itemViewPrefab = DefaultItemViewPrefab;
             }
 
             GameObject itemViewGameObject = Object.Instantiate(itemViewPrefab, ItemsRoot);
