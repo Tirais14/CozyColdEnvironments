@@ -54,6 +54,12 @@ namespace CCEnvs.UnityX.ECS.Collections
                 return !(left == right);
             }
 
+            public unsafe ref T ElementAt(int index)
+            {
+                var arrayPtr = core.array.GetUnsafePtr();
+                return ref UnsafeUtility.ArrayElementAsRef<T>(arrayPtr, index);
+            }
+
             public unsafe ref T ElementAt(int x, int y, int z)
             {
                 var arrayPtr = core.array.GetUnsafePtr();

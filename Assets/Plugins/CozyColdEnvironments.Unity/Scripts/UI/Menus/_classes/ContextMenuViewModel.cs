@@ -82,7 +82,7 @@ namespace CCEnvs.UnityX.UI.Menus
                 if (DefaultItemViewPrefab == null)
                 {
                     this.PrintError(DebugMessageBuilder.CreatePooled()
-                    .AddMessage("Cannot find item prefab")
+                    .AddMessage("Not found item prefab")
                     .AddProperty(nameof(item), item)
                     .ToStringAndDispose()
                     );
@@ -97,7 +97,7 @@ namespace CCEnvs.UnityX.UI.Menus
             if (!itemViewGameObject.Q().Component<IView>().Lax().TryGetValue(out itemView))
             {
                 this.PrintError(DebugMessageBuilder.CreatePooled()
-                    .AddMessage("Cannot find item view")
+                    .AddMessage("Not found item view")
                     .AddProperty(nameof(itemViewGameObject), itemViewGameObject)
                     .ToStringAndDispose()
                     );
@@ -111,7 +111,7 @@ namespace CCEnvs.UnityX.UI.Menus
             if (!itemView.TryGetViewModel<IContextMenuItemViewModel>(out var itemViewModel))
             {
                 this.PrintError(DebugMessageBuilder.CreatePooled()
-                    .AddMessage("Cannot find required view model")
+                    .AddMessage($"Not found {nameof(IContextMenuItemViewModel)}")
                     .AddProperty(nameof(itemView), itemView)
                     .ToStringAndDispose()
                     );
@@ -142,8 +142,9 @@ namespace CCEnvs.UnityX.UI.Menus
 
         private void OnItemViewRemove(IView itemView)
         {
-            itemView.IfNotNull(x => x.ViewModel).IfNotNull(viewModel => viewModel.SetModel(null));
-            itemView.Showable.Hide();
+            //itemView.IfNotNull(x => x.ViewModel).IfNotNull(viewModel => viewModel.SetModel(null));
+            //itemView.Showable.Hide();
+            itemView.As<Component>().IfNotNull(itemView => Object.Destroy(itemView.gameObject));
         }
 
         private void OnItemRemoveCore(IContextMenuItem item)
