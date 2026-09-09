@@ -254,6 +254,8 @@ namespace CCEnvs.UnityX.UI
             throw new NotImplementedException(nameof(OnSetViewModel));
         }
 
+        protected virtual void OnModelChanged(object? model) { }
+
         protected abstract TViewModel? CreateViewModel();
 
         protected void TryDisposeViewModel()
@@ -267,19 +269,20 @@ namespace CCEnvs.UnityX.UI
             modelBinding?.Dispose();
         }
 
-        private void OnModelChanged(object? model)
+        private void OnModelChangedInternal(object? model)
         {
             CC.Guard.IsNotNull(ViewModel, nameof(ViewModel));
             OnSetViewModel(default);
             OnSetViewModel(ViewModel);
             InitViewModel(ViewModel);
+            OnModelChanged(model);
         }
 
         private void BindModel(TViewModel viewModel)
         {
             modelBinding = viewModel.ObserveModel()
                 .Skip(1)
-                .Subscribe(OnModelChanged);
+                .Subscribe(OnModelChangedInternal);
         }
 
         private async UniTaskVoid InitViewModelCoreAsync(TViewModel viewModel)

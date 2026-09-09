@@ -323,7 +323,7 @@ namespace CCEnvs.Collections
         private readonly void ThrowOnCapacityZero()
         {
             if (FreeSpace == 0)
-                throw new InvalidOperationException("Space is out");
+                throw new InvalidOperationException("Collection is full");
         }
     }
 }

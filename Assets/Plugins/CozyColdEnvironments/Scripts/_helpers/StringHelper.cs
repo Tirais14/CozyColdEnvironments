@@ -1,9 +1,11 @@
 using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
+using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -17,8 +19,31 @@ namespace CCEnvs
         public const string EMPTY_OBJECT = "( )";
         public const string EMPTY_ARRAY = "[ ]";
 
-        public static bool Match(this string? left, string? right,
-            StringMatchSettings settings = StringMatchSettings.Default)
+        public static bool EqualsAsString(
+            this ReadOnlySpan<char> left,
+            ReadOnlySpan<char> right,
+            StringComparison comparison = StringComparison.Ordinal
+            )
+        {
+            if (left.IsEmpty && right.IsEmpty)
+                return true;
+            if (left.Length != right.Length)
+                return false;
+
+            for (int i = 0; i < left.Length; i++)
+            {
+                if (left[i] != right[i])
+                    return false;
+            }
+
+            return true;
+        }
+
+        public static bool Match(
+            this string? left,
+            string? right,
+            StringMatchSettings settings = StringMatchSettings.Default
+            )
         {
             if (left is null && right is null)
                 return true;
@@ -28,7 +53,12 @@ namespace CCEnvs
             if (settings.HasFlagT(StringMatchSettings.PartialFromStart))
             {
                 if (settings.HasFlagT(StringMatchSettings.Culture))
-                    throw new NotImplementedException();
+                {
+                    if (settings.HasFlagT(StringMatchSettings.IgnoreCase))
+                        return left.StartsWith(right, ignoreCase: true, CultureInfo.CurrentCulture);
+                    else
+                        return left.StartsWith(right, ignoreCase: false, CultureInfo.CurrentCulture);
+                }
                 else if (settings.HasFlagT(StringMatchSettings.Invariant))
                 {
                     if (settings.HasFlagT(StringMatchSettings.IgnoreCase))
@@ -47,7 +77,12 @@ namespace CCEnvs
             else if (settings.HasFlagT(StringMatchSettings.Partial))
             {
                 if (settings.HasFlagT(StringMatchSettings.Culture))
-                    throw new NotImplementedException();
+                {
+                    if (settings.HasFlagT(StringMatchSettings.IgnoreCase))
+                        return left.Contains(right, StringComparison.CurrentCultureIgnoreCase);
+                    else
+                        return left.Contains(right, StringComparison.CurrentCulture);
+                }
                 else if (settings.HasFlagT(StringMatchSettings.Invariant))
                 {
                     if (settings.HasFlagT(StringMatchSettings.IgnoreCase))
@@ -66,7 +101,12 @@ namespace CCEnvs
             else
             {
                 if (settings.HasFlagT(StringMatchSettings.Culture))
-                    throw new NotImplementedException();
+                {
+                    if (settings.HasFlagT(StringMatchSettings.IgnoreCase))
+                        return left.Equals(right, StringComparison.CurrentCultureIgnoreCase);
+                    else
+                        return left.Equals(right, StringComparison.CurrentCulture);
+                }
                 else if (settings.HasFlagT(StringMatchSettings.Invariant))
                 {
                     if (settings.HasFlagT(StringMatchSettings.IgnoreCase))
@@ -83,20 +123,43 @@ namespace CCEnvs
                 }
             }
         }
-        public static bool Match(this Maybe<string> left, Maybe<string> right,
-            StringMatchSettings settings = StringMatchSettings.Default)
+        public static bool Match(
+            this Maybe<string> left,
+            Maybe<string> right,
+            StringMatchSettings settings = StringMatchSettings.Default
+            )
         {
             return left.Raw.Match(right.Raw, settings);
+        }
+
+        public static bool EqualsCulture(
+            this string? value,
+            string? other,
+            bool ignoreCase = false
+            )
+        {
+            if (value == other)
+                return true;
+            if (value is null || other is null)
+                return false;
+
+            return value.Equals(
+                other,
+                ignoreCase
+                ?
+                StringComparison.CurrentCultureIgnoreCase
+                :
+                StringComparison.CurrentCulture
+                );
         }
 
         public static bool EqualsInvariant(this string? value,
                                            string? other,
                                            bool ignoreCase = false)
         {
-            if (value is null && other is null)
+            if (value == other)
                 return true;
-
-            if (value is null)
+            if (value is null || other is null)
                 return false;
 
             return value.Equals(other, ignoreCase ?
@@ -109,10 +172,9 @@ namespace CCEnvs
                                          string? other,
                                          bool ignoreCase = false)
         {
-            if (value is null && other is null)
+            if (value == other)
                 return true;
-
-            if (value is null)
+            if (value is null || other is null)
                 return false;
 
             return value.Equals(other, ignoreCase ?
@@ -121,28 +183,84 @@ namespace CCEnvs
                 StringComparison.Ordinal);
         }
 
+        public static bool ContainsCulture(
+            this string value,
+            string other,
+            bool ignoreCase = false
+            )
+        {
+            Guard.IsNotNull(value);
+
+            if (value == other)
+                return true;
+
+            return value.Contains(
+                other,
+                ignoreCase
+                ?
+                StringComparison.CurrentCultureIgnoreCase
+                :
+                StringComparison.CurrentCulture
+                );
+        }
+
         public static bool ContainsInvariant(this string value,
                                              string other,
                                              bool ignoreCase = false)
         {
-            CC.Guard.IsNotNull(value, nameof(value));
+            Guard.IsNotNull(value);
 
-            return value.Contains(other, ignoreCase ?
+            if (value == other)
+                return true;
+
+            return value.Contains(
+                other,
+                ignoreCase
+                ?
                 StringComparison.InvariantCultureIgnoreCase
                 :
-                StringComparison.InvariantCulture);
+                StringComparison.InvariantCulture
+                );
         }
 
         public static bool ContainsOrdinal(this string value,
                                            string other,
                                            bool ignoreCase = false)
         {
-            CC.Guard.IsNotNull(value, nameof(value));
+            Guard.IsNotNull(value);
 
-            return value.Contains(other, ignoreCase ?
+            if (value == other)
+                return true;
+
+            return value.Contains(
+                other,
+                ignoreCase 
+                ?
                 StringComparison.OrdinalIgnoreCase
                 :
-                StringComparison.Ordinal);
+                StringComparison.Ordinal
+                );
+        }
+
+        public static bool StartWithCulture(
+            this string value,
+            string other,
+            bool ignoreCase = false
+            )
+        {
+            Guard.IsNotNull(value);
+
+            if (value == other)
+                return true;
+
+            return value.Contains(
+                other,
+                ignoreCase
+                ?
+                StringComparison.CurrentCultureIgnoreCase
+                :
+                StringComparison.CurrentCulture
+                );
         }
 
         public static bool StartsWithInvariant(
@@ -151,12 +269,19 @@ namespace CCEnvs
             bool ignoreCase = false
             )
         {
-            CC.Guard.IsNotNull(value, nameof(value));
+            Guard.IsNotNull(value);
 
-            return value.Contains(other, ignoreCase ?
+            if (value == other)
+                return true;
+
+            return value.Contains(
+                other, 
+                ignoreCase
+                ?
                 StringComparison.InvariantCultureIgnoreCase
                 :
-                StringComparison.InvariantCulture);
+                StringComparison.InvariantCulture
+                );
         }
 
         public static bool StartsWithOrdinal(
@@ -165,12 +290,19 @@ namespace CCEnvs
             bool ignoreCase = false
             )
         {
-            CC.Guard.IsNotNull(value, nameof(value));
+            Guard.IsNotNull(value);
 
-            return value.StartsWith(other, ignoreCase ?
+            if (value == other)
+                return true;
+
+            return value.StartsWith(
+                other,
+                ignoreCase
+                ?
                 StringComparison.OrdinalIgnoreCase
                 :
-                StringComparison.Ordinal);
+                StringComparison.Ordinal
+                );
         }
 
         public static string TrimFirst(this string value)
