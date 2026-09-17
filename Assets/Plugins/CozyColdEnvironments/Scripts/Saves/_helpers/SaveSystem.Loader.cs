@@ -28,10 +28,9 @@ namespace CCEnvs.Saves
                 if (Archives.IsEmpty())
                     return;
 
-                string cmdName = NameFactory.CreateFromCaller(
+                string cmdName = NameFactory.CreateFromCallerCached(
                     selfType,
-                    nameof(LoadArchivesFromFileAsync),
-                    expirationTimeRelativeToNow: TimeSpan.Zero
+                    nameof(LoadArchivesFromFileAsync)
                     );
 
                 await Command.Builder.WithName(cmdName)
@@ -66,10 +65,9 @@ namespace CCEnvs.Saves
                 if (SaveSystemSerializedStorage.Archives.IsEmpty())
                     return;
 
-                string cmdName = NameFactory.CreateFromCaller(
+                string cmdName = NameFactory.CreateFromCallerCached(
                     selfType,
-                    nameof(LoadArchivesFromSerializedAsync),
-                    expirationTimeRelativeToNow: TimeSpan.Zero
+                    nameof(LoadArchivesFromSerializedAsync)
                     );
 
                 await Command.Builder.WithName(cmdName)

@@ -1,12 +1,17 @@
 #nullable enable
+using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CCEnvs.Disposables;
 using CCEnvs.Patterns.Commands;
+using CCEnvs.Pools;
+using CCEnvs.UnityX.Async;
 using CCEnvs.UnityX.ComponentInjections;
 using CommunityToolkit.Diagnostics;
 using Cysharp.Threading.Tasks;
+using Humanizer;
 using R3;
 using System;
+using System.Linq;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -33,6 +38,7 @@ namespace CCEnvs.UnityX.UI.Elements
         private bool isUIReloadBinded;
 
         private IDisposable? parentShowableRootElementBinding;
+        private IDisposable? rootGeometryChangedBinding;
 
         public PanelRenderer Renderer {
             get
@@ -152,7 +158,8 @@ namespace CCEnvs.UnityX.UI.Elements
 
         protected override void HideCore()
         {
-            if (RootElement is null)
+            if (RootElement is null ||
+                RootElement.style.display == DisplayStyle.None)
                 return;
 
             RootElement.style.display = DisplayStyle.None;
@@ -170,7 +177,8 @@ namespace CCEnvs.UnityX.UI.Elements
 
         protected override void ShowCore()
         {
-            if (RootElement is null)
+            if (RootElement is null ||
+                RootElement.style.display == DisplayStyle.Flex)
                 return;
 
             RootElement.style.display = DisplayStyle.Flex;
@@ -183,6 +191,8 @@ namespace CCEnvs.UnityX.UI.Elements
                     .AddProperty(nameof(RootElement.visible), RootElement.visible)
                     .ToStringAndDispose()
                     );
+
+                //this.PrintLog(Loops.BreadthFirstSearch(RootElement, x => x.Children().ToArray()).Select(x => x.name).SequenceToString());
             }
         }
 
@@ -219,6 +229,40 @@ namespace CCEnvs.UnityX.UI.Elements
                 .WithCancellationToken(destroyCancellationToken);
         }
 
+        protected override ICommandBase GetHideCommand(CancellationToken cancellationToken)
+        {
+            string cmdName = NameFactory.CreateFromCallerCached(
+                this,
+                nameof(Hide)
+                );
+
+            return Command.Builder.WithName(cmdName)
+                .WithState(this)
+                .Asynchronously()
+                .WithExecuteAction(async static (@this, cancellationToken) =>
+                {
+                    await UniTask.DelayFrame(
+                        1,
+                        delayTiming: PlayerLoopTiming.Update,
+                        cancellationToken: cancellationToken
+                        );
+
+                    @this.HideInternal();
+                    @this.IsShown = false;
+                })
+                .BuildPooled()
+                .Value
+                .WithCancellationToken(destroyCancellationToken);
+        }
+
+        private void InitVisibleState()
+        {
+            ShowInternal();
+
+            if (!ShowOnInited)
+                HideInternal();
+        }
+
         private void OnParentShowableRootElementChanged(VisualElement? parentRoot)
         {
             if (parentRoot is not null)
@@ -245,19 +289,22 @@ namespace CCEnvs.UnityX.UI.Elements
                 }
 
                 if (RootElement is not null)
+                {
                     RootElement.userData = new GameObjectReferenceContainer(gameObject);
+                    InitVisibleState();
+                }
             }
             else
-            {
                 RootElement = null;
-            }
         }
 
         private void OnUIReload(PanelRenderer _, VisualElement root)
         {
             RootElement = root;
             RootElement.userData = new GameObjectReferenceContainer(gameObject);
+            InitVisibleState();
         }
+
 
         private async UniTask InitAsync()
         {
@@ -266,10 +313,10 @@ namespace CCEnvs.UnityX.UI.Elements
             try
             {
                 await WaitUntilChildrensInitedAsync();
-                await InitVisibleStateAsync();
                 OnInited();
                 ExecuteOnInitedEvent();
                 commandScheduler.Enable();
+
             }
             catch (System.Exception)
             {

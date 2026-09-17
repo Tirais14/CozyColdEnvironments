@@ -38,10 +38,9 @@ namespace CCEnvs.Saves
             if (Archive.Catalogs.IsEmpty())
                 return;
 
-            string cmdName = NameFactory.CreateFromCaller(
+            string cmdName = NameFactory.CreateFromCallerCached(
                 this,
-                nameof(LoadCatalogsFromFileAsync),
-                expirationTimeRelativeToNow: TimeSpan.Zero
+                nameof(LoadCatalogsFromFileAsync)
                 );
 
             await Command.Builder.WithName(cmdName)
@@ -78,10 +77,9 @@ namespace CCEnvs.Saves
             if (serialized == default)
                 return;
 
-            string cmdName = NameFactory.CreateFromCaller(
+            string cmdName = NameFactory.CreateFromCallerCached(
                 this,
-                nameof(LoadCatalogsFromSerializedAsync),
-                expirationTimeRelativeToNow: TimeSpan.Zero
+                nameof(LoadCatalogsFromSerializedAsync)
                 );
 
             await Command.Builder.WithName(cmdName)

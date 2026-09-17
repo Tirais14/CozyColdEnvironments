@@ -32,7 +32,7 @@ namespace CCEnvs.Patterns.Commands
 
         private readonly ConcurrentQueue<QueueCommand> commands = new();
 
-        private readonly ConcurrentDictionary<CommandSignature, List<QueueCommand>?> commandSets = new();
+        private readonly ConcurrentDictionary<CommandSignature, List<QueueCommand>> commandSets = new();
 
         private readonly ReactiveProperty<bool> isEnabled = new();
         private readonly ReactiveProperty<bool> isRunning = new();
@@ -42,6 +42,7 @@ namespace CCEnvs.Patterns.Commands
         private QueueCommand? cmd;
 
         private bool isRunningFinshingDelayed;
+        private bool isCommandExecuted;
 
         private int delayFrameCountBeforeRunningFinished;
         private int garbageCmdCount;
@@ -95,9 +96,13 @@ namespace CCEnvs.Patterns.Commands
             set => garbageCommandCountThreshold = Math.Clamp(value, 8, int.MaxValue);
         }
 
+        public int CommandCount => commands.Count;
+
         public string Name { get; }
 
         public object SyncRoot { get; } = new();
+
+        public IEnumerable<ICommandBase> Commands => commands.Select(cmd => cmd.Value);
 
         private CancellationToken disposeCancellationToken => _disposeCancellationTokenSource.Token;
 
@@ -181,9 +186,6 @@ namespace CCEnvs.Patterns.Commands
             if (Interlocked.Exchange(ref disposed, 1) != 0)
                 return;
 
-            //if (CCDebug<CommandScheduler>.IsEnabled)
-            //    this.PrintLog("Disposed");
-
             try
             {
                 OnReset();
@@ -226,10 +228,14 @@ namespace CCEnvs.Patterns.Commands
                 loopFuse.MoveNextThrow();
 #endif
 
-                if (IsCurrentCommandUndone())
-                    break;
-
-                if (!TryResolveCommand())
+                if (isCommandExecuted)
+                {
+                    if (IsCurrentCommandUndone())
+                        break;
+                    else if (!TryResolveCommand())
+                        break;
+                }
+                else if (!TryResolveCommand())
                     break;
 
                 if (!IsCommandReadyToExecute())
@@ -278,7 +284,7 @@ namespace CCEnvs.Patterns.Commands
             if (!commandSets.TryGetValue(cmdSignature, out var cmds))
                 return false;
 
-            return cmds is not null && cmds.Count > 0;
+            return cmds.Count > 0;
         }
 
         public bool HasCommand(ICommandBase? command)
@@ -349,7 +355,7 @@ namespace CCEnvs.Patterns.Commands
 
             CommandSignature newCmdSignature = newCmd.Signature;
 
-            if (!commandSets.TryGetValue(newCmdSignature, out var equalCmds) || equalCmds is null)
+            if (!commandSets.TryGetValue(newCmdSignature, out var equalCmds))
                 return;
 
             QueueCommand cmd;
@@ -449,7 +455,7 @@ namespace CCEnvs.Patterns.Commands
 
             lock (SyncRoot)
             {
-                if (commandSets.TryGetValue(cmd.Value.Signature, out var commandSet) && commandSet is not null)
+                if (commandSets.TryGetValue(cmd.Value.Signature, out var commandSet))
                     commandSet.Remove(cmd);
             }
 
@@ -466,6 +472,7 @@ namespace CCEnvs.Patterns.Commands
 
             OnCommandDone(cmd);
             cmd = null;
+            isCommandExecuted = false;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -519,10 +526,9 @@ namespace CCEnvs.Patterns.Commands
                                 cancellationToken: disposeCancellationToken
                                 );
 #endif
-                            return;
                         }
-
-                        cmdSync.Execute();
+                        else
+                            cmdSync.Execute();
                     }
                     break;
                 case ICommandAsync cmdAsync:
@@ -545,15 +551,16 @@ namespace CCEnvs.Patterns.Commands
                                 cancellationToken: disposeCancellationToken
                                 );
 #endif
-                            return;
                         }
-
-                        cmdAsync.ExecuteAsync();
+                        else
+                            cmdAsync.ExecuteAsync();
                     }
                     break;
                 default:
                     throw new InvalidOperationException();
             }
+
+            isCommandExecuted = true;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -622,20 +629,12 @@ namespace CCEnvs.Patterns.Commands
         {
             if (!commandSets.TryGetValue(cmdSignature, out var commandSet))
             {
-                commandSets.TryAdd(cmdSignature, null);
-                return;
+                commandSet = new List<QueueCommand>();
+                if (!commandSets.TryAdd(cmdSignature, commandSet))
+                    commandSet = commandSets[cmdSignature];
             }
 
-            if (commandSet is null)
-            {
-                commandSet = new List<QueueCommand>(1) { cmd };
-
-                if (!commandSets.TryUpdate(cmdSignature, commandSet, null))
-                    lock (SyncRoot)
-                        commandSets[cmdSignature]!.Add(cmd);
-            }
-            else
-                commandSet.Add(cmd);
+            commandSet.Add(cmd);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

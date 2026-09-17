@@ -1,5 +1,6 @@
 #nullable enable
 using R3;
+using System.Collections.Generic;
 
 namespace CCEnvs.Patterns.Commands
 {
@@ -11,6 +12,9 @@ namespace CCEnvs.Patterns.Commands
         bool IsRunning { get; }
 
         int DelayFrameCountBeforeRunningFinished { get; set; }
+        int CommandCount { get; }
+
+        IEnumerable<ICommandBase> Commands { get; }
 
         void Schedule(ICommandBase command);
 

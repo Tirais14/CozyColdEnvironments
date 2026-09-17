@@ -1,3 +1,4 @@
+using CCEnvs.Patterns.Factories;
 using CCEnvs.Pools;
 using CCEnvs.Reflection;
 using CommunityToolkit.Diagnostics;
@@ -58,7 +59,6 @@ namespace CCEnvs.Patterns.Commands
         public CommandBuilder AsSingle(bool state = true)
         {
             IsSingle = state;
-
             return this;
         }
 
@@ -67,7 +67,6 @@ namespace CCEnvs.Patterns.Commands
         public CommandBuilder OnThreadPool(bool state = true)
         {
             ExecuteOnThreadPool = state;
-
             return this;
         }
 
@@ -82,12 +81,9 @@ namespace CCEnvs.Patterns.Commands
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly Intermediate<TState> WithState<TState>(TState state)
         {
-            Guard.IsNotNull(state, nameof(state));
+            CC.Guard.IsNotNull(state, nameof(state));
 
-            return new Intermediate<TState>(this)
-            {
-                State = state
-            };
+            return new Intermediate<TState>(this, state);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -159,11 +155,12 @@ namespace CCEnvs.Patterns.Commands
             public Action<TState>? ResetAction;
             public Action<TState>? CancelAction;
 
-            public Intermediate(CommandBuilder builder)
+            public Intermediate(CommandBuilder builder, TState state)
                 :
                 this()
             {
                 this.builder = builder;
+                State = state;
             }
 
             [DebuggerStepThrough]
@@ -269,23 +266,12 @@ namespace CCEnvs.Patterns.Commands
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public readonly PooledObject<AnonymousCommandAsync> BuildPooled()
             {
-                PooledObject<AnonymousCommandAsync> pooledCmd;
-                AnonymousCommandAsync cmd;
+                pool ??= new ObjectPool<AnonymousCommandAsync>(
+                    Factory.Create(() => new AnonymousCommandAsync())
+                    );
 
-                if (pool is not null && pool.InactiveCount > 0)
-                {
-                    pooledCmd = pool.Get();
-                    cmd = pooledCmd.Value;
-                }
-                else
-                {
-                    cmd = new AnonymousCommandAsync();
-
-                    pool ??= new ObjectPool<AnonymousCommandAsync>();
-
-                    pool.Return(cmd);
-                    pooledCmd = pool.Get();
-                }
+                PooledObject<AnonymousCommandAsync> pooledCmd = pool.Get();
+                AnonymousCommandAsync cmd = pooledCmd.Value;
 
                 cmd.Name = builder.Name ?? string.Empty;
                 cmd.IsSingle = builder.IsSingle;
@@ -358,23 +344,12 @@ namespace CCEnvs.Patterns.Commands
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public readonly PooledObject<AnonymousCommandAsync<TState>> BuildPooled()
             {
-                PooledObject<AnonymousCommandAsync<TState>> pooledCmd = default;
-                AnonymousCommandAsync<TState> cmd;
+                pool ??= new ObjectPool<AnonymousCommandAsync<TState>>(
+                    Factory.Create(() => new AnonymousCommandAsync<TState>())
+                    );
 
-                if (pool is not null && pool.InactiveCount > 0)
-                {
-                    pooledCmd = pool.Get();
-                    cmd = pooledCmd.Value;
-                }
-                else
-                {
-                    cmd = new AnonymousCommandAsync<TState>();
-
-                    pool ??= new ObjectPool<AnonymousCommandAsync<TState>>();
-
-                    pool.Return(cmd);
-                    pooledCmd = pool.Get();
-                }
+                PooledObject<AnonymousCommandAsync<TState>> pooledCmd = pool.Get();
+                AnonymousCommandAsync<TState> cmd = pooledCmd.Value;
 
                 cmd.Name = builder.Name ?? string.Empty;
                 cmd.IsSingle = builder.IsSingle;
@@ -447,24 +422,12 @@ namespace CCEnvs.Patterns.Commands
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public readonly PooledObject<AnonymousCommand> BuildPooled()
             {
-                PooledObject<AnonymousCommand> pooledCmd;
-                AnonymousCommand cmd;
+                pool ??= new ObjectPool<AnonymousCommand>(
+                    Factory.Create(() => new AnonymousCommand())
+                    );
 
-                if (pool is not null && pool.InactiveCount > 0)
-                {
-                    pooledCmd = pool.Get();
-                    cmd = pooledCmd.Value;
-                }
-                else
-                {
-                    cmd = new AnonymousCommand(
-                        );
-
-                    pool ??= new ObjectPool<AnonymousCommand>();
-
-                    pool.Return(cmd);
-                    pooledCmd = pool.Get();
-                }
+                PooledObject<AnonymousCommand> pooledCmd = pool.Get();
+                AnonymousCommand cmd = pooledCmd.Value;
 
                 cmd.Name = builder.Name ?? string.Empty;
                 cmd.IsSingle = builder.IsSingle;
@@ -537,23 +500,12 @@ namespace CCEnvs.Patterns.Commands
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public readonly PooledObject<AnonymousCommand<TState>> BuildPooled()
             {
-                PooledObject<AnonymousCommand<TState>> pooledCmd;
-                AnonymousCommand<TState> cmd;
+                pool ??= new ObjectPool<AnonymousCommand<TState>>(
+                    Factory.Create(() => new AnonymousCommand<TState>())
+                    );
 
-                if (pool is not null && pool.InactiveCount > 0)
-                {
-                    pooledCmd = pool.Get();
-                    cmd = pooledCmd.Value;
-                }
-                else
-                {
-                    cmd = new AnonymousCommand<TState>();
-
-                    pool ??= new ObjectPool<AnonymousCommand<TState>>();
-
-                    pool.Return(cmd);
-                    pooledCmd = pool.Get();
-                }
+                PooledObject<AnonymousCommand<TState>> pooledCmd = pool.Get();
+                AnonymousCommand<TState> cmd = pooledCmd.Value;
 
                 cmd.Name = builder.Name ?? string.Empty;
                 cmd.IsSingle = builder.IsSingle;

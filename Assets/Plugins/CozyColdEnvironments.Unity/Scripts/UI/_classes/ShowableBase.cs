@@ -67,10 +67,16 @@ namespace CCEnvs.UnityX.UI
         public TSelf? Root => _root.As<TSelf>();
         public TSelf? Parent => _parent.As<TSelf>();
 
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+            commandScheduler.Disable(); //disabling until IsInited
+        }
+
         protected override void Awake()
         {
             base.Awake();
-            commandScheduler.Disable(); //disabling until IsInited
+            //commandScheduler.Disable(); //disabling until IsInited
             SetRoot();
             SetParent();
         }
@@ -317,16 +323,6 @@ namespace CCEnvs.UnityX.UI
             HideCore();
         }
 
-        protected async UniTask InitVisibleStateAsync()
-        {
-            destroyCancellationToken.ThrowIfCancellationRequested();
-
-            if (ShowOnInited)
-                ShowInternal();
-            else
-                HideInternal();
-        }
-
         protected async UniTask WaitUntilChildrensInitedAsync()
         {
             destroyCancellationToken.ThrowIfCancellationRequested();
@@ -355,10 +351,9 @@ namespace CCEnvs.UnityX.UI
 
         protected virtual ICommandBase GetHideCommand(CancellationToken cancellationToken)
         {
-            string cmdName = NameFactory.CreateFromCaller(
+            string cmdName = NameFactory.CreateFromCallerCached(
                 this,
-                nameof(Hide),
-                expirationTimeRelativeToNow: 5.Minutes()
+                nameof(Hide)
                 );
 
             return Command.Builder.WithName(cmdName)
@@ -378,10 +373,9 @@ namespace CCEnvs.UnityX.UI
 
         protected virtual ICommandBase GetShowCommand(CancellationToken cancellationToken)
         {
-            string cmdName = NameFactory.CreateFromCaller(
+            string cmdName = NameFactory.CreateFromCallerCached(
                 this,
-                nameof(Show),
-                expirationTimeRelativeToNow: 5.Minutes()
+                nameof(Show)
                 );
 
             return Command.Builder.WithName(cmdName)

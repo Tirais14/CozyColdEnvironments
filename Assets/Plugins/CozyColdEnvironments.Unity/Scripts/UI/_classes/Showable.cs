@@ -220,6 +220,16 @@ namespace CCEnvs.UnityX.UI
             transparentGraphics.Dispose();
         }
 
+        private async UniTask InitVisibleStateAsync()
+        {
+            destroyCancellationToken.ThrowIfCancellationRequested();
+
+            if (ShowOnInited)
+                ShowCore();
+            else
+                HideCore();
+        }
+
         private async UniTask InitAsync()
         {
             destroyCancellationToken.ThrowIfCancellationRequested();
