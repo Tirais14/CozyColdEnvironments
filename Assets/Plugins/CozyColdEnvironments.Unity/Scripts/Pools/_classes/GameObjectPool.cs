@@ -11,7 +11,7 @@ namespace CCEnvs.UnityX.Pools
     {
         private static readonly Lazy<GameObjectPool> shared = new(() => new());
 
-        public static GameObjectPool Shared => shared.Value;    
+        public static GameObjectPool Shared => shared.Value;
 
         public GameObjectPool(
             IFactory<GameObject>? factory = null,

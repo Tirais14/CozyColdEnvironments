@@ -234,7 +234,7 @@ namespace CCEnvs
 
             return value.Contains(
                 other,
-                ignoreCase 
+                ignoreCase
                 ?
                 StringComparison.OrdinalIgnoreCase
                 :
@@ -275,7 +275,7 @@ namespace CCEnvs
                 return true;
 
             return value.Contains(
-                other, 
+                other,
                 ignoreCase
                 ?
                 StringComparison.InvariantCultureIgnoreCase

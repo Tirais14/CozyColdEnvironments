@@ -10,7 +10,7 @@ using Object = UnityEngine.Object;
 namespace CCEnvs.UnityX.UI.Menus
 {
     public class ContextMenuViewModel<TModel>
-        : 
+        :
         ViewModel<TModel>,
         IContextMenuViewModel
 

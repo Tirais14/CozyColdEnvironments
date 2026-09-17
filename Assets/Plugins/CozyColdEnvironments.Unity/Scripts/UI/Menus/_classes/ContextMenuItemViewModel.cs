@@ -5,9 +5,9 @@ using System;
 
 namespace CCEnvs.UnityX.UI.Menus
 {
-    public abstract class ContextMenuItemViewModel<TModel> 
+    public abstract class ContextMenuItemViewModel<TModel>
         :
-        ViewModel<TModel>, 
+        ViewModel<TModel>,
         IContextMenuItemViewModel
 
         where TModel : IContextMenuItem

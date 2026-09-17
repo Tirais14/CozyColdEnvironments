@@ -79,7 +79,7 @@ namespace CCEnvs.UnityX.States
 
             if (nextNode.IsNotNull())
             {
-                nextNode.State.Enter(); 
+                nextNode.State.Enter();
 
                 if (CCDebug<StateMachine>.IsEnabled)
                     this.PrintLog($"State entered. State: {nextNode}");

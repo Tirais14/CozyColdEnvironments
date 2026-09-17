@@ -4,7 +4,6 @@ using CCEnvs.Threading;
 using CCEnvs.TypeMatching;
 using CCEnvs.UnityX.Components;
 using Cysharp.Threading.Tasks;
-using Humanizer;
 using R3;
 using System;
 using System.Linq;

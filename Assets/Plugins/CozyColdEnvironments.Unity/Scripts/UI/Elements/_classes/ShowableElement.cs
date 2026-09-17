@@ -1,17 +1,12 @@
 #nullable enable
-using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CCEnvs.Disposables;
 using CCEnvs.Patterns.Commands;
-using CCEnvs.Pools;
-using CCEnvs.UnityX.Async;
 using CCEnvs.UnityX.ComponentInjections;
 using CommunityToolkit.Diagnostics;
 using Cysharp.Threading.Tasks;
-using Humanizer;
 using R3;
 using System;
-using System.Linq;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -229,31 +224,31 @@ namespace CCEnvs.UnityX.UI.Elements
                 .WithCancellationToken(destroyCancellationToken);
         }
 
-        protected override ICommandBase GetHideCommand(CancellationToken cancellationToken)
-        {
-            string cmdName = NameFactory.CreateFromCallerCached(
-                this,
-                nameof(Hide)
-                );
+        //protected override ICommandBase GetHideCommand(CancellationToken cancellationToken)
+        //{
+        //    string cmdName = NameFactory.CreateFromCallerCached(
+        //        this,
+        //        nameof(Hide)
+        //        );
 
-            return Command.Builder.WithName(cmdName)
-                .WithState(this)
-                .Asynchronously()
-                .WithExecuteAction(async static (@this, cancellationToken) =>
-                {
-                    await UniTask.DelayFrame(
-                        1,
-                        delayTiming: PlayerLoopTiming.Update,
-                        cancellationToken: cancellationToken
-                        );
+        //    return Command.Builder.WithName(cmdName)
+        //        .WithState(this)
+        //        .Asynchronously()
+        //        .WithExecuteAction(async static (@this, cancellationToken) =>
+        //        {
+        //            await UniTask.DelayFrame(
+        //                1,
+        //                delayTiming: PlayerLoopTiming.Update,
+        //                cancellationToken: cancellationToken
+        //                );
 
-                    @this.HideInternal();
-                    @this.IsShown = false;
-                })
-                .BuildPooled()
-                .Value
-                .WithCancellationToken(destroyCancellationToken);
-        }
+        //            @this.HideInternal();
+        //            @this.IsShown = false;
+        //        })
+        //        .BuildPooled()
+        //        .Value
+        //        .WithCancellationToken(destroyCancellationToken);
+        //}
 
         private void InitVisibleState()
         {

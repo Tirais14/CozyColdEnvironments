@@ -95,7 +95,7 @@ namespace CCEnvs.UnityXEditor
         {
             if (targetField.IsDefined<MaybeNullAttribute>(true) ||
                 targetField.IsDefined<OptionalAttribute>(true))
-                {
+            {
                 propertyField.label += "?";
                 //propertyField.style.backgroundColor = new Color(0f, 0f, 1f, 0.05f);
             }

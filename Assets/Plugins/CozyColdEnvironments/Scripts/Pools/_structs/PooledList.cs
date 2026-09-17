@@ -11,7 +11,7 @@ namespace CCEnvs.Pools
         :
         IList<TValue>,
         IReadOnlyList<TValue>,
-        IDisposable, 
+        IDisposable,
         IEquatable<PooledList<TValue>>
     {
         private PooledObject<List<TValue>> handle;
@@ -69,7 +69,7 @@ namespace CCEnvs.Pools
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator List<TValue>(PooledList<TValue> instance)
         {
-            return instance.Value;   
+            return instance.Value;
         }
 
         public static PooledList<TValue> Create(int? capacity = null)

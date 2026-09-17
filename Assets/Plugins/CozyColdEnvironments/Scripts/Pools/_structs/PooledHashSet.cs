@@ -2,13 +2,12 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using ZLinq;
 
 #nullable enable
 namespace CCEnvs.Pools
 {
-    public readonly struct PooledHashSet<TValue> 
-        : 
+    public readonly struct PooledHashSet<TValue>
+        :
         ICollection<TValue>,
         IDisposable,
         IEquatable<PooledHashSet<TValue>>

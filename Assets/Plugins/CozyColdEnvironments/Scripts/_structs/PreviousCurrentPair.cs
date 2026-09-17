@@ -31,7 +31,7 @@ namespace CCEnvs
         public void Deconstruct(out T previous, out T current)
         {
             previous = Previous;
-            current = Current;  
+            current = Current;
         }
 
         public static implicit operator PreviousCurrentPair<T>((T Previous, T Current) pair)

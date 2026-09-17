@@ -1,6 +1,5 @@
 using CCEnvs.Diagnostics;
 using System;
-using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.UnityX.UI.Menus

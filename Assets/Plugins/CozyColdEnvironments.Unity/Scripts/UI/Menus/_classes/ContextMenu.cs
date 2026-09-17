@@ -1,4 +1,5 @@
 using CCEnvs.Linq;
+using CCEnvs.Threading;
 using CCEnvs.TypeMatching;
 using ObservableCollections;
 using R3;
@@ -7,7 +8,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
-using CCEnvs.Threading;
 
 #nullable enable
 namespace CCEnvs.UnityX.UI.Menus
