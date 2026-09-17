@@ -39,10 +39,14 @@ namespace CCEnvs.Patterns.Commands
 
         private readonly CancellationTokenSource _disposeCancellationTokenSource = new();
 
+        private readonly object commandsGate = new();
+        private readonly object commandSetsGate = new();
+
         private QueueCommand? cmd;
 
         private bool isRunningFinshingDelayed;
         private bool isCommandExecuted;
+        private bool isCommandCollectionRequireGate;
 
         private int delayFrameCountBeforeRunningFinished;
         private int garbageCmdCount;
@@ -100,9 +104,23 @@ namespace CCEnvs.Patterns.Commands
 
         public string Name { get; }
 
-        public object SyncRoot { get; } = new();
+        public IEnumerable<ICommandBase> Commands {
+            get
+            {
+                isCommandCollectionRequireGate = true;
 
-        public IEnumerable<ICommandBase> Commands => commands.Select(cmd => cmd.Value);
+                try
+                {
+                    lock (commandsGate)
+                        foreach (var command in commands)
+                            yield return command.Value;
+                }
+                finally
+                {
+                    isCommandCollectionRequireGate = false;
+                }
+            }
+        }
 
         private CancellationToken disposeCancellationToken => _disposeCancellationTokenSource.Token;
 
@@ -156,7 +174,11 @@ namespace CCEnvs.Patterns.Commands
 
             var queueCmd = queueCmdPool.Get().Value.Set(cmd);
 
-            commands.Enqueue(queueCmd);
+            if (isCommandCollectionRequireGate)
+                lock (commandsGate)
+                    commands.Enqueue(queueCmd);
+            else
+                commands.Enqueue(queueCmd);
 
             AddCommandToSet(cmd.Signature, queueCmd);
 
@@ -330,12 +352,9 @@ namespace CCEnvs.Patterns.Commands
 
             EraseCurrentCommand();
 
-            lock (SyncRoot)
+            lock (commandsGate)
             {
-                int i = 0;
-                int cmdCount = commands.Count;
-
-                while (i < cmdCount && commands.TryDequeue(out var cmd))
+                while (commands.TryDequeue(out var cmd))
                     OnCommandDone(cmd);
             }
 
@@ -360,65 +379,69 @@ namespace CCEnvs.Patterns.Commands
 
             QueueCommand cmd;
 
-            for (int i = equalCmds.Count - 1; i >= 0; i--)
+            lock (commandSetsGate)
             {
-                if (!newCmd.IsValid)
-                    return;
+                for (int i = equalCmds.Count - 1; i >= 0; i--)
+                {
+                    if (!newCmd.IsValid)
+                        return;
 
-                lock (SyncRoot)
                     cmd = equalCmds[i];
 
-                if (!IsCommandUndone(cmd.Value))
-                {
-                    lock (SyncRoot)
+                    if (!IsCommandUndone(cmd.Value))
+                    {
                         equalCmds.RemoveAt(i);
+                        continue;
+                    }
 
-                    continue;
-                }
+                    if (CCDebug<CommandScheduler>.IsEnabled)
+                    {
+                        this.PrintLog(DebugMessageBuilder.CreatePooled()
+                            .AddMessage("Command canceled")
+                            .AddProperty("CancelledCommand", cmd)
+                            .AddProperty("ByCommand", newCmd)
+                            .ToStringAndDispose()
+                            );
+                    }
 
-                if (CCDebug<CommandScheduler>.IsEnabled)
-                {
-                    this.PrintLog(DebugMessageBuilder.CreatePooled()
-                        .AddMessage("Command canceled")
-                        .AddProperty("Command", cmd)
-                        .AddProperty("ByCommand", newCmd)
-                        .ToStringAndDispose()
-                        );
-                }
-
-                garbageCmdCount++;
-
-                lock (SyncRoot)
-                {
+                    garbageCmdCount++;
                     equalCmds.RemoveAt(i);
+                    cmd.IsGarbage = true;
+                    cmd.Value.Cancel();
                 }
-
-                cmd.IsGarbage = true;
-
-                cmd.Value.Cancel();
             }
         }
 
         private void ClearGarbageCommands()
         {
-            using var liveCmds = ListPool<QueueCommand>.Shared.Get();
+            using var liveCommands = ListPool<QueueCommand>.Shared.Get();
+            liveCommands.Value.TryIncreaseCapacity(garbageCmdCount);
 
-            if (liveCmds.Value.Capacity < garbageCmdCount)
-                liveCmds.Value.Capacity = garbageCmdCount;
+            isCommandCollectionRequireGate = true;
 
-            while (commands.TryDequeue(out var cmd))
+            try
             {
-                if (cmd.IsGarbage || !IsCommandUndone(cmd.Value))
+                lock (commandsGate)
                 {
-                    OnCommandDone(cmd);
-                    continue;
+                    while (commands.TryDequeue(out var cmd))
+                    {
+                        if (cmd.IsGarbage || !IsCommandUndone(cmd.Value))
+                        {
+                            OnCommandDone(cmd);
+                            continue;
+                        }
+
+                        liveCommands.Value.Add(cmd);
+                    }
+
+                    for (int i = 0; i < liveCommands.Value.Count; i++)
+                        commands.Enqueue(liveCommands.Value[i]);
                 }
-
-                liveCmds.Value.Add(cmd);
             }
-
-            for (int i = 0; i < liveCmds.Value.Count; i++)
-                commands.Enqueue(liveCmds.Value[i]);
+            finally
+            {
+                isCommandCollectionRequireGate = false;
+            }
 
             garbageCmdCount = 0;
         }
@@ -433,35 +456,32 @@ namespace CCEnvs.Patterns.Commands
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void OnCommandDone(QueueCommand cmd)
+        private void OnCommandDone(QueueCommand command)
         {
             if (CCDebug<CommandScheduler>.IsEnabled)
             {
                 this.PrintLog(DebugMessageBuilder.CreatePooled()
                     .AddMessage("Command completed")
-                    .AddProperty("Command", cmd)
+                    .AddProperty("Command", command)
                     .ToStringAndDispose()
                     );
             }
 
-            if (cmd.Value is null)
+            if (command.Value is null)
             {
-                queueCmdPool.Return(cmd.Reset());
+                queueCmdPool.Return(command.Reset());
                 return;
             }
 
-            if (cmd.IsGarbage)
+            if (command.IsGarbage)
                 garbageCmdCount--;
 
-            lock (SyncRoot)
-            {
-                if (commandSets.TryGetValue(cmd.Value.Signature, out var commandSet))
-                    commandSet.Remove(cmd);
-            }
+            if (commandSets.TryGetValue(command.Value.Signature, out var commandSet))
+                lock (commandSetsGate)
+                    commandSet.Remove(command);
 
-            Utilizable.TryUtilizeOrDispose(cmd.Value);
-
-            queueCmdPool.Return(cmd.Reset());
+            Utilizable.TryUtilizeOrDispose(command.Value);
+            queueCmdPool.Return(command.Reset());
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -634,7 +654,8 @@ namespace CCEnvs.Patterns.Commands
                     commandSet = commandSets[cmdSignature];
             }
 
-            commandSet.Add(cmd);
+            lock (commandSetsGate)
+                commandSet.Add(cmd);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
