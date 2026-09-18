@@ -42,7 +42,7 @@ namespace CCEnvs.UnityX.Items
         where TPutItemEvent : struct
         where TTakeItemEvent : struct
     {
-        protected readonly Dictionary<TContainer, CompositeDisposable> containerDisposables;
+        private readonly Dictionary<TContainer, CompositeDisposable> containerDisposables;
 
         private readonly ObservableDictionary<int, TContainer> containers;
 
@@ -232,12 +232,35 @@ namespace CCEnvs.UnityX.Items
             return PutItemFrom(container, container.ItemCount);
         }
 
+        public TReadOnlyItemContainer TakeItem(TItem? item, int count)
+        {
+            if (item.IsNull() ||
+                count <= 0 ||
+                !occupiedContainers.TryGetValue(item, out List<TContainer> containers))
+            {
+                return CreateReadOnlyItemContainer();
+            }
+
+            int takenCount = 0;
+            ReadOnlyItemContainer takenItems;
+
+            for (int i = 0; i < containers.Count; i++)
+            {
+                takenItems = containers[i].TakeItem(count);
+                takenCount += takenItems.ItemCount;
+                count -= takenCount;
+
+                if (count <= 0)
+                    break;
+            }
+
+            return CreateReadOnlyItemContainer(item, takenCount);
+        }
+
         public TLargeReadOnlyItemContainer TakeItem(TItem? item, long count)
         {
-            if (item.IsNull()
-                ||
-                count <= 0
-                ||
+            if (item.IsNull() ||
+                count <= 0 ||
                 !occupiedContainers.TryGetValue(item, out List<TContainer> containers))
             {
                 return CreateLargeReadOnlyItemContainer();
@@ -524,8 +547,14 @@ namespace CCEnvs.UnityX.Items
 
         public bool ContainsContainer(IItemContainer? container)
         {
-            return container is TContainer typedContainer &&
-                   containerDisposables.ContainsKey(typedContainer);
+            if (container is not TContainer typedContainer)
+                return false;
+
+            foreach (var (_, otherContainer) in containers)
+                if (ReferenceEquals(typedContainer, otherContainer))
+                    return true;
+
+            return false;
         }
         public bool ContainsContainer(int? id)
         {
@@ -611,10 +640,7 @@ namespace CCEnvs.UnityX.Items
 
         public bool ContainsItem()
         {
-            return occupiedContainers.Count != 0
-                   &&
-                   occupiedContainers.Values.SelectMany(containers => containers)
-                        .Any(container => !container.IsEmpty);
+            return occupiedContainers.Count >= 1;
         }
         public bool ContainsItem(TItem? item)
         {
@@ -756,6 +782,12 @@ namespace CCEnvs.UnityX.Items
             }
         }
 
+        protected void AddContainerDisposable(TContainer container, IDisposable disposable)
+        {
+            CC.Guard.IsNotNull(disposable, nameof(disposable));
+            containerDisposables.GetOrCreateNew(container).Add(disposable);
+        }
+
         protected abstract TReadOnlyItemContainer CreateReadOnlyItemContainer();
         protected abstract TReadOnlyItemContainer CreateReadOnlyItemContainer(
             TItem? item,
@@ -886,7 +918,21 @@ namespace CCEnvs.UnityX.Items
                     return;
         }
 
-        protected virtual void OnContainerItemChanged((TItem? Previous, TItem? Current) items, TContainer cnt)
+        protected virtual void OnContainerItemChanged(TItem? previousItem, TItem? currentItem, TContainer container) { }
+
+        protected virtual void OnContainerPutItem(TPutItemEvent ev) { }
+
+        protected virtual void OnContainerTakeItem(TTakeItemEvent ev) { }
+
+        protected virtual void OnContainerAdd(int containerID, TContainer container) { }
+
+        protected virtual void OnContainerRemove(int containerID, TContainer container) { }
+
+        protected virtual void OnContainerReplace(int containerID, TContainer oldContainer, TContainer newContainer) { }
+
+        protected virtual void OnContainersClear() { }
+
+        private void OnContainerItemChangedInternal((TItem? Previous, TItem? Current) items, TContainer container)
         {
             var (previous, current) = items;
 
@@ -894,37 +940,40 @@ namespace CCEnvs.UnityX.Items
                 &&
                 occupiedContainers.TryGetValue(previous, out var occupiedCnts))
             {
-                occupiedCnts.Remove(cnt);
+                occupiedCnts.Remove(container);
             }
 
             if (current.IsNotNull())
-                occupiedContainers.GetOrCreateNew(current).Add(cnt);
+                occupiedContainers.GetOrCreateNew(current).Add(container);
+
+            OnContainerItemChanged(items.Previous, items.Current, container);
         }
 
-        protected virtual void OnContainerPutItem(TPutItemEvent ev)
+        private void OnContainerPutItemInternal(TPutItemEvent ev)
         {
             onContainerPutItem?.Execute(ev);
+            OnContainerPutItem(ev);
         }
 
-        protected virtual void OnContainerTakeItem(TTakeItemEvent ev)
+        private void OnContainerTakeItemInternal(TTakeItemEvent ev)
         {
             onContainerTakeItem?.Execute(ev);
+            OnContainerTakeItem(ev);
         }
 
         private void BindContainerItem(TContainer container)
         {
-            var disposables = containerDisposables.GetOrCreateNew(container);
-
-            container.ObserveItem()!
+            IDisposable binding = container.ObserveItem()!
                 .Cast<IItem, TItem>()
                 .Pairwise()
-                .Subscribe(container, OnContainerItemChanged)
-                .AddTo(disposables);
+                .Subscribe(container, OnContainerItemChangedInternal);
+
+            AddContainerDisposable(container, binding);
         }
 
         private void BindContainerPutItem(TContainer container)
         {
-            container.ObservePutItem()
+            IDisposable binding = container.ObservePutItem()
                 .Subscribe((@this: this, container),
                 static (containerEv, args) =>
                 {
@@ -936,14 +985,15 @@ namespace CCEnvs.UnityX.Items
                         container
                         );
 
-                    @this.OnContainerPutItem(inventoryEv);
-                })
-                .AddTo(containerDisposables.GetOrCreateNew(container));
+                    @this.OnContainerPutItemInternal(inventoryEv);
+                });
+
+            AddContainerDisposable(container, binding);
         }
 
         private void BindContainerTakeItem(TContainer container)
         {
-            container.ObserveTakeItem()
+            IDisposable binding = container.ObserveTakeItem()
                 .Subscribe((@this: this, container), static (containerEv, args) =>
                 {
                     var (@this, container) = args;
@@ -954,12 +1004,13 @@ namespace CCEnvs.UnityX.Items
                         container
                         );
 
-                    @this.OnContainerTakeItem(inventoryEv);
-                })
-                .AddTo(containerDisposables.GetOrCreateNew(container));
+                    @this.OnContainerTakeItemInternal(inventoryEv);
+                });
+
+            AddContainerDisposable(container, binding);
         }
 
-        protected virtual void OnContainerAdd(DictionaryAddEvent<int, TContainer> addEv)
+        private void OnContainerAddInternal(DictionaryAddEvent<int, TContainer> addEv)
         {
             TContainer? container = addEv.Value;
 
@@ -968,14 +1019,18 @@ namespace CCEnvs.UnityX.Items
             BindContainerPutItem(container);
             BindContainerTakeItem(container);
 
+            int containerID = addEv.Key;
+
             if (!EqualityComparer<IInventory?>.Default.Equals((IInventory)this, container.ParentInventory))
             {
-                container.ID = addEv.Key;
+                container.ID = containerID;
                 container.SetParentInventory((IInventory)this);
             }
+
+            OnContainerAdd(containerID, container);
         }
 
-        protected virtual void OnContainerRemove(DictionaryRemoveEvent<int, TContainer> removeEv)
+        private void OnContainerRemoveInternal(DictionaryRemoveEvent<int, TContainer> removeEv)
         {
             TContainer container = removeEv.Value;
 
@@ -990,26 +1045,32 @@ namespace CCEnvs.UnityX.Items
             {
                 containers.Remove(container);
             }
+
+            int containerID = removeEv.Key;
+
+            OnContainerRemove(containerID, container);
         }
 
-        protected virtual void OnContainerReplace(DictionaryReplaceEvent<int, TContainer> replaceEv)
+        private void OnContainerReplaceInternal(DictionaryReplaceEvent<int, TContainer> replaceEv)
         {
             var id = replaceEv.Key;
-            var oldCnt = replaceEv.OldValue;
-            var newCnt = replaceEv.NewValue;
+            var oldContainer = replaceEv.OldValue;
+            var newContainer = replaceEv.NewValue;
 
-            var removeEv = new DictionaryRemoveEvent<int, TContainer>(id, oldCnt);
-            OnContainerRemove(removeEv);
+            var removeEv = new DictionaryRemoveEvent<int, TContainer>(id, oldContainer);
+            OnContainerRemoveInternal(removeEv);
 
-            var addEv = new DictionaryAddEvent<int, TContainer>(id, newCnt);
-            OnContainerAdd(addEv);
+            var addEv = new DictionaryAddEvent<int, TContainer>(id, newContainer);
+            OnContainerAddInternal(addEv);
+            OnContainerReplace(id, oldContainer, newContainer);
         }
 
-        protected virtual void OnContainersClear(Unit _)
+        private void OnContainersClearInternal(Unit _)
         {
             occupiedContainers.Clear();
             containerDisposables.SelectValue().DisposeEach(bufferized: true);
             containerDisposables.Clear();
+            OnContainersClear();
         }
 
         private void ResolveOccupied(TContainer container)
@@ -1023,25 +1084,25 @@ namespace CCEnvs.UnityX.Items
         private void BindContainerAdd()
         {
             containerAddBinding = containers.ObserveDictionaryAdd(DisposeCancellationToken)
-                .Subscribe(OnContainerAdd);
+                .Subscribe(OnContainerAddInternal);
         }
 
         private void BindContainerRemove()
         {
             containerRemoveBinding = containers.ObserveDictionaryRemove(DisposeCancellationToken)
-                 .Subscribe(OnContainerRemove);
+                 .Subscribe(OnContainerRemoveInternal);
         }
 
         private void BindContainerReplace()
         {
             containerReplaceBinding = containers.ObserveDictionaryReplace(DisposeCancellationToken)
-                .Subscribe(OnContainerReplace);
+                .Subscribe(OnContainerReplaceInternal);
         }
 
         private void BindContainersClear()
         {
             containersClearBinding = containers.ObserveClear(DisposeCancellationToken)
-                .Subscribe(OnContainersClear);
+                .Subscribe(OnContainersClearInternal);
         }
     }
 }

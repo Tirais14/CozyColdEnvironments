@@ -46,6 +46,7 @@ namespace CCEnvs.UnityX.Items
         bool ContainsContainer(IItemContainer container);
         bool ContainsContainer(int? id);
 
+        ReadOnlyItemContainer TakeItem(IItem? item, int count);
         LargeReadOnlyItemContainer TakeItem(IItem? item, long count);
         LargeReadOnlyItemContainer TakeItem(IItem? item);
 
@@ -60,6 +61,8 @@ namespace CCEnvs.UnityX.Items
         bool ContainsItem();
         bool ContainsItem(IItem? item);
         bool ContainsItem(IItem? item, long count);
+
+        bool ContainsItemSequence(IEnumerable<IItem?> items);
 
         bool CanPutItem();
         bool CanPutItem(IItem? item);
@@ -139,10 +142,11 @@ namespace CCEnvs.UnityX.Items
             out IList<int> ids
             );
 
-        LargeReadOnlyItemContainer<TItem> TakeItem(TItem? item, long itemCount);
+        ReadOnlyItemContainer<TItem> TakeItem(TItem? item, int count);
+        LargeReadOnlyItemContainer<TItem> TakeItem(TItem? item, long count);
         LargeReadOnlyItemContainer<TItem> TakeItem(TItem? item);
 
-        LargeReadOnlyItemContainer<TItem> PutItem(TItem? item, long itemCount = 1);
+        LargeReadOnlyItemContainer<TItem> PutItem(TItem? item, long count = 1);
         ReadOnlyItemContainer<TItem> PutItem(IItemContainerInfo<TItem> containerInfo);
         ReadOnlyItemContainer<TItem> PutItem(ReadOnlyItemContainer<TItem> readOnlyContainer);
         LargeReadOnlyItemContainer<TItem> PutItem(LargeReadOnlyItemContainer<TItem> readOnlyContainer);
@@ -277,6 +281,10 @@ namespace CCEnvs.UnityX.Items
             return TakeItem(item.As<TItem>());
         }
         LargeReadOnlyItemContainer IInventory.TakeItem(IItem? item, long count)
+        {
+            return TakeItem(item.As<TItem>(), count);
+        }
+        ReadOnlyItemContainer IInventory.TakeItem(IItem? item, int count)
         {
             return TakeItem(item.As<TItem>(), count);
         }
