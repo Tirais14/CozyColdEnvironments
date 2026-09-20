@@ -71,9 +71,21 @@ namespace CCEnvs.UnityX.Items
         {
             return ContainsItem() && EqualityComparer<IItem?>.Default.Equals(Item, item);
         }
-        public readonly bool ContainsItem(IItem? item, int count)
+        public readonly bool ContainsItem(
+            IItem? item,
+            int count,
+            ItemCountCheckType itemCountCheckType = ItemCountCheckType.Default
+            )
         {
-            return ContainsItem(item) && ItemCount >= count;
+            if (!ContainsItem(item))
+                return false;
+
+            return itemCountCheckType switch
+            {
+                ItemCountCheckType.BiggerOrEquals => ItemCount >= count,
+                ItemCountCheckType.Equals => ItemCount == count,
+                _ => throw CC.ThrowHelper.InvalidOperationException(itemCountCheckType),
+            };
         }
 
         public LargeReadOnlyItemContainer AsLarge()
@@ -200,9 +212,21 @@ namespace CCEnvs.UnityX.Items
         {
             return ContainsItem() && EqualityComparer<IItem?>.Default.Equals(Item, item);
         }
-        public readonly bool ContainsItem(IItem? item, int count)
+        public readonly bool ContainsItem(
+            IItem? item,
+            int count,
+            ItemCountCheckType itemCountCheckType = ItemCountCheckType.Default
+            )
         {
-            return ContainsItem(item) && ItemCount >= count;
+            if (!ContainsItem(item))
+                return false;
+
+            return itemCountCheckType switch
+            {
+                ItemCountCheckType.BiggerOrEquals => ItemCount >= count,
+                ItemCountCheckType.Equals => ItemCount == count,
+                _ => throw CC.ThrowHelper.InvalidOperationException(itemCountCheckType),
+            };
         }
 
         public readonly LargeReadOnlyItemContainer<TItem> AsLarge()

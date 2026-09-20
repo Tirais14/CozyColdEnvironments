@@ -2,6 +2,7 @@ using CCEnvs.FuncLanguage;
 using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
@@ -168,6 +169,31 @@ namespace CCEnvs.Collections
             left.AddRange(right);
 
             return left;
+        }
+
+        public static bool TryGetKeyOf<TKey, TValue>(
+            this IEnumerable<KeyValuePair<TKey, TValue>> kvps,
+            TValue targetValue,
+            [NotNullWhen(true)] out TKey? result,
+            IEqualityComparer<TValue>? comparer = null
+            )
+        {
+            comparer ??= EqualityComparer<TValue>.Default;
+
+            foreach (var (key, value) in kvps)
+            {
+                if (key.IsNull())
+                    continue;
+
+                if (comparer.Equals(value, targetValue))
+                {
+                    result = key;
+                    return true;
+                }
+            }
+
+            result = default;
+            return false;
         }
     }
 }

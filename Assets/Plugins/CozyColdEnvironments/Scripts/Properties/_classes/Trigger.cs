@@ -47,4 +47,7 @@ namespace CCEnvs.Proeprties
             this.value = value;
         }
     }
+
+    public class Trigger : Trigger<bool> { }
+
 }

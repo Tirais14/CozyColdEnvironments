@@ -649,9 +649,50 @@ namespace CCEnvs.UnityX.Items
 
             return occupiedContainers.ContainsKey(item);
         }
-        public bool ContainsItem(TItem? item, long count)
+        public bool ContainsItem(
+            TItem? item,
+            long count,
+            ItemCountCheckType itemCountCheckType = ItemCountCheckType.Default
+            )
         {
-            return GetItemCount(item) >= count;
+            return itemCountCheckType switch
+            {
+                ItemCountCheckType.BiggerOrEquals => GetItemCount(item) >= count,
+                ItemCountCheckType.Equals => GetItemCount(item) == count,
+                _ => throw CC.ThrowHelper.InvalidOperationException(itemCountCheckType),
+            };
+        }
+
+        public bool ContainsItemSequence(
+            IReadOnlyList<InventoryItemSequenceSearchNode> nodes,
+            int offset = 0
+            )
+        {
+            if (nodes.Count == 0 ||
+                offset >= ContainerCount)
+                return false;
+
+            int i = 0;
+            int nodeIndex = 0;
+            int matchCount = 0;
+
+            foreach (var (_, container) in Containers)
+            {
+                if (i++ < offset)
+                    continue;
+
+                if (nodeIndex >= nodes.Count)
+                    return false;
+
+                InventoryItemSequenceSearchNode node = nodes[nodeIndex++];
+
+                if (!container.ContainsItem(node.Item, node.ItemCount, node.ItemCountCheckType))
+                    continue;
+
+                matchCount++;
+            }
+
+            return matchCount == nodes.Count;
         }
 
         public IEnumerable<TLargeReadOnlyItemContainer> GetCompactedContainersQuery()
@@ -744,6 +785,22 @@ namespace CCEnvs.UnityX.Items
         {
             onContainerTakeItem ??= new ReactiveCommand<TTakeItemEvent>();
             return onContainerTakeItem;
+        }
+
+        public Observable<Unit> ObserveContent()
+        {
+            Observable<Unit> putItemObservable = ObservePutItem().AsUnitObservable();
+            Observable<Unit> takeItemObservable = ObserveTakeItem().AsUnitObservable();
+            Observable<Unit> containerAddObservable = ObserveContainerAdd().AsUnitObservable();
+            Observable<Unit> containerRemoveObservable = ObserveContainerRemove().AsUnitObservable();
+            Observable<Unit> containerReplaceObservable = ObserveContainerReplace().AsUnitObservable();
+            Observable<Unit> containersClearObservable = ObserveClear();
+
+            return putItemObservable.Merge(takeItemObservable)
+                .Merge(containerAddObservable)
+                .Merge(containerRemoveObservable)
+                .Merge(containerReplaceObservable)
+                .Merge(containersClearObservable);
         }
 
         public void Clear() => containers.Clear();

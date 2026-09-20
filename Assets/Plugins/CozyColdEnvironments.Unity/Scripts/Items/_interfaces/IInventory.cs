@@ -60,9 +60,16 @@ namespace CCEnvs.UnityX.Items
 
         bool ContainsItem();
         bool ContainsItem(IItem? item);
-        bool ContainsItem(IItem? item, long count);
+        bool ContainsItem(
+            IItem? item, 
+            long count,
+            ItemCountCheckType itemCountCheckType = ItemCountCheckType.Default
+            );
 
-        bool ContainsItemSequence(IEnumerable<IItem?> items);
+        bool ContainsItemSequence(
+            IReadOnlyList<InventoryItemSequenceSearchNode> items,
+            int offset = 0
+            );
 
         bool CanPutItem();
         bool CanPutItem(IItem? item);
@@ -102,6 +109,12 @@ namespace CCEnvs.UnityX.Items
         Observable<InventoryPutItemEvent> ObservePutItem();
 
         Observable<InventoryTakeItemEvent> ObserveTakeItem();
+
+        /// <summary>
+        /// Observing any changes like: TakeItem, PutItem, ContainerAdd and etc
+        /// </summary>
+        /// <returns></returns>
+        Observable<Unit> ObserveContent();
     }
     public interface IInventory<TItem, TItemContainer>
         :

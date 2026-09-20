@@ -114,12 +114,16 @@ namespace CCEnvs.UnityX.Items
         {
             return ContainsItem() && item is TItem typedItem && EqualityComparer<TItem?>.Default.Equals(Item, typedItem);
         }
-        public bool ContainsItem(IItem? item, int count)
+        public bool ContainsItem(
+            IItem? item,
+            int count,
+            ItemCountCheckType itemCountCheckType = ItemCountCheckType.Default
+            )
         {
             if (!ContainsItem(item))
                 return false;
 
-            return ItemCount >= count;
+            return itemCountCheckType.IsMatch(ItemCount, count);
         }
 
         public TReadOnlyContainer PutItem(TItem? inputItem, int count = 1)

@@ -15,7 +15,7 @@ namespace CCEnvs.UnityX.Items
 
         bool ContainsItem();
         bool ContainsItem(IItem? item);
-        bool ContainsItem(IItem? item, int count);
+        bool ContainsItem(IItem? item, int count, ItemCountCheckType itemCountCheckType = ItemCountCheckType.Default);
 
         bool CanPutItem();
         bool CanPutItem(IItem? item);
@@ -28,7 +28,11 @@ namespace CCEnvs.UnityX.Items
         where TItem : IItem
     {
         bool ContainsItem(TItem? item);
-        bool ContainsItem(TItem? item, int count);
+        bool ContainsItem(
+            TItem? item, 
+            int count,
+            ItemCountCheckType itemCountCheckType = ItemCountCheckType.Default
+            );
 
         bool CanPutItem(TItem? item);
         bool CanPutItem(TItem? item, int count);
@@ -41,12 +45,16 @@ namespace CCEnvs.UnityX.Items
             return ContainsItem(typed);
         }
 
-        bool IItemContainerInfoItemless.ContainsItem(IItem? item, int count)
+        bool IItemContainerInfoItemless.ContainsItem(
+            IItem? item,
+            int count, 
+            ItemCountCheckType itemCountCheckType
+            )
         {
             if (item.IsNot<TItem>(out var typed))
                 return false;
 
-            return ContainsItem(typed, count);
+            return ContainsItem(typed, count, itemCountCheckType);
         }
 
         bool IItemContainerInfoItemless.CanPutItem(IItem? item)
