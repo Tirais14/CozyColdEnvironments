@@ -83,9 +83,21 @@ namespace CCEnvs.UnityX.Items
         {
             return ContainsItem() && EqualityComparer<IItem?>.Default.Equals(Item, item);
         }
-        public readonly bool ContainsItem(IItem? item, int count)
+        public readonly bool ContainsItem(
+            IItem? item,
+            int count,
+            ItemCountCheckType itemCountCheckType = ItemCountCheckType.Default
+            )
         {
-            return ItemCount >= count && ContainsItem(item);
+            return itemCountCheckType.IsMatch(ItemCount, count) && ContainsItem(item);
+        }
+        public readonly bool ContainsItem(
+            IItem? item,
+            long count,
+            ItemCountCheckType itemCountCheckType = ItemCountCheckType.Default
+            )
+        {
+            return itemCountCheckType.IsMatch(ItemCount, count) && ContainsItem(item);
         }
 
         public override bool Equals(object? obj)
@@ -217,9 +229,21 @@ namespace CCEnvs.UnityX.Items
         {
             return ContainsItem() && EqualityComparer<IItem?>.Default.Equals((IItem?)Item, item);
         }
-        public readonly bool ContainsItem(IItem? item, int count)
+        public readonly bool ContainsItem(
+            IItem? item, 
+            int count,
+            ItemCountCheckType itemCountCheckType = ItemCountCheckType.Default
+            )
         {
-            return ItemCount >= count && ContainsItem(item);
+            return itemCountCheckType.IsMatch(ItemCount, count) && ContainsItem(item);
+        }
+        public readonly bool ContainsItem(
+            IItem? item,
+            long count,
+            ItemCountCheckType itemCountCheckType = ItemCountCheckType.Default
+            )
+        {
+            return itemCountCheckType.IsMatch(ItemCount, count) && ContainsItem(item);
         }
 
         public override bool Equals(object? obj)

@@ -167,7 +167,11 @@ namespace CCEnvs.UnityX.Items
         ReadOnlyItemContainer<TItem> PutItemFrom(IItemContainer<TItem> container);
 
         bool ContainsItem(TItem? item);
-        bool ContainsItem(TItem? item, long count);
+        bool ContainsItem(
+            TItem? item,
+            long count,
+            ItemCountCheckType itemCountCheckType = ItemCountCheckType.Default
+            );
 
         bool CanPutItem(TItem? item);
         bool CanPutItem(TItem? item, long count);
@@ -306,9 +310,9 @@ namespace CCEnvs.UnityX.Items
         {
             return item.Is<TItem>(out var typedItem) && ContainsItem(typedItem);
         }
-        bool IInventory.ContainsItem(IItem? item, long count)
+        bool IInventory.ContainsItem(IItem? item, long count, ItemCountCheckType itemCountCheckType)
         {
-            return item.Is<TItem>(out var typedItem) && ContainsItem(typedItem, count);
+            return item.Is<TItem>(out var typedItem) && ContainsItem(typedItem, count, itemCountCheckType);
         }
 
         bool IInventory.CanPutItem(IItem? item)
