@@ -682,7 +682,7 @@ namespace CCEnvs.UnityX.Items
                     continue;
 
                 if (nodeIndex >= nodes.Count)
-                    return false;
+                    break;
 
                 InventoryItemSequenceSearchNode node = nodes[nodeIndex++];
 
@@ -692,7 +692,8 @@ namespace CCEnvs.UnityX.Items
                 matchCount++;
             }
 
-            return matchCount == nodes.Count;
+            bool result = matchCount == nodes.Count;
+            return result;
         }
 
         public IEnumerable<TLargeReadOnlyItemContainer> GetCompactedContainersQuery()
@@ -795,12 +796,14 @@ namespace CCEnvs.UnityX.Items
             Observable<Unit> containerRemoveObservable = ObserveContainerRemove().AsUnitObservable();
             Observable<Unit> containerReplaceObservable = ObserveContainerReplace().AsUnitObservable();
             Observable<Unit> containersClearObservable = ObserveClear();
+            Observable<Unit> emit = Observable.ReturnUnit();
 
             return putItemObservable.Merge(takeItemObservable)
                 .Merge(containerAddObservable)
                 .Merge(containerRemoveObservable)
                 .Merge(containerReplaceObservable)
-                .Merge(containersClearObservable);
+                .Merge(containersClearObservable)
+                .Merge(emit);
         }
 
         public void Clear() => containers.Clear();

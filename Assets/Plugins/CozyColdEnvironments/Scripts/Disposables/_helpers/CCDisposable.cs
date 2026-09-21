@@ -7,6 +7,15 @@ namespace CCEnvs.Disposables
 {
     public static class CCDisposable
     {
+        public static IDisposable Create(Action action)
+        {
+            return new AnonymousDisposable(action);
+        }
+        public static IDisposable Create<TState>(Action<TState> action, TState state)
+        {
+            return new AnonymousDisposable<TState>(action, state);
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DisposableLight<TState> Light<TState>(
             TState state,
