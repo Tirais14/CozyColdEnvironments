@@ -35,11 +35,6 @@ namespace CCEnvs.UnityX.Items.UI
     {
         private readonly ObservableDictionary<IItemContainer, GameObject> containerViews = new(4, new ReferenceEqualityComparer<IItemContainer>());
 
-        /// <summary>
-        /// Containers added from view
-        /// </summary>
-        private readonly Lazy<HashSet<IItemContainer>> fromViewContainers = new(() => new HashSet<IItemContainer>());
-
         private IDisposable? addContainerBinding;
         private IDisposable? removeContainerBinding;
         private IDisposable? replaceContainerBinding;
@@ -68,14 +63,6 @@ namespace CCEnvs.UnityX.Items.UI
 
             SetModel(model);
         }
-
-        public void AddContainer(IItemContainer cnt)
-        {
-            GuardedModel.AddContainer(cnt);
-            fromViewContainers.Value.Add(cnt);
-        }
-
-        public void RemoveContainer(int id) => GuardedModel.RemoveContainer(id);
 
         protected override void OnSetModel(TModel? model)
         {
@@ -140,17 +127,7 @@ namespace CCEnvs.UnityX.Items.UI
             using var containers = ListPool<IItemContainer>.Shared.Get(addEvs.Length);
 
             foreach (var addEv in addEvs)
-            {
-                if (fromViewContainers.TryGetValue(out var fromViewCnts)
-                    &&
-                    fromViewCnts.Contains(addEv.Container))
-                {
-                    fromViewContainers.Value.Remove(addEv.Container);
-                    continue;
-                }
-
                 containers.Value.Add(addEv.Container);
-            }
 
             var containerViewModels = await InstantiateContainers(containers.Value.Count, cancellationToken);
 
