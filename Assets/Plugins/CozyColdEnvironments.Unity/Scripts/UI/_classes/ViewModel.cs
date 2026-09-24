@@ -43,6 +43,11 @@ namespace CCEnvs.UnityX.UI
                 );
         }
 
+        protected ViewModel(TModel? model)
+        {
+            SetModel(model);
+        }
+
         ~ViewModel() => Dispose();
 
         public virtual void SetModel(TModel? model)

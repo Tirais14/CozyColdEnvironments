@@ -199,6 +199,16 @@ namespace CCEnvs.UnityX.UI
             };
         }
 
+        public bool TrySetModel(object? model)
+        {
+            if (ViewModel.IsNull())
+                return false;
+
+            object? previousModel = ViewModel.Model;
+            ViewModel.SetModel(model);
+            return !Equals(previousModel, model);
+        }
+
         public bool HasModel() => Model.IsNotNull();
         public bool HasModel<T>() => Model.Is<T>();
 

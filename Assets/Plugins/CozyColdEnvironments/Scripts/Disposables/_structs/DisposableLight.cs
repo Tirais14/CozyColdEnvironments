@@ -73,6 +73,8 @@ namespace CCEnvs.Disposables
         IEquatable<DisposableLight<TState>>,
         IDisposable
     {
+        public static DisposableLight<TState> Empty { get; } = new();
+
         public TState State { get; }
 
         public Action<TState> DisposeAction { get; }

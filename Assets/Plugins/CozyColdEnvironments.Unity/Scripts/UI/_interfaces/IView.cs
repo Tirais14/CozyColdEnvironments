@@ -19,6 +19,8 @@ namespace CCEnvs.UnityX.UI
 
         void SetViewModelFactory(Func<object> factory);
 
+        bool TrySetModel(object? model);
+
         bool HasModel();
         bool HasModel<T>();
         bool HasViewModel();
