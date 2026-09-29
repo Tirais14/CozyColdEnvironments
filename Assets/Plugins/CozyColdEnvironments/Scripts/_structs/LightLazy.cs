@@ -16,6 +16,11 @@ namespace CCEnvs
         {
             return new LightLazy<T>(factory);
         }
+
+        public static LightLazy<T, TState> Create<T, TState>(TState state, Func<TState, T> factory)
+        {
+            return new LightLazy<T, TState>(state, factory);
+        }
     }
 
     public struct LightLazy<T>

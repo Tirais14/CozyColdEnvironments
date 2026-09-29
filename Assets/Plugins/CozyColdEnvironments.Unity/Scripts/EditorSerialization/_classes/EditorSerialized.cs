@@ -2,6 +2,7 @@ using CCEnvs.Attributes;
 using CommunityToolkit.Diagnostics;
 using System;
 using System.Reflection;
+using UnityEngine;
 
 #nullable enable
 #pragma warning disable IDE0044
@@ -13,7 +14,8 @@ namespace CCEnvs.UnityX.EditorSerialization
         :
         IEditorSerialized<T>,
         IMutableType<T>,
-        IShallowCloneable<EditorSerialized<T>>
+        IShallowCloneable<EditorSerialized<T>>,
+        ISerializationCallbackReceiver
     {
         [NonSerialized]
         private T? data;
@@ -86,6 +88,15 @@ namespace CCEnvs.UnityX.EditorSerialization
         protected abstract T CreateValue();
 
         T IMutableType<T>.MutateType() => Data;
+
+        void ISerializationCallbackReceiver.OnBeforeSerialize()
+        {
+        }
+
+        void ISerializationCallbackReceiver.OnAfterDeserialize()
+        {
+            ResetData();
+        }
     }
 
     public abstract class EditorSerialized<T, TConverted>

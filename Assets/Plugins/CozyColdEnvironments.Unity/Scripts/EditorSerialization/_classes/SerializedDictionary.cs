@@ -63,15 +63,15 @@ namespace CCEnvs.UnityX.EditorSerialization
 
         void ISerializationCallbackReceiver.OnBeforeSerialize()
         {
-            if (items is null)
-                return;
+            //if (items is null)
+            //    return;
 
-            items = items.Where(item =>
-                {
-                    return !EqualityComparer<TKey>.Default.Equals(item.Key, defaultItem.Key);
-                })
-                .Prepend(defaultItem)
-                .ToArray();
+            //items = items.Where(item =>
+            //    {
+            //        return !EqualityComparer<TKey>.Default.Equals(item.Key, defaultItem.Key);
+            //    })
+            //    .Prepend(defaultItem)
+            //    .ToArray();
         }
     }
 }

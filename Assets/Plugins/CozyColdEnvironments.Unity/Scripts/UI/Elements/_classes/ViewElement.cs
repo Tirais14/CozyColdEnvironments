@@ -21,9 +21,10 @@ namespace CCEnvs.UnityX.UI.Elements
         {
             base.OnDestroy();
             CCDisposable.Dispose(ref rootElementBinding);
+            OnRootElementChanged(null);
         }
 
-        protected virtual void OnRootElementSet(VisualElement root)
+        protected virtual void InitRootElement(VisualElement root)
         {
 
         }
@@ -39,12 +40,12 @@ namespace CCEnvs.UnityX.UI.Elements
 
         private void OnRootElementChangedInternal(VisualElement? root)
         {
+            OnRootElementChanged(root);
+
             if (root is null)
                 OnRootElementReset();
             else
-                OnRootElementSet(root);
-
-            OnRootElementChanged(root);
+                InitRootElement(root);
         }
 
         private void BindRootElement()

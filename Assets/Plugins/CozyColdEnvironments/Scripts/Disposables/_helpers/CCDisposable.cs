@@ -11,7 +11,7 @@ namespace CCEnvs.Disposables
         {
             return new AnonymousDisposable(action);
         }
-        public static IDisposable Create<TState>(Action<TState> action, TState state)
+        public static IDisposable Create<TState>(TState state, Action<TState> action)
         {
             return new AnonymousDisposable<TState>(action, state);
         }
