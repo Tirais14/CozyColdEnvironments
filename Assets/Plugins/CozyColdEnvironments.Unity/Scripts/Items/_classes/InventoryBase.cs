@@ -7,6 +7,7 @@ using CCEnvs.Threading;
 using CCEnvs.TypeMatching;
 using ObservableCollections;
 using R3;
+using SuperLinq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -42,9 +43,72 @@ namespace CCEnvs.UnityX.Items
         where TPutItemEvent : struct
         where TTakeItemEvent : struct
     {
+        protected readonly struct InventoryContainer 
+            :
+            IEquatable<InventoryContainer>,
+            IComparable<InventoryContainer>
+        {
+            public TContainer Value { get; }
+
+            public int Index { get; }
+
+            public static bool operator ==(InventoryContainer left, InventoryContainer right)
+            {
+                return left.Equals(right);
+            }
+
+            public static bool operator !=(InventoryContainer left, InventoryContainer right)
+            {
+                return !(left == right);
+            }
+
+            public static bool operator <(InventoryContainer left, InventoryContainer right)
+            {
+                return left.CompareTo(right) < 0;
+            }
+
+            public static bool operator <=(InventoryContainer left, InventoryContainer right)
+            {
+                return left.CompareTo(right) <= 0;
+            }
+
+            public static bool operator >(InventoryContainer left, InventoryContainer right)
+            {
+                return left.CompareTo(right) > 0;
+            }
+
+            public static bool operator >=(InventoryContainer left, InventoryContainer right)
+            {
+                return left.CompareTo(right) >= 0;
+            }
+
+            public override bool Equals(object? obj)
+            {
+                return obj is InventoryContainer container && Equals(container);
+            }
+
+            public bool Equals(InventoryContainer other)
+            {
+                return EqualityComparer<TContainer>.Default.Equals(Value, other.Value) &&
+                       Index == other.Index;
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(Value, Index);
+            }
+
+            public int CompareTo(InventoryContainer other)
+            {
+                return Index.CompareTo(other.Index);
+            }
+        }
+
         private readonly Dictionary<TContainer, CompositeDisposable> containerDisposables;
 
         private readonly ObservableDictionary<int, TContainer> containers;
+
+        private readonly List<TContainer> indexedContainers = new();
 
         private readonly Dictionary<TItem, List<TContainer>> occupiedContainers = new();
 
@@ -107,6 +171,7 @@ namespace CCEnvs.UnityX.Items
         public int OccupiedContainerCount => ContainerCount - EmptyContainerCount;
 
         public IEnumerable<KeyValuePair<int, TContainer>> Containers => containers;
+        public IEnumerable<TContainer> OrderedContainers => indexedContainers;
 
         public TContainer? ContainerSample { get; set; }
 
@@ -177,17 +242,19 @@ namespace CCEnvs.UnityX.Items
                 return count >= 1;
             }
 
+            long restCount = count;
+
             using (var sameItemContainers = GetContainersWithItemPooled(item, ignoreFull: true))
                 foreach (var container in sameItemContainers)
-                    if (!putItem(item, ref count, container))
+                    if (!putItem(item, ref restCount, container))
                         return CreateLargeReadOnlyItemContainer();
 
             using (var emptyContainers = GetEmptyContainersPooled())
                 foreach (var container in emptyContainers)
-                    if (!putItem(item, ref count, container))
+                    if (!putItem(item, ref restCount, container))
                         return CreateLargeReadOnlyItemContainer();
 
-            return CreateLargeReadOnlyItemContainer(item, count);
+            return CreateLargeReadOnlyItemContainer(item, restCount);
         }
         public TReadOnlyItemContainer PutItem(TInputItemContainerInfo? containerInfo)
         {
@@ -421,6 +488,10 @@ namespace CCEnvs.UnityX.Items
                 yield return cnt;
             }
         }
+
+        public TContainer GetContainer(int id) => containers[id];
+
+        public TContainer GetContainerAt(int index) => containers[index];
 
         public int AddContainer(TContainer container, int? id = null)
         {
@@ -672,10 +743,26 @@ namespace CCEnvs.UnityX.Items
                 offset >= ContainerCount)
                 return false;
 
-            int i = 0;
             int nodeIndex = 0;
             int matchCount = 0;
 
+            for (int i = 0; i < indexedContainers.Count; i++)
+            {
+                TContainer container = indexedContainers[i];
+
+                if (i++ < offset)
+                    continue;
+
+                if (nodeIndex >= nodes.Count)
+                    break;
+
+                InventoryItemSequenceSearchNode node = nodes[nodeIndex++];
+
+                if (!container.ContainsItem(node.Item, node.ItemCount, node.ItemCountCheckType))
+                    continue;
+
+                matchCount++;
+            }
             foreach (var (_, container) in Containers)
             {
                 if (i++ < offset)
@@ -1074,6 +1161,7 @@ namespace CCEnvs.UnityX.Items
         {
             TContainer? container = addEv.Value;
 
+            indexedContainers.Add(container);
             ResolveOccupied(container);
             BindContainerItem(container);
             BindContainerPutItem(container);
@@ -1093,6 +1181,8 @@ namespace CCEnvs.UnityX.Items
         private void OnContainerRemoveInternal(DictionaryRemoveEvent<int, TContainer> removeEv)
         {
             TContainer container = removeEv.Value;
+
+            indexedContainers.Remove(container, ReferenceEqualityComparer<TContainer>.Default);
 
             if (containerDisposables.TryGetValue(container, out var disposables))
                 disposables.Dispose();

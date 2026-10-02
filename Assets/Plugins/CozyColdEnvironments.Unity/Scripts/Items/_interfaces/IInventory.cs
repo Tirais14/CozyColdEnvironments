@@ -21,6 +21,8 @@ namespace CCEnvs.UnityX.Items
 
         IEnumerable<KeyValuePair<int, IItemContainer>> Containers { get; }
 
+        IEnumerable<IItemContainer> OrderedContainers { get; }
+
         int ContainerCount { get; }
         int EmptyContainerCount { get; }
         int OccupiedContainerCount { get; }
@@ -33,6 +35,10 @@ namespace CCEnvs.UnityX.Items
         bool TryGetContainer(int id, [NotNullWhen(true)] out IItemContainer? container);
 
         void ResetContainers();
+
+        IItemContainer GetContainer(int id);
+
+        IItemContainer GetContainerAt(int index);
 
         int AddContainer(IItemContainer container, int? id = null);
 
@@ -140,7 +146,12 @@ namespace CCEnvs.UnityX.Items
             get => Containers.Select(x => KeyValuePair.Create(x.Key, (IItemContainer)x.Value));
         }
 
+        IReadOnlyList<IItemContainer> IndexedContainers { get; }
+
         bool TryGetContainer(int id, [NotNullWhen(true)] out TItemContainer? container);
+
+        new TItemContainer GetContainer(int id);
+        new TItemContainer GetContainerAt(int index);
 
         int AddContainer(TItemContainer itemContainer, int? id = null);
 
@@ -219,6 +230,10 @@ namespace CCEnvs.UnityX.Items
             container = typedContainer;
             return true;
         }
+
+        IItemContainer IInventory.GetContainer(int id) => GetContainer(id);
+
+        IItemContainer IInventory.GetContainerAt(int index) => GetContainerAt(index);
 
         int IInventory.AddContainer(IItemContainer itemContainer, int? id)
         {

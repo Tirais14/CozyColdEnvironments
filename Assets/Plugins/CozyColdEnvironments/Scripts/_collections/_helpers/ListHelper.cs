@@ -189,5 +189,33 @@ namespace CCEnvs.Collections
 
             return source;
         }
+
+        public static bool Remove<T>(this IList<T> list, T element, IEqualityComparer<T> comparer)
+        {
+            CC.Guard.IsNotNull(list, nameof(list));
+            CC.Guard.IsNotNull(comparer, nameof(comparer));
+
+            if (list.IsReadOnly)
+                throw CC.ThrowHelper.ReadOnlyCollection(list);
+
+            int removeIndex = -1;
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                if (!comparer.Equals(list[i], element))
+                    continue;
+
+                removeIndex = i;
+                break;
+            }
+
+            if (removeIndex >= 0)
+            {
+                list.RemoveAt(removeIndex);
+                return true;
+            }
+
+            return false;
+        }
     }
 }
