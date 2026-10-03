@@ -491,7 +491,7 @@ namespace CCEnvs.UnityX.Items
 
         public TContainer GetContainer(int id) => containers[id];
 
-        public TContainer GetContainerAt(int index) => containers[index];
+        public TContainer GetContainerAt(int index) => indexedContainers[index];
 
         public int AddContainer(TContainer container, int? id = null)
         {
@@ -750,22 +750,7 @@ namespace CCEnvs.UnityX.Items
             {
                 TContainer container = indexedContainers[i];
 
-                if (i++ < offset)
-                    continue;
-
-                if (nodeIndex >= nodes.Count)
-                    break;
-
-                InventoryItemSequenceSearchNode node = nodes[nodeIndex++];
-
-                if (!container.ContainsItem(node.Item, node.ItemCount, node.ItemCountCheckType))
-                    continue;
-
-                matchCount++;
-            }
-            foreach (var (_, container) in Containers)
-            {
-                if (i++ < offset)
+                if (i < offset)
                     continue;
 
                 if (nodeIndex >= nodes.Count)

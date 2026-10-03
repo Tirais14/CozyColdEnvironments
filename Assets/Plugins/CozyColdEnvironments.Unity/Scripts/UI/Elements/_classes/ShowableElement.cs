@@ -27,32 +27,46 @@ namespace CCEnvs.UnityX.UI.Elements
 
         private readonly ReactiveProperty<VisualElement?> rootElement = new();
 
-        [GetByParent]
-        private PanelRenderer renderer = null!;
+        private readonly ReactiveProperty<PanelRenderer?> renderer = new();
 
         private bool isUIReloadBinded;
+        private bool isRendererSetted;
+        private bool isRootElementSetted;
 
         private IDisposable? parentShowableRootElementBinding;
-        private IDisposable? rootGeometryChangedBinding;
 
-        public PanelRenderer Renderer {
+        public PanelRenderer? Renderer {
             get
             {
-                if (renderer == null)
+                if (!didStart || !isRendererSetted)
                 {
-                    renderer = this.Q()
-                        .FromParents()
-                        .IncludeInactive()
-                        .Component<PanelRenderer>()
-                        .Strict();
+                    renderer.Value = GetComponentInParent<PanelRenderer>();
+                    isRendererSetted = true;
                 }
 
-                return renderer;
+                return renderer.Value;
             }
         }
 
         public VisualElement? RootElement {
-            get => rootElement.Value;
+            get
+            {
+                if (!didStart || !isRootElementSetted)
+                {
+                    InitRenderer();
+
+                    if (CCDebug<ShowableElement>.IsEnabled)
+                    {
+                        this.PrintLog(DebugMessageBuilder.CreatePooled()
+                            .AddMessage("Init renderer early invoked")
+                            .AddProperty("Showable", this)
+                            .ToStringAndDispose()
+                            );
+                    }
+                }
+
+                return rootElement.Value;
+            }
             private set
             {
                 rootElement.Value = value;
@@ -72,55 +86,24 @@ namespace CCEnvs.UnityX.UI.Elements
         protected override void Start()
         {
             base.Start();
+            InitRenderer();
             InitAsync().Forget(ex => this.PrintException(ex));
         }
 
-        protected override void OnEnable()
+
+        protected override void OnTransformParentChanged()
         {
-            base.OnEnable();
-
-            if (Parent.IsNotNull() && Parent.Renderer == Renderer)
-            {
-                parentShowableRootElementBinding = Parent.ObserveRootElement()
-                    .Subscribe(OnParentShowableRootElementChanged);
-            }
-            else
-            {
-                if (CCDebug<ShowableElement>.IsEnabled && visualTree != null)
-                    this.PrintWarning($"Showable is not child of a renderer. {nameof(VisualTree)} will be ignored");
-
-                Renderer.RegisterUIReloadCallback(OnUIReload);
-                isUIReloadBinded = true;
-            }
-        }
-
-        protected override void OnDisable()
-        {
-            base.OnDisable();
-
-            if (RootElement is not null)
-                RootElement.userData = null;
-
-            if (isUIReloadBinded)
-            {
-                Renderer.UnregisterUIReloadCallback(OnUIReload);
-                isUIReloadBinded = false;
-            }
-            else
-            {
-                CCDisposable.Dispose(ref parentShowableRootElementBinding);
-
-                if (visualTree != null)
-                    RootElement?.RemoveFromHierarchy();
-            }
-
-            RootElement = null;
+            base.OnTransformParentChanged();
+            DetachRenderer();
+            InitRenderer();
         }
 
         protected override void OnDestroy()
         {
             base.OnDestroy();
+            DetachRenderer();
             rootElement.Dispose();
+            renderer.Dispose();
         }
 
         public ShowableElement SetShowCommandDelayFrameCount(int value)
@@ -135,7 +118,7 @@ namespace CCEnvs.UnityX.UI.Elements
             return this;
         }
 
-        public void RegisterRendererChagnedCallbackOnce(Action<PanelRenderer> action)
+        public void RegisterRendererChangedCallbackOnce(Action<PanelRenderer> action)
         {
             Guard.IsNotNull(action);
 
@@ -151,6 +134,8 @@ namespace CCEnvs.UnityX.UI.Elements
 
         public Observable<VisualElement?> ObserveRootElement() => rootElement;
 
+        public Observable<PanelRenderer?> ObserveRenderer() => renderer;
+
         protected override void HideCore()
         {
             if (RootElement is null ||
@@ -158,16 +143,6 @@ namespace CCEnvs.UnityX.UI.Elements
                 return;
 
             RootElement.style.display = DisplayStyle.None;
-
-            if (CCDebug<ShowableElement>.IsEnabled)
-            {
-                this.PrintLog(DebugMessageBuilder.CreatePooled()
-                    .AddMessage("Root state changed")
-                    .AddProperty(nameof(RootElement), RootElement)
-                    .AddProperty(nameof(RootElement.visible), RootElement.visible)
-                    .ToStringAndDispose()
-                    );
-            }
         }
 
         protected override void ShowCore()
@@ -177,18 +152,6 @@ namespace CCEnvs.UnityX.UI.Elements
                 return;
 
             RootElement.style.display = DisplayStyle.Flex;
-
-            if (CCDebug<ShowableElement>.IsEnabled)
-            {
-                this.PrintLog(DebugMessageBuilder.CreatePooled()
-                    .AddMessage("Root state changed")
-                    .AddProperty(nameof(RootElement), RootElement)
-                    .AddProperty(nameof(RootElement.visible), RootElement.visible)
-                    .ToStringAndDispose()
-                    );
-
-                //this.PrintLog(Loops.BreadthFirstSearch(RootElement, x => x.Children().ToArray()).Select(x => x.name).SequenceToString());
-            }
         }
 
         protected virtual void OnInited() { }
@@ -262,17 +225,34 @@ namespace CCEnvs.UnityX.UI.Elements
         {
             if (parentRoot is not null)
             {
-                if (RootElement is not null && RootElement.parent == parentRoot)
+                if (rootElement.Value is not null && rootElement.Value.parent == parentRoot)
                     return;
 
                 if (visualTree == null)
-                    RootElement = parentRoot.Q<VisualElement>(name);
+                {
+                    rootElement.Value = parentRoot.Q<VisualElement>(name);
+
+                    if (rootElement.Value is null)
+                    {
+                        foreach (var children in parentRoot.Children())
+                        {
+                            if (children.name != "root")
+                                continue;
+
+                            rootElement.Value = children;
+                            break;
+                        }
+
+                        if (rootElement.Value is null)
+                            throw new InvalidOperationException($"Not found any root with names: {name}, root");
+                    }
+                }
                 else
                 {
-                    RootElement?.RemoveFromHierarchy();
+                    rootElement.Value?.RemoveFromHierarchy();
 
-                    RootElement = visualTree.CloneTree();
-                    parentRoot.Add(RootElement);
+                    rootElement.Value = visualTree.CloneTree();
+                    parentRoot.Add(rootElement.Value);
 
                     if (CCDebug<ShowableElement>.IsEnabled)
                     {
@@ -283,20 +263,20 @@ namespace CCEnvs.UnityX.UI.Elements
                     }
                 }
 
-                if (RootElement is not null)
+                if (rootElement.Value is not null)
                 {
-                    RootElement.userData = new GameObjectReferenceContainer(gameObject);
+                    rootElement.Value.userData = new GameObjectReferenceContainer(gameObject);
                     InitVisibleState();
                 }
             }
             else
-                RootElement = null;
+                rootElement.Value = null;
         }
 
         private void OnUIReload(PanelRenderer _, VisualElement root)
         {
-            RootElement = root;
-            RootElement.userData = new GameObjectReferenceContainer(gameObject);
+            rootElement.Value = root;
+            rootElement.Value.userData = new GameObjectReferenceContainer(gameObject);
             InitVisibleState();
         }
 
@@ -322,6 +302,57 @@ namespace CCEnvs.UnityX.UI.Elements
             {
                 IsInited = true;
             }
+        }
+
+        private void InitRenderer()
+        {
+            if (isRootElementSetted)
+                return;
+
+            renderer.Value = GetComponentInParent<PanelRenderer>();
+            isRendererSetted = true;
+            isRootElementSetted = true;
+
+            if (Renderer == null)
+                return;
+
+            if (Parent.IsNotNull() && Parent.Renderer == Renderer)
+            {
+                parentShowableRootElementBinding = Parent.ObserveRootElement()
+                    .Subscribe(OnParentShowableRootElementChanged);
+            }
+            else
+            {
+                if (visualTree != null)
+                    this.PrintWarning($"Showable is not child of a renderer. {nameof(VisualTree)} will be ignored");
+
+                Renderer.RegisterUIReloadCallback(OnUIReload);
+                isUIReloadBinded = true;
+            }
+        }
+
+        private void DetachRenderer()
+        {
+            if (rootElement.Value is not null)
+                rootElement.Value.userData = null;
+
+            if (isUIReloadBinded && Renderer != null)
+            {
+                Renderer.UnregisterUIReloadCallback(OnUIReload);
+                isUIReloadBinded = false;
+            }
+            else
+            {
+                CCDisposable.Dispose(ref parentShowableRootElementBinding);
+
+                if (visualTree != null)
+                    RootElement?.RemoveFromHierarchy();
+            }
+
+            rootElement.Value = null;
+            isRootElementSetted = false;
+            renderer.Value = null;
+            isRendererSetted = false;
         }
     }
 }

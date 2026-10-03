@@ -21,6 +21,8 @@ namespace CCEnvs.UnityX.UI
 
         bool TrySetModel(object? model);
 
+        void SetModel(object? model);
+
         bool HasModel();
         bool HasModel<T>();
         bool HasViewModel();

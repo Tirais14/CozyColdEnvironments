@@ -39,6 +39,9 @@ namespace CCEnvs.UnityX.UI
         private MonoBehaviour? _root;
         private MonoBehaviour? _parent;
 
+        private bool isParentSetted;
+        private bool isRootSetted;
+
         private ReactiveCommand<bool>? onInitedEvent;
 
         public bool ShowOnInited {
@@ -63,8 +66,24 @@ namespace CCEnvs.UnityX.UI
             set => preventHide = value;
         }
 
-        public TSelf? Root => _root.As<TSelf>();
-        public TSelf? Parent => _parent.As<TSelf>();
+        public TSelf? Root {
+            get
+            {
+                if (!didStart || !isRootSetted)
+                    SetRoot();
+
+                return _root.As<TSelf>();
+            }
+        }
+        public TSelf? Parent {
+            get
+            {
+                if (!didStart || !isParentSetted)
+                    SetParent();
+
+                return _parent.As<TSelf>();
+            }
+        }
 
         protected override void OnEnable()
         {
@@ -76,6 +95,11 @@ namespace CCEnvs.UnityX.UI
         {
             base.Awake();
             //commandScheduler.Disable(); //disabling until IsInited
+        }
+
+        protected override void Start()
+        {
+            base.Start();
             SetRoot();
             SetParent();
         }
@@ -417,6 +441,7 @@ namespace CCEnvs.UnityX.UI
                     break;
                 }
             }
+            isRootSetted = true;
         }
 
         private void SetParent()
@@ -429,6 +454,8 @@ namespace CCEnvs.UnityX.UI
                 .Lax()
                 .Cast<MonoBehaviour>()
                 .GetValue();
+
+            isParentSetted = true;
         }
     }
 }

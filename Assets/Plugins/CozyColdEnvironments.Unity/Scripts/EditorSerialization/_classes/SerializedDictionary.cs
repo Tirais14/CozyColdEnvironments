@@ -44,16 +44,6 @@ namespace CCEnvs.UnityX.EditorSerialization
 
             collection.AddRange(items);
 
-#if UNITY_EDITOR
-            if (Application.isPlaying)
-            {
-#endif
-                this.items = null!;
-                defaultItem = default;
-#if UNITY_EDITOR
-            }
-#endif
-
             return collection;
         }
 

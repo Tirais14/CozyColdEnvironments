@@ -63,6 +63,8 @@ namespace CCEnvs.UnityX.UI
 
             if (model.IsNotNull())
                 InitModel(model);
+            else
+                ClenupModel();
         }
 
         public bool HasModel() => Model.IsNotNull();
@@ -116,5 +118,7 @@ namespace CCEnvs.UnityX.UI
         {
             throw new NotImplementedException(string.Join('.', GetType().FullName, nameof(InitModel)));
         }
+
+        protected virtual void ClenupModel() { }
     }
 }

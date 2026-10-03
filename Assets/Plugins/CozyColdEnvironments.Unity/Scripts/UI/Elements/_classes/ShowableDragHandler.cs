@@ -5,6 +5,7 @@ using CommunityToolkit.Diagnostics;
 using Cysharp.Threading.Tasks;
 using Humanizer;
 using R3;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -120,31 +121,21 @@ namespace CCEnvs.UnityX.UI.Elements
                 .Cast<Component>()
                 .Do(dragHandler => Destroy(dragHandler));
 
-            ghostShowable.ObserveRootElement()
-                .Where(root => root is not null)
-                .Take(1)
-                .Timeout(60.Seconds())
-                .Subscribe(
-                (this, ev, ghostShowable),
-                static (root, args) =>
-                {
-                    var (@this, ev, ghostShowable) = args;
+            GhostRoot = ghostShowable.RootElement ?? throw new System.InvalidOperationException("Ghost root element is null");
 
-                    ev.SetTarget(
-                        ghostShowable.RootElement,
+            ev.SetTarget(
+                        GhostRoot,
                         ghostShowable.As<Component>().IfNotNull(x => x.gameObject)
                         );
 
-                    @this.GhostRoot = root!;
-                    @this.GhostRoot.pickingMode = PickingMode.Ignore;
-                    @this.GhostRoot.style.position = Position.Absolute;
-                    @this.SetGhostRootPosition(ev.Info.position);
+            GhostRoot.pickingMode = PickingMode.Ignore;
+            GhostRoot.style.position = Position.Absolute;
+            SetGhostRootPosition(ev.Info.position);
 
-                    if (@this.showable.RootElement is not null && @this.hideWhenDrag)
-                        @this.showable.RootElement.style.display = DisplayStyle.None;
+            if (showable.RootElement is not null && hideWhenDrag)
+                showable.RootElement.style.display = DisplayStyle.None;
 
-                    @this.isDragging = true;
-                });
+            isDragging = true;
         }
 
         protected override void OnDragEvent(DragEvent ev)

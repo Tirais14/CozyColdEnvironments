@@ -1,4 +1,6 @@
 using CCEnvs.Diagnostics;
+using CCEnvs.FuncLanguage;
+using CCEnvs.Pools;
 using CCEnvs.Reflection;
 using CCEnvs.TypeMatching;
 using CCEnvs.UnityX.ComponentInjections;
@@ -207,6 +209,14 @@ namespace CCEnvs.UnityX.UI
             object? previousModel = ViewModel.Model;
             ViewModel.SetModel(model);
             return !Equals(previousModel, model);
+        }
+
+        public void SetModel(object? model)
+        {
+            if (ViewModel.IsNull())
+                throw new InvalidOperationException("View model is null");
+
+            ViewModel.SetModel(model);
         }
 
         public bool HasModel() => Model.IsNotNull();

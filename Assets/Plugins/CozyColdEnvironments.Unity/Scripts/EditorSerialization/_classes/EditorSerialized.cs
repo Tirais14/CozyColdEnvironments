@@ -14,9 +14,12 @@ namespace CCEnvs.UnityX.EditorSerialization
         :
         IEditorSerialized<T>,
         IMutableType<T>,
-        IShallowCloneable<EditorSerialized<T>>,
-        ISerializationCallbackReceiver
+        IShallowCloneable<EditorSerialized<T>>
     {
+#if UNITY_EDITOR
+        private int dataCreationKey;
+#endif
+
         [NonSerialized]
         private T? data;
 
@@ -27,9 +30,18 @@ namespace CCEnvs.UnityX.EditorSerialization
             [Converter]
             get
             {
+#if UNITY_EDITOR
+                if (dataCreationKey != UnityEditorDomain.PlayModeEntranceCount)
+                    ResetData();
+#endif
+
                 if (!isValueCreated)
                 {
                     data = CreateValue();
+#if UNITY_EDITOR
+                    dataCreationKey = UnityEditorDomain.PlayModeEntranceCount;
+#endif
+
                     isValueCreated = true;
                 }
 
@@ -88,15 +100,6 @@ namespace CCEnvs.UnityX.EditorSerialization
         protected abstract T CreateValue();
 
         T IMutableType<T>.MutateType() => Data;
-
-        void ISerializationCallbackReceiver.OnBeforeSerialize()
-        {
-        }
-
-        void ISerializationCallbackReceiver.OnAfterDeserialize()
-        {
-            ResetData();
-        }
     }
 
     public abstract class EditorSerialized<T, TConverted>

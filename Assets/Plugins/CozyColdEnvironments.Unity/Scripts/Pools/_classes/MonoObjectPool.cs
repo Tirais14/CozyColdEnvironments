@@ -1,5 +1,6 @@
 using CCEnvs.Patterns.Factories;
 using CCEnvs.Pools;
+using CCEnvs.Services;
 using CCEnvs.UnityX.Async;
 using CCEnvs.UnityX.Components;
 using Cysharp.Threading.Tasks;
@@ -17,7 +18,7 @@ namespace CCEnvs.UnityX.Pools
 
         where T : class
         where TCore : IObjectPool<T>
-        where TFactory : Component, IFactory<T>
+        where TFactory : IFactory<T>
     {
         [Header("Pool Settings")]
         [Space(6f)]
@@ -111,7 +112,7 @@ namespace CCEnvs.UnityX.Pools
                     delayFrameCountBetweenBatches: preheatDelayFrameCountBetweenBatches
                     );
 
-            preheatOp.ExecuteAsync().ForgetByPrintException(destroyCancellationToken);
+            preheatOp.ExecuteAsync(destroyCancellationToken).ForgetByPrintException();
         }
 
         void IDisposable.Dispose() => core.Dispose();

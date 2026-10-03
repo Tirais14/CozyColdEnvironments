@@ -133,6 +133,8 @@ namespace CCEnvs.UnityX.Items
 
         new IEnumerable<KeyValuePair<int, TItemContainer>> Containers { get; }
 
+        new IEnumerable<TItemContainer> OrderedContainers { get; }
+
         new TItemContainer? ContainerSample { get; set; }
 
         IItemContainer IInventory.this[int id] => this[id];
@@ -146,7 +148,7 @@ namespace CCEnvs.UnityX.Items
             get => Containers.Select(x => KeyValuePair.Create(x.Key, (IItemContainer)x.Value));
         }
 
-        IReadOnlyList<IItemContainer> IndexedContainers { get; }
+        IEnumerable<IItemContainer> IInventory.OrderedContainers => OrderedContainers.Select(x => (IItemContainer)x);
 
         bool TryGetContainer(int id, [NotNullWhen(true)] out TItemContainer? container);
 

@@ -1,5 +1,8 @@
+using CCEnvs.Diagnostics;
+using CCEnvs.Patterns.Factories;
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 
 #nullable enable
 namespace CCEnvs.Pools
@@ -18,15 +21,29 @@ namespace CCEnvs.Pools
         private readonly int batchSize;
         private readonly int delayFrameCountBetweenBatches;
 
+        private readonly IFactory<ValueTask<T>>? customFactory;
+
         public ObjectPoolPreheatOperation(
             IObjectPoolBase<T> pool,
             int count,
             int batchSize = 1,
-            int delayFrameCountBetweenBatches = 0)
+            int delayFrameCountBetweenBatches = 0,
+            IFactory<ValueTask<T>>? customFactory = null
+            )
             :
             this()
         {
             CC.Guard.IsNotNull(pool, nameof(pool));
+
+            if (!pool.HasFactory && customFactory.IsNull())
+            {
+                throw new ArgumentException(DebugMessageBuilder.CreatePooled()
+                    .AddMessage("Pool has't factory")
+                    .AddProperty(nameof(pool), pool)
+                    .ToStringAndDispose(),
+                    nameof(pool)
+                    );
+            }
 
             this.pool = pool;
 
@@ -87,9 +104,7 @@ namespace CCEnvs.Pools
                 for (int i = 0; i < processCount; i++)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-
                     task = GetFromPoolAsync(cancellationToken);
-
                     tasks[i] = task;
                 }
 
@@ -126,6 +141,12 @@ namespace CCEnvs.Pools
 #endif
             GetFromPoolAsync(CancellationToken cancellationToken)
         {
+            if (customFactory.IsNotNull())
+            {
+                var item = await customFactory.Create();
+                return new PooledObject<T>(item, pool, (item, pool) => pool.CastTo<IObjectPoolBase<T>>().Return(item));
+            }
+
             if (isAsync)
                 return await asyncPool!.GetAsync(cancellationToken);
 

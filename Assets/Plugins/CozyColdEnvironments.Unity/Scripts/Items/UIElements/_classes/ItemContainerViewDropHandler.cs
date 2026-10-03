@@ -1,3 +1,4 @@
+using CCEnvs.Diagnostics;
 using CCEnvs.UnityX.ComponentInjections;
 using CCEnvs.UnityX.UI;
 using CCEnvs.UnityX.UI.Elements;
@@ -23,6 +24,18 @@ namespace CCEnvs.UnityX.Items.UIElements
                     .TryGetValue(out var dragContainer)
                 )
             {
+                return;
+            }
+
+            this.PrintLog(dragContainer.GetHashCode());
+
+            if (dragContainer.IsEmpty)
+            {
+                this.PrintError(DebugMessageBuilder.CreatePooled()
+                    .AddMessage("Drag container is empty")
+                    .AddProperty(nameof(dragContainer), dragContainer)
+                    .ToStringAndDispose()
+                    );
                 return;
             }
 
