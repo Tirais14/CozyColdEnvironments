@@ -27,8 +27,6 @@ namespace CCEnvs.UnityX.Items.UIElements
                 return;
             }
 
-            this.PrintLog(dragContainer.GetHashCode());
-
             if (dragContainer.IsEmpty)
             {
                 this.PrintError(DebugMessageBuilder.CreatePooled()

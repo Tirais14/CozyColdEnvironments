@@ -67,7 +67,7 @@ namespace CCEnvs.UnityX.Items
         bool ContainsItem();
         bool ContainsItem(IItem? item);
         bool ContainsItem(
-            IItem? item, 
+            IItem? item,
             long count,
             ItemCountCheckType itemCountCheckType = ItemCountCheckType.Default
             );

@@ -12,7 +12,7 @@ namespace CCEnvs.UnityX.UI
             IFactory<TView>? factory = null,
             int capacity = 4,
             int? maxSize = null
-            ) 
+            )
             :
             base(factory, capacity, maxSize)
         {

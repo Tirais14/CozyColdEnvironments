@@ -42,9 +42,6 @@ namespace CCEnvs.UnityX.UI.Elements
             var container = containerView.GetModel<IItemContainer>();
             container.TakeItem().PutItemTo(dragContainer).PutItemTo(container);
 
-            this.PrintLog($"dragContainer: {dragContainer.GetHashCode()}");
-            this.PrintLog($"container: {container.GetHashCode()}");
-
             if (dragContainer.IsEmpty)
             {
                 this.PrintError(DebugMessageBuilder.CreatePooled()

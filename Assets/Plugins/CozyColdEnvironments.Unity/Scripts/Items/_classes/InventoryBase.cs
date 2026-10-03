@@ -7,7 +7,6 @@ using CCEnvs.Threading;
 using CCEnvs.TypeMatching;
 using ObservableCollections;
 using R3;
-using SuperLinq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -43,7 +42,7 @@ namespace CCEnvs.UnityX.Items
         where TPutItemEvent : struct
         where TTakeItemEvent : struct
     {
-        protected readonly struct InventoryContainer 
+        protected readonly struct InventoryContainer
             :
             IEquatable<InventoryContainer>,
             IComparable<InventoryContainer>

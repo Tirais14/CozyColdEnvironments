@@ -29,7 +29,7 @@ namespace CCEnvs.UnityX.Items
     {
         bool ContainsItem(TItem? item);
         bool ContainsItem(
-            TItem? item, 
+            TItem? item,
             int count,
             ItemCountCheckType itemCountCheckType = ItemCountCheckType.Default
             );
@@ -47,7 +47,7 @@ namespace CCEnvs.UnityX.Items
 
         bool IItemContainerInfoItemless.ContainsItem(
             IItem? item,
-            int count, 
+            int count,
             ItemCountCheckType itemCountCheckType
             )
         {

@@ -230,7 +230,7 @@ namespace CCEnvs.UnityX.Items
             return ContainsItem() && EqualityComparer<IItem?>.Default.Equals((IItem?)Item, item);
         }
         public readonly bool ContainsItem(
-            IItem? item, 
+            IItem? item,
             int count,
             ItemCountCheckType itemCountCheckType = ItemCountCheckType.Default
             )
