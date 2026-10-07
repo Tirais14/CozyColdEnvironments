@@ -92,7 +92,7 @@ namespace CCEnvs
         }
     }
 
-    public ref struct LightLazy<T, TState>
+    public struct LightLazy<T, TState>
     {
         private readonly Func<TState, T> factory;
         private readonly TState state;

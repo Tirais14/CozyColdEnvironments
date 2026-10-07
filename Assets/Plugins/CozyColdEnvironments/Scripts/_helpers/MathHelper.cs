@@ -1,4 +1,6 @@
 #nullable enable
+using System;
+
 namespace CCEnvs
 {
     public static class MathHelper
@@ -12,6 +14,36 @@ namespace CCEnvs
                 quotient--;
 
             return quotient;
+        }
+
+        public static int GetRandomCount(int minCount, int maxCount, float everyNewOneDropChance)
+        {
+            minCount = Math.Max(minCount, 0);
+
+            if (maxCount <= minCount)
+                throw new ArgumentException($"{nameof(maxCount)} cannot be less or equals {minCount}");
+
+            if (maxCount == 0)
+                throw new ArgumentException(nameof(maxCount));
+            if (everyNewOneDropChance >= 1f)
+                return maxCount;
+            if (everyNewOneDropChance <= 0f)
+                return minCount;
+
+            int remaining = maxCount;
+            int count = 0;
+            var r = new Random();
+            float failureChance = 1.0f - everyNewOneDropChance;
+
+            while (remaining > 0)
+            {
+                if (r.NextDouble(0, 1) > failureChance)
+                    count++;
+
+                remaining--;
+            }
+
+            return count;
         }
     }
 }

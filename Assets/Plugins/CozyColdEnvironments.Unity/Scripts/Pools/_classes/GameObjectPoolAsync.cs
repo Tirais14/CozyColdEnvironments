@@ -9,10 +9,13 @@ namespace CCEnvs.UnityX.Pools
 {
     public class GameObjectPoolAsync : ObjectPoolAsync<GameObject>
     {
+        private readonly Transform? objectsRoot;
+
         public GameObjectPoolAsync(
             IFactory<CancellationToken, ValueTask<GameObject>>? factory = null,
             int capacity = 4,
-            int? maxSize = null
+            int? maxSize = null,
+            Transform? objectsRoot = null
             )
             :
             base(factory: factory,
@@ -20,6 +23,7 @@ namespace CCEnvs.UnityX.Pools
                 maxSize: maxSize
         )
         {
+            this.objectsRoot = objectsRoot;
         }
 
         protected override void OnGet(PooledObject<GameObject> handledObj)
@@ -32,6 +36,7 @@ namespace CCEnvs.UnityX.Pools
         {
             base.OnReturn(obj);
             ComponentPool.OnTransfomrReturn(obj.transform);
+            obj.transform.SetParent(objectsRoot);
         }
     }
 }

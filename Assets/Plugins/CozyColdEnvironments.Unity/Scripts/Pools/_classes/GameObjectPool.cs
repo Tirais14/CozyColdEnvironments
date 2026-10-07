@@ -11,12 +11,15 @@ namespace CCEnvs.UnityX.Pools
     {
         private static readonly Lazy<GameObjectPool> shared = new(() => new());
 
+        private readonly Transform? objectsRoot;
+
         public static GameObjectPool Shared => shared.Value;
 
         public GameObjectPool(
             IFactory<GameObject>? factory = null,
             int capacity = 4,
-            int? maxSize = null
+            int? maxSize = null,
+            Transform? objectRoot = null
             )
             :
             base(factory: factory,
@@ -24,7 +27,7 @@ namespace CCEnvs.UnityX.Pools
                 maxSize: maxSize
                 )
         {
-
+            this.objectsRoot = objectRoot;
         }
 
         protected override void OnGet(PooledObject<GameObject> handledObj)
@@ -37,6 +40,7 @@ namespace CCEnvs.UnityX.Pools
         {
             base.OnReturn(obj);
             ComponentPool.OnTransfomrReturn(obj.transform);
+            obj.transform.SetParent(objectsRoot);
         }
 
         private int disposed;

@@ -257,20 +257,14 @@ namespace CCEnvs.UnityX.UI
         /// <summary>
         /// Invokes in <see cref="Start"/>, <see cref="SetViewModel(TViewModel)"/>, <see cref="SetModelUnsafe(TModel)"/>
         /// </summary>
-        protected virtual void InitViewModel(TViewModel viewModel)
-        {
-            throw new NotImplementedException(nameof(InitViewModel));
-        }
+        protected virtual void InitViewModel(TViewModel viewModel) { }
 
         /// <summary>
         /// Invokes in <see cref="SetViewModel(TViewModel?)"/> with value or in Dispose with null
         /// </summary>
         /// <param name="viewModel"></param>
         /// <exception cref="NotImplementedException"></exception>
-        protected virtual void OnSetViewModel(TViewModel? viewModel)
-        {
-            throw new NotImplementedException(nameof(OnSetViewModel));
-        }
+        protected virtual void OnSetViewModel(TViewModel? viewModel) { }
 
         protected virtual void OnModelChanged(object? model) { }
 

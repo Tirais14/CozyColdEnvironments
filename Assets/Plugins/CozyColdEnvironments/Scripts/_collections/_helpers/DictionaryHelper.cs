@@ -68,6 +68,22 @@ namespace CCEnvs.Collections
 
             return value;
         }
+        public static TValue GetOrCreate<TKey, TValue>(
+            this IDictionary<TKey, TValue> source,
+            TKey key,
+            Func<TKey, TValue> factory)
+        {
+            CC.Guard.IsNotNullSource(source);
+            Guard.IsNotNull(factory, nameof(factory));
+
+            if (!source.TryGetValue(key, out TValue value))
+            {
+                value = factory(key);
+                source.Add(key, value);
+            }
+
+            return value;
+        }
 
         public static TValue GetOrCreate<TKey, TValue, TState>(
             this IDictionary<TKey, TValue> source,

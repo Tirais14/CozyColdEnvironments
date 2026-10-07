@@ -13,7 +13,7 @@ namespace CCEnvs.UnityX.Items.UIElements
     [DisallowMultipleComponent]
     public abstract class ItemContainerView<TViewModel>
         :
-        View<TViewModel>
+        ViewElement<TViewModel>
 
         where TViewModel : IItemContainerViewModel
     {
@@ -21,7 +21,7 @@ namespace CCEnvs.UnityX.Items.UIElements
         [Space(5f)]
 
         [SerializeField]
-        [Tooltip("Element must be Image type")]
+        [Tooltip("Element must be Image or Button type")]
         protected string? iconViewName = "icon";
         [SerializeField]
         [Tooltip("Element must be Label type")]
@@ -29,76 +29,57 @@ namespace CCEnvs.UnityX.Items.UIElements
 
         private IDisposable? iconBinding;
         private IDisposable? countBinding;
-        private IDisposable? rootElementBinding;
 
         public string? IconViewName {
             get => iconViewName;
-            set => SetIconElementName(value);
+            set => iconViewName = value;
         }
 
         public string? CounterViewName {
             get => counterViewName;
-            set => SetCounterElementName(value);
+            set => counterViewName = value;
         }
 
-        public Image? IconView { get; private set; }
+        public VisualElement? IconView { get; private set; }
 
         public Label? CounterView { get; private set; }
 
-        [field: GetBySelf]
-        protected IElement Element { get; private set; } = null!;
-
-        public ItemContainerView<TViewModel> SetIconElementName(string? value)
+        protected override void OnRootElementReset()
         {
-            iconViewName = value;
-            return this;
+            base.OnRootElementReset();
+            IconView = null;
+            CounterView = null;
         }
 
-        public ItemContainerView<TViewModel> SetCounterElementName(string? value)
+        protected override void InitRootElement(VisualElement root)
         {
-            counterViewName = value;
-            return this;
-        }
-
-        protected override void OnSetViewModel(TViewModel? vm)
-        {
-            if (vm.IsNull())
+            if (iconViewName.IsNotNullOrWhiteSpace())
             {
-                CCDisposable.Dispose(ref iconBinding);
-                CCDisposable.Dispose(ref countBinding);
-                CCDisposable.Dispose(ref rootElementBinding);
+                IconView = root.Q<VisualElement>(iconViewName);
+
+                if (IconView is not null)
+                    BindIcon(GuardedViewModel);
             }
-            else
-                rootElementBinding = Element.ObserveRootElement().Subscribe(OnRootElementChanged);
+
+            if (counterViewName.IsNotNullOrWhiteSpace())
+            {
+                CounterView = root.Q<Label>(counterViewName);
+
+                if (CounterView is not null)
+                    BindCount(GuardedViewModel);
+            }
         }
 
-        protected override void InitViewModel(TViewModel vm) { }
-
-        private void OnRootElementChanged(VisualElement? root)
+        protected override void OnSetViewModel(TViewModel? viewModel)
         {
             CCDisposable.Dispose(ref iconBinding);
             CCDisposable.Dispose(ref countBinding);
-            IconView = null;
-            CounterView = null;
+        }
 
-            if (root is not null)
-            {
-                if (iconViewName.IsNotNullOrWhiteSpace())
-                {
-                    IconView = root.Q<Image>(iconViewName);
-
-                    if (IconView is not null)
-                        BindIcon(GuardedViewModel);
-                }
-
-                if (counterViewName.IsNotNullOrWhiteSpace())
-                {
-                    CounterView = root.Q<Label>(counterViewName);
-
-                    if (CounterView is not null)
-                        BindCount(GuardedViewModel);
-                }
-            }
+        protected override void InitViewModel(TViewModel viewModel)
+        {
+            BindIcon(viewModel);
+            BindCount(viewModel);
         }
 
         protected virtual void OnIconChanged(Sprite icon)
@@ -106,7 +87,22 @@ namespace CCEnvs.UnityX.Items.UIElements
             if (IconView is null)
                 return;
 
-            IconView.sprite = icon;
+            switch (IconView)
+            {
+                case Button button:
+                    button.iconImage = Background.FromSprite(icon);
+                    break;
+                case Image image:
+                    image.sprite = icon;
+                    break;
+                default:
+                    throw CC.ThrowHelper.InvalidOperationException(IconView);
+            }
+
+        }
+        private void BindIcon(TViewModel viewModel)
+        {
+            iconBinding = viewModel.Icon.Subscribe(OnIconChanged);
         }
 
         protected virtual void OnCountChanged(string count)
@@ -115,11 +111,6 @@ namespace CCEnvs.UnityX.Items.UIElements
                 return;
 
             CounterView.text = count;
-        }
-
-        private void BindIcon(TViewModel viewModel)
-        {
-            iconBinding = viewModel.Icon.Subscribe(OnIconChanged);
         }
 
         private void BindCount(TViewModel viewModel)
