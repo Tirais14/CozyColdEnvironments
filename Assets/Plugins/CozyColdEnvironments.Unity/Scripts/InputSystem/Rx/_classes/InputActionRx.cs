@@ -93,13 +93,6 @@ namespace CCEnvs.UnityX.InputSystem.Rx
             Action = inputAction;
 
             Setup();
-
-            CCServices.Bind(GetType())
-                .FromInstance(this)
-                .WithID(Name)
-                .WithInterfaces(nameof(IInputActionRx))
-                .IfNotBound()
-                .AsSingle();
         }
 
         ~InputActionRx() => Dispose();

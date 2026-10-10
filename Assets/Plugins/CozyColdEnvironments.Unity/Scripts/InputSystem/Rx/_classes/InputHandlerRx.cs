@@ -42,14 +42,6 @@ namespace CCEnvs.UnityX.InputSystem.Rx
 
             Enable();
             Type type = GetType();
-            BindToServices(type);
-            BindActionsToServices(type,
-                actionProps
-                ??
-                type.GetProperties(BindingFlagsDefault.InstancePublic)
-                .Where(prop => prop.PropertyType.IsType<IInputActionRx>())
-                .ToArray()
-                );
         }
 
         /// <exception cref="EmptyStringArgumentException"></exception>
@@ -131,32 +123,6 @@ namespace CCEnvs.UnityX.InputSystem.Rx
 
             registeredActions.Add(inputAction.Name, inputAction);
             disposables.Add(inputAction);
-        }
-
-        private void BindToServices(Type type)
-        {
-            CCServices.Bind(type).FromInstance(this).AsSingle();
-            CCServices.Bind(type)
-                .WithID(type.GetName(TypeNameConvertingAttributes.None))
-                .FromInstance(this)
-                .WithInterfaces(nameof(IInputHandlerRx))
-                .IfNotBound()
-                .AsSingle();
-        }
-
-        private void BindActionsToServices(Type type, PropertyInfo[] actionProps)
-        {
-            foreach (var item in actionProps.Where(prop => prop.PropertyType.IsType<IInputActionRx>())
-                .Select(this, static (prop, @this) => prop.GetValue(@this))
-                .OfType<IInputActionRx>())
-            {
-                CCServices.Bind(item.GetType())
-                    .WithID(type.GetName(TypeNameConvertingAttributes.None) + '.' + item.Name)
-                    .FromInstance(item)
-                    .WithInterfaces(nameof(IInputActionRx))
-                    .IfNotBound()
-                    .AsSingle();
-            }
         }
 
         private InputAction ResolveInputAction(PropertyInfo prop)

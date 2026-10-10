@@ -127,6 +127,43 @@ namespace CCEnvs
             return Value.CastTo<TOut>();
         }
 
+        public T GetValue(Func<T> factory)
+        {
+            Guard.IsNotNull(factory, nameof(factory));
+
+            if (!IsValueCreated)
+                return factory();
+
+            return Value;
+        }
+        public T GetValue<TArg>(TArg state, Func<TArg, T> factory)
+        {
+            Guard.IsNotNull(factory, nameof(factory));
+
+            if (!IsValueCreated)
+                return factory(state);
+
+            return Value;
+        }
+        public TOut GetValue<TOut>(Func<TOut> factory)
+        {
+            Guard.IsNotNull(factory, nameof(factory));
+
+            if (!IsValueCreated)
+                return factory();
+
+            return Value.CastTo<TOut>();
+        }
+        public TOut GetValue<TOut, TArg>(TArg state, Func<TArg, TOut> factory)
+        {
+            Guard.IsNotNull(factory, nameof(factory));
+
+            if (!IsValueCreated)
+                return factory(state);
+
+            return Value.CastTo<TOut>();
+        }
+
         public readonly bool TryGetValue(out T result)
         {
             if (!IsValueCreated)

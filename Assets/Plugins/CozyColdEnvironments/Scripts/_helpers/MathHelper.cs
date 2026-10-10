@@ -37,7 +37,7 @@ namespace CCEnvs
 
             while (remaining > 0)
             {
-                if (r.NextDouble(0, 1) > failureChance)
+                if (r.NextFloat(0f, 1f) > failureChance)
                     count++;
 
                 remaining--;

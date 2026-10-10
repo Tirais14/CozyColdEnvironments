@@ -17,25 +17,25 @@ namespace CCEnvs.Patterns.Factories
         {
             return new AnonymousFactory<TOut>(factory);
         }
-
         public static IFactory<T, TOut> Create<T, TOut>(Func<T, TOut> factory)
         {
             return new AnonymousFactory<T, TOut>(factory);
         }
-
         public static IFactory<T, T1, TOut> Create<T, T1, TOut>(Func<T, T1, TOut> factory)
         {
             return new AnonymousFactory<T, T1, TOut>(factory);
         }
-
         public static IFactory<T, T1, T2, TOut> Create<T, T1, T2, TOut>(Func<T, T1, T2, TOut> factory)
         {
             return new AnonymousFactory<T, T1, T2, TOut>(factory);
         }
-
         public static IFactory<TOut> Create<TState, TOut>(TState state, Func<TState, TOut> factory)
         {
             return new AnonymousStatedFactory<TState, TOut>(state, factory);
+        }
+        public static IFactory<T1, TOut> Create<TState, T1, TOut>(TState state, Func<TState, T1, TOut> factory)
+        {
+            return new AnonymousStatedFactory<TState, T1, TOut>(state, factory);
         }
 
         public static class Async

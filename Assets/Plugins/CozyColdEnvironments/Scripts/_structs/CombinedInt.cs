@@ -28,26 +28,17 @@ namespace CCEnvs
             set => Value = (Value & 0x00000000FFFFFFFFL) | ((long)value << 32);
         }
 
-#if UNITY_BURST
-        [Unity.Burst.BurstCompile]
-#endif
         public CombinedInt(long value)
         {
             Value = value;
         }
 
-#if UNITY_BURST
-        [Unity.Burst.BurstCompile]
-#endif
         public CombinedInt(int part1)
         {
             Value = default;
             Part1 = part1;
         }
 
-#if UNITY_BURST
-        [Unity.Burst.BurstCompile]
-#endif
         public CombinedInt(int part1, int part2)
         {
             Value = default;
