@@ -44,9 +44,9 @@ namespace CCEnvs.UnityX.Items.UIElements
 
         public Label? CounterView { get; private set; }
 
-        protected override void OnRootElementReset()
+        protected override void CleanupRootElement()
         {
-            base.OnRootElementReset();
+            base.CleanupRootElement();
             IconView = null;
             CounterView = null;
         }

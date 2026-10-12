@@ -43,7 +43,7 @@ namespace CCEnvs.UnityX.UI.Elements
 
         }
 
-        protected virtual void OnRootElementReset()
+        protected virtual void CleanupRootElement()
         {
         }
 
@@ -58,7 +58,7 @@ namespace CCEnvs.UnityX.UI.Elements
 
             if (root is null)
             {
-                OnRootElementReset();
+                CleanupRootElement();
                 ResetRootBindableElements();
             }
             else

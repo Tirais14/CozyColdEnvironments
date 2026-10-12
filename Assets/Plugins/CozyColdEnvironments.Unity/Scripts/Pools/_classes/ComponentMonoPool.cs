@@ -10,7 +10,7 @@ namespace CCEnvs.UnityX.Pools
         MonoObjectPool<TComponent, ComponentPool<TComponent>, TFactory>
 
         where TComponent : Component
-        where TFactory : Component, IFactory<TComponent>
+        where TFactory : IFactory<TComponent>
     {
         public override void Return(TComponent? obj)
         {

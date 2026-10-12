@@ -16,6 +16,7 @@ namespace CCEnvs.UnityX.EditorSerialization
         IShallowCloneable<EditorSerialized<T>>
     {
 #if UNITY_EDITOR
+        [NonSerialized]
         private int dataCreationKey;
 #endif
 
@@ -30,7 +31,9 @@ namespace CCEnvs.UnityX.EditorSerialization
             get
             {
 #if UNITY_EDITOR
-                if (dataCreationKey != UnityEditorDomain.PlayModeEntranceCount)
+                if (isValueCreated &&
+                    dataCreationKey != UnityEditorDomain.PlayModeEntranceCount
+                    )
                     ResetData();
 #endif
 
