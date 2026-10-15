@@ -338,6 +338,7 @@ namespace CCEnvs.UnityX.UI.Elements
             if (isUIReloadBinded && Renderer != null)
             {
                 Renderer.UnregisterUIReloadCallback(OnUIReload);
+                rootElement.Value?.RemoveFromHierarchy();
                 isUIReloadBinded = false;
             }
             else
@@ -345,7 +346,7 @@ namespace CCEnvs.UnityX.UI.Elements
                 CCDisposable.Dispose(ref parentShowableRootElementBinding);
 
                 if (visualTree != null)
-                    RootElement?.RemoveFromHierarchy();
+                    rootElement.Value?.RemoveFromHierarchy();
             }
 
             rootElement.Value = null;

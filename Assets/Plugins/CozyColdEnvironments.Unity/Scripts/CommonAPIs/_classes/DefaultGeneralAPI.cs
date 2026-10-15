@@ -39,8 +39,7 @@ namespace CCEnvs.UnityX.CommonAPIs
 
             Instance = this;
 
-            CCServices.BindInstance(this)
-                .WithInterfaces()
+            CCServices.BindInstance<IGeneralAPI>(this)
                 .AsSingle();
         }
 

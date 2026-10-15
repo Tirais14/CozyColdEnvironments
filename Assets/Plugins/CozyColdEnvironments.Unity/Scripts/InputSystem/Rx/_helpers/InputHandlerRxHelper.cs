@@ -29,12 +29,22 @@ namespace CCEnvs.UnityX.InputSystem
 
             foreach (var inputAction in GetInputActions(inputHandlerRx))
             {
+                var inputActionID = $"{inputHandlerRx.GetType().GetName(TypeNameConvertingAttributes.None)}.{inputAction.Name}";
+
                 CCServices.Bind(inputAction.GetType())
                     .FromInstance(inputAction)
-                    .WithInterfaces(nameof(IInputActionRx))
-                    .WithID($"{inputHandlerRx.GetType().GetName(TypeNameConvertingAttributes.None)}.{inputAction.Name}")
+                    .WithID(inputActionID)
                     .AsSingle()
                     .AddTo(compositeDisposable);
+
+                foreach (var iface in ServiceBinderHelper.FindInterfaces<IInputActionRx>(inputAction.GetType()))
+                {
+                    CCServices.Bind(iface)
+                        .FromInstance(inputAction)
+                        .WithID(inputActionID)
+                        .AsSingle()
+                        .AddTo(compositeDisposable);
+                }
             }
 
             return compositeDisposable;

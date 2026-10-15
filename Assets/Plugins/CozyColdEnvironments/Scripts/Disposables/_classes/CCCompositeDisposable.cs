@@ -7,6 +7,15 @@ namespace CCEnvs.Disposables
 {
     public class CCCompositeDisposable : List<IDisposable>, IDisposable
     {
+        public CCCompositeDisposable() { }
+
+        public CCCompositeDisposable(int capacity)
+            :
+            base(capacity)
+        {
+
+        }
+
         private int disposed;
         public void Dispose()
         {

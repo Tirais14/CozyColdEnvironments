@@ -21,8 +21,7 @@ namespace CCEnvs.UnityX.CommonAPIs
 
             Instance = this;
 
-            CCServices.BindInstance(this)
-                .WithInterfaces()
+            CCServices.BindInstance<ISavingAPI>(this)
                 .AsSingle();
         }
 

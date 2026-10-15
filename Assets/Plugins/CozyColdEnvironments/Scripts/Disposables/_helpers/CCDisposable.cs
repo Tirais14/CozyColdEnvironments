@@ -7,6 +7,8 @@ namespace CCEnvs.Disposables
 {
     public static class CCDisposable
     {
+        public static IDisposable Empty { get; } = Create(Do.Nothing);
+
         public static IDisposable Create(Action action)
         {
             return new AnonymousDisposable(action);
