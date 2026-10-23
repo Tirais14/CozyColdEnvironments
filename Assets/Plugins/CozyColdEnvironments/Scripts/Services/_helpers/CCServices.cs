@@ -52,7 +52,7 @@ namespace CCEnvs.Services
                     binder is IServiceBindingLazyStateProvider lazyStateProvider &&
                     !lazyStateProvider.IsLazy
                     )
-                    bindings.Add(bindingKey, new BindingNode(factoryProvider.Factory.Create(Array.Empty<object>()), bindingType));
+                    bindings.Add(bindingKey, new BindingNode(factoryProvider.Factory.Create("5268d3f4-7422-4b47-ac56-99daae47ae18", Array.Empty<object>()), bindingType));
                 else
                     bindings.Add(bindingKey, new BindingNode(factoryProvider.Factory, bindingType));
 

@@ -60,10 +60,24 @@ namespace CCEnvs.Patterns.Factories
                 ExpirationScanFrequency = 2.Minutes()
             });
 
-        public static object Create(this IFactory factory, object uniqueID, object[]? args)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="factory"></param>
+        /// <param name="uniqueID">maybe null only if Factory realizes <see cref="IFactoryNonGeneric"/></param>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
+        public static object Create(this IFactory factory, object? uniqueID, object[]? args)
         {
             CC.Guard.IsNotNull(factory, nameof(factory));
             args ??= Array.Empty<object>();
+
+            if (factory is IFactoryNonGeneric nonGenericFactory)
+                return nonGenericFactory.Create(args);
+
+            if (uniqueID.IsNull())
+                throw new ArgumentNullException(nameof(uniqueID), $"UniqueID may be null only if Factory realizes {nameof(IFactoryNonGeneric)}");
 
             var argTypesHashBuilder = new HashCode();
             argTypesHashBuilder.Add(factory.GetType());
