@@ -52,7 +52,7 @@ namespace CCEnvs.Services
                 if (!HasFactory)
                     throw new InvalidOperationException("Invalid binding type");
 
-                return Factory!.Create(Array.Empty<object>());
+                return Factory!.Create(this, Array.Empty<object>());
             }
             else if (BindingType == BindingType.Single)
             {
@@ -61,7 +61,7 @@ namespace CCEnvs.Services
 
                 if (!IsResolved)
                 {
-                    Target = Factory!.Create(Array.Empty<object>());
+                    Target = Factory!.Create(this, Array.Empty<object>());
                     IsResolved = true;
                 }
 

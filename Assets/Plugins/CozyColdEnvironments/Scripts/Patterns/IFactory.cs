@@ -60,7 +60,7 @@ namespace CCEnvs.Patterns.Factories
                 ExpirationScanFrequency = 2.Minutes()
             });
 
-        public static object Create(this IFactory factory, params object[]? args)
+        public static object Create(this IFactory factory, object uniqueID, object[]? args)
         {
             CC.Guard.IsNotNull(factory, nameof(factory));
             args ??= Array.Empty<object>();
@@ -72,8 +72,9 @@ namespace CCEnvs.Patterns.Factories
                 argTypesHashBuilder.Add(args[i].GetType());
 
             int argTypesHash = argTypesHashBuilder.ToHashCode();
+            var cacheID = (uniqueID, argTypesHash);
 
-            if (!methodCache.TryGetValue<MethodInfo>(argTypesHash, out var method) ||
+            if (!methodCache.TryGetValue<MethodInfo>(cacheID, out var method) ||
                 method is null)
             {
                 var factoryType = factory.GetType();
@@ -108,7 +109,7 @@ namespace CCEnvs.Patterns.Factories
                         continue;
 
                     method = m;
-                    using var cacheEntry = methodCache.CreateEntry(argTypesHash);
+                    using var cacheEntry = methodCache.CreateEntry(cacheID);
                     cacheEntry.Value = method;
                     cacheEntry.AbsoluteExpirationRelativeToNow = 6.Minutes();
                     break;
