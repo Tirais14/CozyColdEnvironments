@@ -1,6 +1,8 @@
+using CCEnvs.Attributes;
 using CCEnvs.Disposables;
 using CCEnvs.Reflection;
 using CCEnvs.TypeMatching;
+using CommunityToolkit.Diagnostics;
 using Humanizer;
 using Microsoft.Extensions.Caching.Memory;
 using R3;
@@ -12,10 +14,9 @@ using UnityEngine.UIElements;
 #nullable enable
 namespace CCEnvs.UnityX.UI.Elements
 {
-    public abstract class ViewElement<TViewModel> : View<TViewModel>
-        where TViewModel : IViewModel
+    public abstract class ViewElement
     {
-        private static readonly Lazy<MemoryCache> rootBindableElementsCache = new(
+        private static readonly Lazy<MemoryCache> rootDependentElementsCached = new(
             () => new MemoryCache(new MemoryCacheOptions
             {
                 ExpirationScanFrequency = 1.Minutes()
@@ -23,7 +24,69 @@ namespace CCEnvs.UnityX.UI.Elements
 
         private static readonly Dictionary<Type, bool> hasRootBindableElementsFlags = new();
 
+        [OnInstallExecutable]
+        private static void OnInstall()
+        {
+            if (rootDependentElementsCached.IsValueCreated)
+                rootDependentElementsCached.Value.Clear();
+
+            hasRootBindableElementsFlags.Clear();
+        }
+
+        public static IReadOnlyList<FieldInfo> ResolveRootDependentFields(Type viewModelType)
+        {
+            Guard.IsNotNull(viewModelType, nameof(viewModelType));
+
+            if (hasRootBindableElementsFlags.TryGetValue(viewModelType, out bool hasBindableElements) &&
+                !hasBindableElements
+                )
+                return Array.Empty<FieldInfo>();
+
+            if (rootDependentElementsCached.TryGetValue(out var rootDependentElements) &&
+                rootDependentElements.TryGetValue<List<FieldInfo>>(viewModelType, out var fieldsCache) &&
+                fieldsCache is not null)
+            {
+                return fieldsCache;
+            }
+
+            FieldInfo[] fields = viewModelType.GetFields(BindingFlagsDefault.InstanceAll);
+            var toCacheFields = LightLazy.Create(fields.Length, static fieldCount => new List<FieldInfo>(fieldCount));
+
+            for (int i = 0; i < fields.Length; i++)
+            {
+                FieldInfo field = fields[i];
+
+                if (field.IsInitOnly ||
+                    !field.IsDefined<RootDependentAttribute>(inherit: true)
+                    )
+                    continue;
+
+                toCacheFields.Value.Add(field);
+            }
+
+            if (toCacheFields.IsValueCreated && toCacheFields.Value.Count >= 1)
+            {
+                toCacheFields.Value.TrimExcess();
+                using var cacheEntry = rootDependentElementsCached.Value.CreateEntry(viewModelType);
+                cacheEntry.AbsoluteExpirationRelativeToNow = 10.Minutes();
+                cacheEntry.Value = toCacheFields.Value;
+                hasRootBindableElementsFlags[viewModelType] = true;
+                return toCacheFields.Value;
+            }
+
+            hasRootBindableElementsFlags[viewModelType] = false;
+            return Array.Empty<FieldInfo>();
+        }
+    }
+
+    public abstract class ViewElement<TViewModel> : View<TViewModel>
+        where TViewModel : IViewModel
+    {
+        private readonly Lazy<List<IDisposable>> rootElementDisposables = new(() => new());
+
         private IDisposable? rootElementBinding;
+
+        protected ICollection<IDisposable> RootElementBindings => rootElementDisposables.Value;
 
         protected override void Start()
         {
@@ -73,50 +136,8 @@ namespace CCEnvs.UnityX.UI.Elements
 
         private void ResetRootBindableElements()
         {
-            var type = GetType();
-
-            if (hasRootBindableElementsFlags.TryGetValue(type, out bool hasBindableElements) &&
-                !hasBindableElements
-                )
-                return;
-
-            if (rootBindableElementsCache.TryGetValue(out var rootBindableElements) &&
-                rootBindableElements.TryGetValue<List<FieldInfo>>(type, out var fieldsCache) &&
-                fieldsCache is not null)
-            {
-                foreach (var field in fieldsCache)
-                    field.SetValue(this, null);
-
-                return;
-            }
-
-            FieldInfo[] fields = type.GetFields(BindingFlagsDefault.InstanceAll);
-            var toCacheFields = LightLazy.Create(fields.Length, static fieldCount => new List<FieldInfo>(fieldCount));
-
-            for (int i = 0; i < fields.Length; i++)
-            {
-                FieldInfo field = fields[i];
-
-                if (field.IsInitOnly ||
-                    !field.IsDefined<RootBindableAttribute>(inherit: true) ||
-                    field.GetValue(this).IsNot<VisualElement>()
-                    )
-                    continue;
-
+            foreach (var field in ViewElement.ResolveRootDependentFields(GetType()))
                 field.SetValue(this, null);
-                toCacheFields.Value.Add(field);
-            }
-
-            if (toCacheFields.IsValueCreated)
-            {
-                toCacheFields.Value.TrimExcess();
-                var cacheEntry = rootBindableElementsCache.Value.CreateEntry(type);
-                cacheEntry.Value = toCacheFields.Value;
-                cacheEntry.AbsoluteExpirationRelativeToNow = 10.Minutes();
-                hasRootBindableElementsFlags.Add(type, true);
-            }
-            else
-                hasRootBindableElementsFlags.Add(type, false);
         }
     }
 }

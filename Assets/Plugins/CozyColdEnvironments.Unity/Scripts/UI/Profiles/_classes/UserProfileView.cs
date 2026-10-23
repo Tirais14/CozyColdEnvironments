@@ -28,7 +28,7 @@ namespace CCEnvs.UnityX.UI.Profiles
                 {
                     @this.iconView.sprite = icon;
                 })
-                .AddTo(ViewModelDisposables);
+                .AddTo(ViewModelBindings);
         }
 
         private void SetName(UserProfileViewModel vm)

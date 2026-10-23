@@ -27,7 +27,7 @@ namespace CCEnvs.UnityX.UI
 
         public TModel? Model => model.Value;
 
-        protected ICollection<IDisposable> ModelDisposables => modelDisposables.Value;
+        protected ICollection<IDisposable> ModelBindings => modelDisposables.Value;
 
         protected TModel GuardedModel => Model.ThrowIfNull(nameof(Model));
 
@@ -55,7 +55,7 @@ namespace CCEnvs.UnityX.UI
             CCDisposable.ThrowIfDisposed(this, disposed);
 
             if (modelDisposables.IsValueCreated)
-                ModelDisposables.DisposeEachAndClear(bufferized: true);
+                ModelBindings.DisposeEachAndClear(bufferized: true);
 
             OnSetModel(model);
 
@@ -109,15 +109,9 @@ namespace CCEnvs.UnityX.UI
         /// Invokes on <see cref="SetModel(TModel?)"/> with value or in Dispose with always null
         /// </summary>
         /// <param name="model"></param>
-        protected virtual void OnSetModel(TModel? model)
-        {
-            throw new NotImplementedException(string.Join('.', GetType().FullName, nameof(OnSetModel)));
-        }
+        protected virtual void OnSetModel(TModel? model) { }
 
-        protected virtual void InitModel(TModel model)
-        {
-            throw new NotImplementedException(string.Join('.', GetType().FullName, nameof(InitModel)));
-        }
+        protected virtual void InitModel(TModel model) { }
 
         protected virtual void ClenupModel() { }
     }

@@ -56,7 +56,11 @@ namespace CCEnvs.Pools
                 syncPool = (IObjectPool<T>)pool;
 
             this.count = Math.Clamp(count, 0, int.MaxValue);
-            this.batchSize = Math.Clamp(batchSize, 1, int.MaxValue);
+
+            if (batchSize <= 0)
+                this.batchSize = count;
+            else
+                this.batchSize = Math.Clamp(batchSize, 0, count);
 
             this.delayFrameCountBetweenBatches = delayFrameCountBetweenBatches;
         }

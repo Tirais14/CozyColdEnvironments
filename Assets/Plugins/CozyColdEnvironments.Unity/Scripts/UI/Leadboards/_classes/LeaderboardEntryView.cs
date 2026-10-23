@@ -81,7 +81,7 @@ namespace CCEnvs.UnityX.UI.Leaderboards
                 {
                     @this.UpdateScoreValueView(item.Value.Key, item.View);
                 })
-                .AddTo(ViewModelDisposables);
+                .AddTo(ViewModelBindings);
         }
 
         private void BindScoreRecordRemove(LeaderboardEntryViewModel vm)
@@ -93,7 +93,7 @@ namespace CCEnvs.UnityX.UI.Leaderboards
                 {
                     @this.UpdateScoreValueView(item.Value.Key, UNBINDED_SCORE_RECORD_VALUE);
                 })
-                .AddTo(ViewModelDisposables);
+                .AddTo(ViewModelBindings);
         }
 
         private void BindScoreRecordsClear(LeaderboardEntryViewModel vm)
@@ -105,7 +105,7 @@ namespace CCEnvs.UnityX.UI.Leaderboards
                     foreach (var scoreView in @this.scoreRecrodViews.Data)
                         scoreView.Value.text = UNBINDED_SCORE_RECORD_VALUE;
                 })
-                .AddTo(ViewModelDisposables);
+                .AddTo(ViewModelBindings);
         }
 
         private void BindScoreRecordReplaced(LeaderboardEntryViewModel vm)
@@ -116,7 +116,7 @@ namespace CCEnvs.UnityX.UI.Leaderboards
                 {
                     @this.UpdateScoreValueView(item.NewValue.Value.Key, item.NewValue.View);
                 })
-                .AddTo(ViewModelDisposables);
+                .AddTo(ViewModelBindings);
         }
 
         private void BindProfileIconView(LeaderboardEntryViewModel vm)
@@ -129,7 +129,7 @@ namespace CCEnvs.UnityX.UI.Leaderboards
                 {
                     @this.profileIconView!.sprite = icon;
                 })
-                .AddTo(ViewModelDisposables);
+                .AddTo(ViewModelBindings);
         }
 
         private void BindPositionView(LeaderboardEntryViewModel vm)
@@ -142,7 +142,7 @@ namespace CCEnvs.UnityX.UI.Leaderboards
                 {
                     @this.positionView!.text = pos;
                 })
-                .AddTo(ViewModelDisposables);
+                .AddTo(ViewModelBindings);
         }
 
         private void SetProfileNameView(LeaderboardEntryViewModel vm)

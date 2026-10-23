@@ -1,8 +1,9 @@
 using CCEnvs.Attributes;
+using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CCEnvs.Disposables;
 using CCEnvs.FuncLanguage;
-using CCEnvs.Reflection;
+using CCEnvs.Patterns.Factories;
 using CCEnvs.TypeMatching;
 using CommunityToolkit.Diagnostics;
 using System;
@@ -15,38 +16,20 @@ namespace CCEnvs.Services
 {
     public static class CCServices
     {
-        public readonly struct BindHandle
-        {
-            public IReadOnlyList<Type> Contracts { get; }
-
-            public object? ID { get; }
-
-            public BindHandle(IEnumerable<Type> contracts, object? iD)
-            {
-                CC.Guard.IsNotNull(contracts, nameof(contracts));
-
-                Contracts = contracts.ToArray();
-                ID = iD;
-            }
-        }
-
         private static readonly Dictionary<BindingKey, BindingNode> bindings = new();
 
-        public static IDisposable Bind(IServiceBinder binder)
+        public static IDisposable Bind(IServiceBinder binder, BindingType bindingType)
         {
             CC.Guard.IsNotNull(binder, nameof(binder));
 
             object? id = null;
-            bool ignoreIfBound = false;
 
-            if (binder.Is<IServiceBinderIDProvider>(out var idProvider))
+            if (binder.Is<IServiceBindingIDProvider>(out var idProvider))
                 id = idProvider.ID;
 
-            if (binder.Is<IServiceBinderIfNotBoundProvider>(out var ifNotBountProvider))
-                ignoreIfBound = ifNotBountProvider.IgnoreIfBound;
+            var bindingKey = new BindingKey(binder.Contract, id);
+            bool ignoreIfBound = false;
 
-            var bindingKey = new BindingKey(binder.Contract, binder.Instance);
-            
             if (bindings.ContainsKey(bindingKey))
             {
                 if (ignoreIfBound)
@@ -60,72 +43,108 @@ namespace CCEnvs.Services
                     );
             }
 
-            bindings.Add(bindingKey, new BindingNode(binder.Instance, BindingType.Single));
+            if (binder.Is<IServiceBindingNotBoundStateProvider>(out var ifNotBoundProvider))
+                ignoreIfBound = ifNotBoundProvider.IgnoreIfBound;
 
-            if (binder.Is<IServiceBinderInterfacesProvider>(out var interfacesProvider))
+            if (binder is IServiceBindingFactoryProvider factoryProvider)
             {
-                bool hasError = false;
-                var ifaceBindingKeys = new List<BindingKey>(interfacesProvider.Interfaces.Count);
+                if (bindingType != BindingType.Transient &&
+                    binder is IServiceBindingLazyStateProvider lazyStateProvider &&
+                    !lazyStateProvider.IsLazy
+                    )
+                    bindings.Add(bindingKey, new BindingNode(factoryProvider.Factory.Create(Array.Empty<object>()), bindingType));
+                else
+                    bindings.Add(bindingKey, new BindingNode(factoryProvider.Factory, bindingType));
 
-                for (int i = 0; i < interfacesProvider.Interfaces.Count; i++)
+            }
+            else if (binder is IServiceBindingInstanceProvider instanceProvider)
+            {
+                if (bindingType == BindingType.Transient)
                 {
-                    Type iface = interfacesProvider.Interfaces[i];
-
-                    if (!iface.IsInterface)
-                    {
-                        typeof(CCServices).PrintError(DebugMessageBuilder.CreatePooled()
-                            .AddMessage("Unexpected interface type")
-                            .AddProperty("Type", iface)
-                            .ToStringAndDispose()
-                            );
-                        hasError = true;
-                        break;
-                    }
-
-                    if (binder.Instance.IsNotInstanceOfType(iface))
-                    {
-                        typeof(CCServices).PrintError(DebugMessageBuilder.CreatePooled()
-                            .AddMessage("Instance doesn't realize interfaces type")
-                            .AddProperty("Interface", iface)
-                            .AddProperty("InstanceType", binder.Instance.GetType())
-                            .ToStringAndDispose()
-                            );
-                        hasError = true;
-                        break;
-                    }
-
-                    if (!ignoreIfBound && HasBinding(iface, id))
-                    {
-                        typeof(CCServices).PrintError(DebugMessageBuilder.CreatePooled()
-                            .AddMessage("Binding already exists")
-                            .AddProperty("Contract", iface)
-                            .AddProperty("ID", id)
-                            .ToStringAndDispose()
-                            );
-                    }
-
-                    var ifaceBindingKey = new BindingKey(iface, id);
-                    ifaceBindingKeys.Add(ifaceBindingKey);
+                    throw new ArgumentException(DebugMessageBuilder.CreatePooled()
+                        .AddMessage("Binder cannot be transient")
+                        .AddProperty("Binder", binder.GetType())
+                        .ToStringAndDispose()
+                        );
                 }
 
-                var compositeHandle = new CCCompositeDisposable(interfacesProvider.Interfaces.Count + 1)
-                {
-                    CCDisposable.Create(bindingKey, bindingKey => Unbind(bindingKey))
-                };
-
-                if (!hasError)
-                {
-                    foreach (var ifaceBindingKey in ifaceBindingKeys)
-                    {
-                        bindings.Add(ifaceBindingKey, new BindingNode(binder.Instance, BindingType.Single));
-                        compositeHandle.Add(CCDisposable.Create(ifaceBindingKey, (ifaceBindingKey) => Unbind(ifaceBindingKey)));
-                    }
-                }
-
-                return compositeHandle;
+                bindings.Add(bindingKey, new BindingNode(instanceProvider.Instance, bindingType));
+            }
+            else
+            {
+                throw new ArgumentException(DebugMessageBuilder.CreatePooled()
+                    .AddMessage("Invalid binder")
+                    .AddProperty("Binder", binder.GetType())
+                    .AddProperty("Providers", binder.GetType().GetInterfaces().Where(x => x.Name.EndsWith("provider", StringComparison.OrdinalIgnoreCase)).SequenceToString())
+                    .ToStringAndDispose()
+                    );
             }
 
             return CCDisposable.Create(bindingKey, bindingKey => Unbind(bindingKey));
+
+            //if (binder.Is<IServiceBinderInterfacesProvider>(out var interfacesProvider))
+            //{
+            //    bool hasError = false;
+            //    var ifaceBindingKeys = new List<BindingKey>(interfacesProvider.Interfaces.Count);
+
+            //    for (int i = 0; i < interfacesProvider.Interfaces.Count; i++)
+            //    {
+            //        Type iface = interfacesProvider.Interfaces[i];
+
+            //        if (!iface.IsInterface)
+            //        {
+            //            typeof(CCServices).PrintError(DebugMessageBuilder.CreatePooled()
+            //                .AddMessage("Unexpected interface type")
+            //                .AddProperty("Type", iface)
+            //                .ToStringAndDispose()
+            //                );
+            //            hasError = true;
+            //            break;
+            //        }
+
+            //        if (binder.Instance.IsNotInstanceOfType(iface))
+            //        {
+            //            typeof(CCServices).PrintError(DebugMessageBuilder.CreatePooled()
+            //                .AddMessage("Instance doesn't realize interface type")
+            //                .AddProperty("Interface", iface)
+            //                .AddProperty("Instance", binder.Instance.GetType())
+            //                .ToStringAndDispose()
+            //                );
+            //            hasError = true;
+            //            break;
+            //        }
+
+            //        if (!ignoreIfBound && HasBinding(iface, id))
+            //        {
+            //            typeof(CCServices).PrintError(DebugMessageBuilder.CreatePooled()
+            //                .AddMessage("Binding already exists")
+            //                .AddProperty("Contract", iface)
+            //                .AddProperty("ID", id)
+            //                .ToStringAndDispose()
+            //                );
+            //        }
+
+            //        ifaceBindingKeys.Add(new BindingKey(iface, id));
+            //    }
+
+            //    var compositeHandle = new CCCompositeDisposable(interfacesProvider.Interfaces.Count + 1)
+            //    {
+            //        CCDisposable.Create(bindingKey, bindingKey => Unbind(bindingKey))
+            //    };
+
+            //    if (!hasError)
+            //    {
+            //        foreach (var ifaceBindingKey in ifaceBindingKeys)
+            //        {
+            //            bindings.Add(ifaceBindingKey, new BindingNode(binder.Instance, BindingType.Single));
+            //            compositeHandle.Add(CCDisposable.Create(ifaceBindingKey, (ifaceBindingKey) => Unbind(ifaceBindingKey)));
+            //        }
+            //    }
+
+            //    return compositeHandle;
+            //}
+
+            //return CCDisposable.Create(bindingKey, bindingKey => Unbind(bindingKey));
         }
         public static ServiceBinderNonGeneric Bind(Type contract)
         {
@@ -144,6 +163,16 @@ namespace CCEnvs.Services
         public static ServiceInstanceBinderGeneric<T> BindInstance<T>(T instance)
         {
             return new ServiceInstanceBinderGeneric<T>(instance);
+        }
+
+        public static ServiceFactoryBinderNonGeneric BindFactory(Type contract, IFactory factory)
+        {
+            return new ServiceFactoryBinderNonGeneric(contract, factory);
+        }
+
+        public static ServiceFactoryBinderGeneric<T> BindFactory<T>(IFactory<T> factory)
+        {
+            return new ServiceFactoryBinderGeneric<T>(factory);
         }
 
         public static object Resolve(Type contract, object? id = null)

@@ -34,7 +34,7 @@ namespace CCEnvs.UnityX.Pools
         [SerializeField]
         protected int preheatCount;
 
-        [SerializeField, Min(1f)]
+        [SerializeField, Min(0f)]
         protected int preheatBatchSize;
 
         [SerializeField, Min(0f)]
@@ -83,6 +83,9 @@ namespace CCEnvs.UnityX.Pools
         {
             if (preheatCount > capacity)
                 capacity = preheatCount;
+
+            if (preheatBatchSize > preheatCount)
+                preheatBatchSize = preheatCount;
         }
 #endif
 

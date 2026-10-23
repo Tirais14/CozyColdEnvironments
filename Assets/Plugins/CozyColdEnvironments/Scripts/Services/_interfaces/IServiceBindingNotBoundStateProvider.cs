@@ -1,7 +1,7 @@
 #nullable enable
 namespace CCEnvs.Services
 {
-    public interface IServiceBinderIfNotBoundProvider
+    public interface IServiceBindingNotBoundStateProvider
     {
         bool IgnoreIfBound { get; }
     }

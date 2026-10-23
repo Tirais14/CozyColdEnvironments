@@ -22,11 +22,11 @@ namespace CCEnvs.UnityX.Pools
 
         protected override ComponentPool<TComponent> CreatePool()
         {
-            return new ComponentPool<TComponent>(factory, capacity: capacity);
+            return new ComponentPool<TComponent>(factory, capacity: capacity, objectsRoot: transform);
         }
     }
 
-    public abstract class ComponentMonoPool<TComponent> : ComponentMonoPool<TComponent, UnityObjectMonoFactory<TComponent>>
+    public abstract class ComponentMonoPool<TComponent> : ComponentMonoPool<TComponent, UnityObjectFactory<TComponent>>
         where TComponent : Component
     {
 

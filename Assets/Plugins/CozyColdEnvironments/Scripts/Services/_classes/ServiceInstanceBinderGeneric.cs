@@ -3,15 +3,15 @@ using System;
 
 namespace CCEnvs.Services
 {
-    public class ServiceInstanceBinderGeneric<T> : IServiceBinder, IServiceBinderIfNotBoundProvider
+    public class ServiceInstanceBinderGeneric<T> 
+        :
+        IServiceBinder<T>,
+        IServiceBindingNotBoundStateProvider,
+        IServiceBindingInstanceProvider<T>
     {
-        public Type Contract => typeof(T);
-
         public T Instance { get; }
 
         public bool IgnoreIfBound { get; set; }
-
-        object IServiceBinder.Instance => Instance!;
 
         public ServiceInstanceBinderGeneric(T instance)
         {
@@ -28,7 +28,7 @@ namespace CCEnvs.Services
 
         public IDisposable AsSingle()
         {
-            return CCServices.Bind(this);
+            return CCServices.Bind(this, BindingType.Single);
         }
 
         public ServiceInstanceIDBinderGeneric<T> WithID(object id)

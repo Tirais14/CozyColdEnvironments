@@ -6,7 +6,12 @@ using System;
 #nullable enable
 namespace CCEnvs.Services
 {
-    public class ServiceInstanceIDBinderNonGeneric : IServiceBinder, IServiceBinderIDProvider, IServiceBinderIfNotBoundProvider
+    public class ServiceInstanceIDBinderNonGeneric
+        :
+        IServiceBinder,
+        IServiceBindingIDProvider,
+        IServiceBindingNotBoundStateProvider,
+        IServiceBindingInstanceProvider
     {
         public Type Contract { get; }
 
@@ -35,7 +40,7 @@ namespace CCEnvs.Services
 
         public IDisposable AsSingle()
         {
-            return CCServices.Bind(this); ;
+            return CCServices.Bind(this, BindingType.Single);
         }
     }
 }

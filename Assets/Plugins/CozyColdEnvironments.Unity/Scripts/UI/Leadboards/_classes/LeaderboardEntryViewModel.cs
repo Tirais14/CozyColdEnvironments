@@ -28,12 +28,12 @@ namespace CCEnvs.UnityX.UI.Leaderboards
         {
             ScoreRecords = model.ScoreRecords.CreateView(
                 static item => item.Value.ToString())
-                .AddTo(ModelDisposables);
+                .AddTo(ModelBindings);
 
             Score = model.ObserveScore()
                 .Select(score => score.ToString())
                 .ToReadOnlyReactiveProperty(model.Score.ToString())
-                .AddTo(ModelDisposables);
+                .AddTo(ModelBindings);
 
             ProfileIcon = model.Profile.ObserveIcon()
                 .Select(
@@ -42,7 +42,7 @@ namespace CCEnvs.UnityX.UI.Leaderboards
                     return sprite.Maybe().GetValue(static () => UCC.AnonymousProfileImage);
                 })
                 .ToReadOnlyReactiveProperty(model.Profile.Icon.Maybe().GetValue(static () => UCC.AnonymousProfileImage))
-                .AddTo(ModelDisposables)!;
+                .AddTo(ModelBindings)!;
 
             Position = model.ObservePosition()
                 .Select(
@@ -51,7 +51,7 @@ namespace CCEnvs.UnityX.UI.Leaderboards
                     return pos.GetValueOrDefault().ToString();
                 })
                 .ToReadOnlyReactiveProperty(model.Position.GetValueOrDefault().ToString())
-                .AddTo(ModelDisposables);
+                .AddTo(ModelBindings);
         }
     }
 }

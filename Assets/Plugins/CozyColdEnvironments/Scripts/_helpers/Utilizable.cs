@@ -82,5 +82,13 @@ namespace CCEnvs
             UtilizeOrDisposeEach(source, bufferized);
             source.Clear();
         }
+
+        public static void Utilize(object obj)
+        {
+            if (obj is IUtilizable utilizable)
+                utilizable.Utilize();
+            else if (obj is IDisposable disposable)
+                disposable.Dispose();
+        }
     }
 }

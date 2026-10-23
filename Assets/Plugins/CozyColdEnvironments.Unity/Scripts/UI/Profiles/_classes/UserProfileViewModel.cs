@@ -16,7 +16,7 @@ namespace CCEnvs.UnityX.UI.Profiles
         {
             Icon = model.ObserveIcon()
                 .ToReadOnlyReactiveProperty(model.Icon)
-                .AddTo(ModelDisposables);
+                .AddTo(ModelBindings);
         }
     }
 }

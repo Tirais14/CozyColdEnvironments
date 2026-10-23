@@ -1,6 +1,9 @@
 #if UNITASK_PLUGIN
+using CommunityToolkit.Diagnostics;
 using Cysharp.Threading.Tasks;
+using System;
 using System.Threading;
+using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Threading.Tasks
@@ -84,6 +87,81 @@ namespace CCEnvs.Threading.Tasks
                 return;
 
             await UniTask.SwitchToMainThread();
+        }
+
+        public static async UniTask Update(
+            Func<bool> moveNext,
+            PlayerLoopTiming timing = PlayerLoopTiming.Update,
+            CancellationToken cancellationToken = default
+            )
+        {
+            Guard.IsNotNull(moveNext, nameof(moveNext));
+
+            while(!cancellationToken.IsCancellationRequested && moveNext())
+                await UniTask.Yield(timing, cancellationToken);
+        }
+        public static async UniTask Update<TState>(
+            TState state,
+            Func<TState, bool> moveNext,
+            PlayerLoopTiming timing = PlayerLoopTiming.Update,
+            CancellationToken cancellationToken = default
+            )
+        {
+            Guard.IsNotNull(moveNext, nameof(moveNext));
+
+            while (!cancellationToken.IsCancellationRequested && moveNext(state))
+                await UniTask.Yield(timing, cancellationToken);
+        }
+
+        public static async UniTask Timer(
+            TimeSpan dueTime,
+            Action? action = null, 
+            PlayerLoopTiming timing = PlayerLoopTiming.Update,
+            bool unsacledDeltaTime = false,
+            CancellationToken cancellationToken = default
+            )
+        {
+            float seconds = 0f;
+            bool fixedDeltaTime = timing == PlayerLoopTiming.FixedUpdate ||
+                                  timing == PlayerLoopTiming.LastFixedUpdate;
+
+            while (seconds < dueTime.TotalSeconds)
+            {
+                await UniTask.NextFrame(timing, cancellationToken);
+
+                if (fixedDeltaTime)
+                    seconds += Time.fixedDeltaTime;
+                else
+                    seconds += unsacledDeltaTime ? Time.unscaledDeltaTime : Time.deltaTime;
+            }
+
+            action?.Invoke();
+        }
+        public static async UniTask Timer<TState>(
+            TimeSpan dueTime,
+            TState? state = default,
+            Action<TState>? action = null,
+            PlayerLoopTiming timing = PlayerLoopTiming.Update,
+            bool unsacledDeltaTime = false,
+            CancellationToken cancellationToken = default
+            )
+        {
+            float seconds = 0f;
+            bool fixedDeltaTime = timing == PlayerLoopTiming.FixedUpdate ||
+                                  timing == PlayerLoopTiming.LastFixedUpdate;
+
+            while (seconds < dueTime.TotalSeconds)
+            {
+                await UniTask.NextFrame(timing, cancellationToken);
+
+                if (fixedDeltaTime)
+                    seconds += Time.fixedDeltaTime;
+                else
+                    seconds += unsacledDeltaTime ? Time.unscaledDeltaTime : Time.deltaTime;
+            }
+
+            if (state.IsNotNull())
+                action?.Invoke(state);
         }
     }
 }

@@ -6,7 +6,7 @@ using System.Linq;
 #nullable enable
 namespace CCEnvs.Services
 {
-    public class ServiceInterfacesInstanceBinderNonGeneric : IServiceBinder, IServiceBinderIfNotBoundProvider, IServiceBinderInterfacesProvider
+    public class ServiceInterfacesInstanceBinderNonGeneric : IServiceBinder, IServiceBindingNotBoundStateProvider, IServiceBinderInterfacesProvider
     {
         public Type Contract { get; }
 
@@ -39,7 +39,7 @@ namespace CCEnvs.Services
 
         public IDisposable AsSingle()
         {
-            return CCServices.Bind(this);
+            return CCServices.Bind(this, BindingType.Single);
         }
     }
 }

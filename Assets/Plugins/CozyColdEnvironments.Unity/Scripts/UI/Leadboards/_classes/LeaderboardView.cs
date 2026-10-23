@@ -35,7 +35,7 @@ namespace CCEnvs.UnityX.UI.Leaderboards
             vm.Entries.ObserveDictionaryAdd(vm.DisposeCancellationToken)
                 .Select(static ev => ev.Value)
                 .Subscribe(vm.OnEntryAdd)
-                .AddTo(ViewModelDisposables);
+                .AddTo(ViewModelBindings);
         }
 
         private void BindEntryRemove(LeaderboardViewModel vm)
@@ -43,7 +43,7 @@ namespace CCEnvs.UnityX.UI.Leaderboards
             vm.Entries.ObserveDictionaryRemove(vm.DisposeCancellationToken)
                 .Select(static ev => ev.Value)
                 .Subscribe(vm.OnEntryRemove)
-                .AddTo(ViewModelDisposables);
+                .AddTo(ViewModelBindings);
         }
 
         private void BindEntryClear(LeaderboardViewModel vm)
@@ -51,7 +51,7 @@ namespace CCEnvs.UnityX.UI.Leaderboards
             vm.Entries.ObserveClear(vm.DisposeCancellationToken)
                 .Subscribe(vm,
                 static (_, vm) => vm.OnEntriesClear())
-                .AddTo(ViewModelDisposables);
+                .AddTo(ViewModelBindings);
         }
 
         private void BindSortedEntries(LeaderboardViewModel vm)
@@ -63,7 +63,7 @@ namespace CCEnvs.UnityX.UI.Leaderboards
                 {
                     vm.SortEntries();
                 })
-                .AddTo(ViewModelDisposables);
+                .AddTo(ViewModelBindings);
         }
     }
 }

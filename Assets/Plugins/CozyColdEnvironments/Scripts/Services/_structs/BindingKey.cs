@@ -42,5 +42,13 @@ namespace CCEnvs.Services
         {
             return HashCode.Combine(Contract, ID);
         }
+
+        public override string ToString()
+        {
+            return ToStringBuilder.CreatePooled()
+                .AddProperty(nameof(Contract), Contract)
+                .AddProperty(nameof(ID), ID)
+                .ToStringAndDispose();
+        }
     }
 }

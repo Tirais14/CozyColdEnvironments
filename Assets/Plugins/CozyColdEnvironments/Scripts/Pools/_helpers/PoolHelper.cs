@@ -107,7 +107,7 @@ namespace CCEnvs.Pools
         public static void Preheat<T>(
             this IObjectPoolBase<T> pool,
             int count,
-            int batchSize = 1,
+            int batchSize = -1,
             int delayFrameCountBetweenBatches = 0,
             IFactory<T>? customFactory = null
             )

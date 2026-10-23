@@ -93,7 +93,7 @@ namespace CCEnvs.UnityX.UI
 
         protected TViewModel GuardedViewModel => ViewModel.ThrowIfNull(nameof(ViewModel));
 
-        protected ICollection<IDisposable> ViewModelDisposables => viewModelDisposables.Value;
+        protected ICollection<IDisposable> ViewModelBindings => viewModelDisposables.Value;
 
         protected override void Start()
         {
@@ -276,7 +276,7 @@ namespace CCEnvs.UnityX.UI
                 disposable.Dispose();
 
             if (viewModelDisposables.IsValueCreated)
-                ViewModelDisposables.DisposeEachAndClear(bufferized: true);
+                ViewModelBindings.DisposeEachAndClear(bufferized: true);
 
             modelBinding?.Dispose();
         }

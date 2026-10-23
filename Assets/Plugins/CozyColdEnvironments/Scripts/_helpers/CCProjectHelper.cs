@@ -1,6 +1,7 @@
 #nullable enable
 using CCEnvs.Attributes;
 using CCEnvs.Collections;
+using CCEnvs.Diagnostics;
 using CCEnvs.Reflection;
 using CommunityToolkit.Diagnostics;
 using SuperLinq;
@@ -200,7 +201,12 @@ namespace CCEnvs
                 }
                 catch (Exception ex)
                 {
-                    typeof(CCProjectHelper).PrintException(ex);
+                    typeof(CCProjectHelper).PrintError(DebugMessageBuilder.CreatePooled()
+                        .AddProperty(ex.GetType().ToString(), ex.Message)
+                        .AddProperty("MethodName", method.Name)
+                        .AddProperty("MethodDeclaringType", method.DeclaringType)
+                        .ToStringAndDispose()
+                        );
                 }
             }
         }

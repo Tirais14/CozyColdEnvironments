@@ -6,7 +6,10 @@ namespace CCEnvs.Services
     public interface IServiceBinder
     {
         Type Contract { get; }
+    }
 
-        object Instance { get; }
+    public interface IServiceBinder<T> : IServiceBinder
+    {
+        Type IServiceBinder.Contract => typeof(T);
     }
 }

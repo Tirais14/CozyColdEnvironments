@@ -127,9 +127,9 @@ namespace CCEnvs
                 return new ArgumentException($"Argument: {argName} cannot be {argName}.");
             }
 
-            public static InvalidOperationException InvalidOperationException(object arg, string? argName = null)
+            public static InvalidOperationException InvalidOperationException(object? arg, string? argName = null)
             {
-                return new InvalidOperationException($"Argument: {argName ?? "value"} cannot be {arg}");
+                return new InvalidOperationException($"Argument: {argName ?? "value"} cannot be {arg ?? "null"}");
             }
 
             public static InvalidOperationException MemberNotFoundException(string? name = null, MemberTypes? memberType = null, Type? reflectedType = null, BindingFlags? bindingFlags = null, Type[]? argumentTypes = null, Binder? binder = null)

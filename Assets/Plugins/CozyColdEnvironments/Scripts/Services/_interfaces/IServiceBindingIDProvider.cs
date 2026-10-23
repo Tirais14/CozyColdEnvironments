@@ -1,6 +1,6 @@
 namespace CCEnvs.Services
 {
-    public interface IServiceBinderIDProvider
+    public interface IServiceBindingIDProvider
     {
         object ID { get; }
     }

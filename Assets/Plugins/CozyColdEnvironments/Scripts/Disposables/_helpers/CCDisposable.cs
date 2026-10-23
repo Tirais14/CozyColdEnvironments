@@ -1,5 +1,6 @@
 using CCEnvs.Reflection;
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 #nullable enable
@@ -8,6 +9,26 @@ namespace CCEnvs.Disposables
     public static class CCDisposable
     {
         public static IDisposable Empty { get; } = Create(Do.Nothing);
+
+        public static IDisposable AddTo<TKey>(
+            this IDisposable disposable,
+            IDictionary<TKey, IDisposable> dictionary,
+            TKey key
+            )
+        {
+            dictionary.Add(key, disposable);
+            return disposable;
+        }
+        public static IDisposable AddTo<TKey, TValue>(
+            this IDisposable disposable,
+            IDictionary<TKey, TValue> dictionary,
+            TKey key
+            )
+            where TValue : ICollection<IDisposable>
+        {
+            dictionary[key].Add(disposable);
+            return disposable;
+        }
 
         public static IDisposable Create(Action action)
         {

@@ -26,10 +26,11 @@ namespace CCEnvs.UnityX.InputSystem
         public static IDisposable RegisterInputActionsInServices(IInputHandlerRx inputHandlerRx)
         {
             var compositeDisposable = new CCEnvs.Disposables.CCCompositeDisposable();
+            var inputHandlerType = inputHandlerRx.GetType();
 
             foreach (var inputAction in GetInputActions(inputHandlerRx))
             {
-                var inputActionID = $"{inputHandlerRx.GetType().GetName(TypeNameConvertingAttributes.None)}.{inputAction.Name}";
+                string inputActionID = $"{inputHandlerType.GetName(TypeNameConvertingAttributes.None)}.{inputAction.Name}";
 
                 CCServices.Bind(inputAction.GetType())
                     .FromInstance(inputAction)
