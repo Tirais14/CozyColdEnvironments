@@ -18,11 +18,12 @@ namespace CCEnvs.UnityX.Editr.AITools
     public class ScriptContextGenerator
     {
         public static async Task<Scripts> GetScriptsAsync(
-            ICollection<ScriptContextNamespace> namespaces,
+            ICollection<ScriptContextScriptInfo> scriptInfos,
             IEnumerable<string>? directories = null,
+            int dependencyMaxDepth = int.MaxValue,
             CancellationToken cancellationToken = default)
         {
-            CC.Guard.IsNotNull(namespaces, nameof(namespaces));
+            CC.Guard.IsNotNull(scriptInfos, nameof(scriptInfos));
 
             var results = new Scripts();
             var scriptsDirs = new List<string>(1024);
@@ -33,12 +34,10 @@ namespace CCEnvs.UnityX.Editr.AITools
                 foreach (var dir in directories.Distinct())
                     scriptsDirs.AddRange(Directory.GetDirectories(Application.dataPath, dir, SearchOption.AllDirectories));
 
-            bool includeFilesWithoutNamespace = namespaces.Any(ns => string.IsNullOrEmpty(ns.Name));
             var allFilePaths = scriptsDirs.SelectMany(dir => Directory.GetFiles(dir, "*.cs", new EnumerationOptions { RecurseSubdirectories = true })).ToList();
-
             int maxDegreeOfParallelism = Math.Max(4, Environment.ProcessorCount);
 
-            // ШАГ 1: Построение точной карты "ИмяТипа -> СписокФайлов" с помощью Roslyn Syntax Tree
+            // ШАГ 1: Построение карты "ИмяТипа -> СписокФайлов"
             var typeToFileMap = new ConcurrentDictionary<string, List<string>>();
 
             Parallel.ForEach(allFilePaths, new ParallelOptions { MaxDegreeOfParallelism = maxDegreeOfParallelism }, filePath =>
@@ -49,12 +48,10 @@ namespace CCEnvs.UnityX.Editr.AITools
                     var tree = CSharpSyntaxTree.ParseText(content, path: filePath);
                     var root = tree.GetRoot();
 
-                    // Определяем текущий неймспейс файла
                     string namespaceName = root.DescendantNodes()
                         .OfType<BaseNamespaceDeclarationSyntax>()
                         .FirstOrDefault()?.Name.ToString() ?? "";
 
-                    // Находим все объявления типов (class, struct, interface, enum, record)
                     var typeDeclarations = root.DescendantNodes().OfType<TypeDeclarationSyntax>();
 
                     foreach (var typeDecl in typeDeclarations)
@@ -62,19 +59,14 @@ namespace CCEnvs.UnityX.Editr.AITools
                         string typeName = typeDecl.Identifier.Text;
                         string fullName = string.IsNullOrEmpty(namespaceName) ? typeName : $"{namespaceName}.{typeName}";
 
-                        // Добавляем в карту и полное имя, и короткое (для удобства поиска)
                         AddToTypeMap(typeToFileMap, fullName, filePath);
                         AddToTypeMap(typeToFileMap, typeName, filePath);
                     }
                 }
-                catch
-                {
-                    // Игнорируем файлы с синтаксическими ошибками или недоступные
-                }
+                catch { }
             });
 
-            // ШАГ 2: Обработка целевых файлов и рекурсивное разрешение зависимостей
-            var globallyProcessedFiles = new ConcurrentDictionary<string, byte>(); // Защита от дубликатов и циклов
+            // ШАГ 2: Обработка файлов, чьи типы совпадают с правилами
             var semaphore = new SemaphoreSlim(maxDegreeOfParallelism, maxDegreeOfParallelism);
             var tasks = new List<Task>(allFilePaths.Count);
 
@@ -82,11 +74,10 @@ namespace CCEnvs.UnityX.Editr.AITools
             {
                 var task = ProcessTargetFileAsync(
                     filePath,
-                    namespaces,
-                    includeFilesWithoutNamespace,
+                    scriptInfos,
                     typeToFileMap,
                     results,
-                    globallyProcessedFiles,
+                    dependencyMaxDepth,
                     semaphore,
                     cancellationToken);
                 tasks.Add(task);
@@ -98,11 +89,10 @@ namespace CCEnvs.UnityX.Editr.AITools
 
         private static async Task ProcessTargetFileAsync(
             string filePath,
-            ICollection<ScriptContextNamespace> namespaces,
-            bool includeFilesWithoutNamespace,
+            ICollection<ScriptContextScriptInfo> scriptInfos,
             ConcurrentDictionary<string, List<string>> typeToFileMap,
             Scripts results,
-            ConcurrentDictionary<string, byte> globallyProcessedFiles,
+            int dependencyMaxDepth,
             SemaphoreSlim semaphore,
             CancellationToken cancellationToken)
         {
@@ -119,33 +109,44 @@ namespace CCEnvs.UnityX.Editr.AITools
                     .OfType<BaseNamespaceDeclarationSyntax>()
                     .FirstOrDefault()?.Name.ToString() ?? "";
 
+                var declaredTypes = root.DescendantNodes().OfType<TypeDeclarationSyntax>()
+                    .Select(t => new
+                    {
+                        ShortName = t.Identifier.Text,
+                        FullName = string.IsNullOrEmpty(namespaceName) ? t.Identifier.Text : $"{namespaceName}.{t.Identifier.Text}"
+                    })
+                    .ToList();
+
+                ScriptContextScriptInfo? matchedRule = null;
                 bool isTargetMatch = false;
-                ScriptContextNamespace? targetRule = null;
 
-                if (string.IsNullOrEmpty(namespaceName))
+                foreach (var rule in scriptInfos)
                 {
-                    isTargetMatch = includeFilesWithoutNamespace;
-                    if (isTargetMatch) targetRule = namespaces.FirstOrDefault(ns => string.IsNullOrEmpty(ns.Name));
+                    foreach (var type in declaredTypes)
+                    {
+                        if (type.FullName.Match(rule.Name, rule.MatchSettings) ||
+                            type.ShortName.Match(rule.Name, rule.MatchSettings))
+                        {
+                            isTargetMatch = true;
+                            matchedRule = rule;
+                            break;
+                        }
+                    }
+                    if (isTargetMatch) break;
                 }
-                else
-                {
-                    targetRule = namespaces.FirstOrDefault(nsRule => nsRule.Name.Match(namespaceName, nsRule.MatchSettings));
-                    if (targetRule != null)
-                        isTargetMatch = true;
-                }
 
-                if (isTargetMatch && targetRule != null)
+                if (isTargetMatch && matchedRule != null)
                 {
-                    // 1. Обрабатываем сам целевой файл
-                    ProcessAndAddFile(filePath, namespaceName, content, results, globallyProcessedFiles, isDependency: false, rule: targetRule);
+                    // 1. Добавляем сам целевой файл
+                    ProcessAndAddFile(filePath, namespaceName, content, results, isDependency: false, rule: matchedRule);
 
-                    // 2. Если нужны зависимости, запускаем рекурсивный обход графа
-                    if (targetRule.IncludeDependecies)
+                    // 2. Если нужны зависимости и глубина > 0, запускаем рекурсивный обход графа
+                    if (matchedRule.IncludeDependecies && dependencyMaxDepth > 0)
                     {
                         var dependencyFiles = ResolveDependenciesRecursive(
                             filePath,
                             typeToFileMap,
-                            globallyProcessedFiles,
+                            dependencyMaxDepth,
                             cancellationToken);
 
                         foreach (var depFilePath in dependencyFiles)
@@ -155,13 +156,12 @@ namespace CCEnvs.UnityX.Editr.AITools
                                 cancellationToken.ThrowIfCancellationRequested();
                                 var depContent = await File.ReadAllTextAsync(depFilePath, cancellationToken);
 
-                                // Определяем неймспейс зависимости для корректной обработки флагов
                                 var depTree = CSharpSyntaxTree.ParseText(depContent, path: depFilePath);
                                 var depNs = depTree.GetRoot().DescendantNodes()
                                     .OfType<BaseNamespaceDeclarationSyntax>()
                                     .FirstOrDefault()?.Name.ToString() ?? "";
 
-                                ProcessAndAddFile(depFilePath, depNs, depContent, results, globallyProcessedFiles, isDependency: true, rule: targetRule);
+                                ProcessAndAddFile(depFilePath, depNs, depContent, results, isDependency: true, rule: matchedRule);
                             }
                             catch (Exception ex)
                             {
@@ -171,10 +171,7 @@ namespace CCEnvs.UnityX.Editr.AITools
                     }
                 }
             }
-            catch (OperationCanceledException)
-            {
-                // Нормальное поведение при отмене
-            }
+            catch (OperationCanceledException) { }
             catch (Exception ex)
             {
                 typeof(ScriptContextGenerator).PrintException(ex);
@@ -185,30 +182,34 @@ namespace CCEnvs.UnityX.Editr.AITools
             }
         }
 
-        /// <summary>
-        /// Рекурсивно находит все файлы, содержащие типы, на которые есть ссылки, 
-        /// а также их базовые классы и интерфейсы.
-        /// </summary>
         private static HashSet<string> ResolveDependenciesRecursive(
             string startFilePath,
             ConcurrentDictionary<string, List<string>> typeToFileMap,
-            ConcurrentDictionary<string, byte> globallyProcessedFiles,
+            int maxDepth,
             CancellationToken ct)
         {
             var discoveredDependencies = new HashSet<string>();
-            var queue = new Queue<string>();
-            queue.Enqueue(startFilePath);
+            var visited = new HashSet<string>();
+            var queue = new Queue<(string filePath, int depth)>();
+
+            queue.Enqueue((startFilePath, 0));
+            visited.Add(startFilePath);
 
             while (queue.Count > 0)
             {
-                string currentFile = queue.Dequeue();
+                var (currentFile, currentDepth) = queue.Dequeue();
 
-                // TryAdd возвращает false, если файл уже был обработан (защита от циклических зависимостей)
-                if (!globallyProcessedFiles.TryAdd(currentFile, 0))
-                    continue;
-
+                // Добавляем в результат только если это не стартовый файл
                 if (currentFile != startFilePath)
+                {
                     discoveredDependencies.Add(currentFile);
+                }
+
+                // Если достигли максимальной глубины, не идем дальше
+                if (currentDepth >= maxDepth)
+                {
+                    continue;
+                }
 
                 ct.ThrowIfCancellationRequested();
 
@@ -230,12 +231,16 @@ namespace CCEnvs.UnityX.Editr.AITools
                         if (typeToFileMap.TryGetValue(refType, out var depFiles))
                         {
                             foreach (var depFile in depFiles)
-                                queue.Enqueue(depFile);
+                            {
+                                if (visited.Add(depFile))
+                                {
+                                    queue.Enqueue((depFile, currentDepth + 1));
+                                }
+                            }
                         }
                     }
 
                     // Б. Находим базовые классы и интерфейсы типов, ОБЪЯВЛЕННЫХ в этом файле
-                    // Это гарантирует, что если мы тянем MyClass, мы также вытянем его IMyInterface и MyBaseClass
                     var hierarchyTypes = root.DescendantNodes()
                         .OfType<TypeDeclarationSyntax>()
                         .Where(t => t.BaseList != null)
@@ -249,7 +254,12 @@ namespace CCEnvs.UnityX.Editr.AITools
                         if (typeToFileMap.TryGetValue(hierType, out var baseFiles))
                         {
                             foreach (var baseFile in baseFiles)
-                                queue.Enqueue(baseFile);
+                            {
+                                if (visited.Add(baseFile))
+                                {
+                                    queue.Enqueue((baseFile, currentDepth + 1));
+                                }
+                            }
                         }
                     }
                 }
@@ -264,56 +274,32 @@ namespace CCEnvs.UnityX.Editr.AITools
 
         private static void AddToTypeMap(ConcurrentDictionary<string, List<string>> map, string typeName, string filePath)
         {
-            map.AddOrUpdate(
-                typeName,
-                _ => new List<string> { filePath },
-                (_, list) =>
-                {
-                    if (!list.Contains(filePath))
-                        list.Add(filePath);
-                    return list;
-                });
+            map.AddOrUpdate(typeName, _ => new List<string> { filePath }, (_, list) =>
+            {
+                if (!list.Contains(filePath)) list.Add(filePath);
+                return list;
+            });
         }
 
         private static string GetCleanTypeName(TypeSyntax typeSyntax)
         {
-            if (typeSyntax is GenericNameSyntax generic)
-                return generic.Identifier.Text; // "List" из "List<T>"
-            if (typeSyntax is IdentifierNameSyntax id)
-                return id.Identifier.Text; // "IVendor"
-            if (typeSyntax is QualifiedNameSyntax qualified)
-                return qualified.ToString(); // "System.Collections.Generic.List"
-            if (typeSyntax is AliasQualifiedNameSyntax alias)
-                return alias.ToString();
+            if (typeSyntax is GenericNameSyntax generic) return generic.Identifier.Text;
+            if (typeSyntax is IdentifierNameSyntax id) return id.Identifier.Text;
+            if (typeSyntax is QualifiedNameSyntax qualified) return qualified.ToString();
+            if (typeSyntax is AliasQualifiedNameSyntax alias) return alias.ToString();
+            if (typeSyntax is PredefinedTypeSyntax predefined) return predefined.Keyword.Text;
 
             return typeSyntax.ToString();
         }
 
-        private static void ProcessAndAddFile(
-            string filePath,
-            string ns,
-            string content,
-            Scripts results,
-            ConcurrentDictionary<string, byte> processedFiles,
-            bool isDependency,
-            ScriptContextNamespace rule)
+        private static void ProcessAndAddFile(string filePath, string ns, string content, Scripts results, bool isDependency, ScriptContextScriptInfo rule)
         {
-            processedFiles.TryAdd(filePath, 0);
-
             bool onlyApi = isDependency ? rule.DependeciesOnlyAPI : rule.OnlyAPI;
             bool removeEmpty = isDependency ? rule.DependeciesRemoveEmptyLines : rule.RemoveEmptyLines;
-
             string finalContent = content;
 
-            if (onlyApi)
-            {
-                finalContent = ExtractAPI(finalContent);
-            }
-
-            if (removeEmpty)
-            {
-                finalContent = RemoveEmptyLines(finalContent);
-            }
+            if (onlyApi) finalContent = ExtractAPI(finalContent);
+            if (removeEmpty) finalContent = RemoveEmptyLines(finalContent);
 
             results.Add(filePath, ns, finalContent);
         }
@@ -325,12 +311,13 @@ namespace CCEnvs.UnityX.Editr.AITools
         }
 
         public static async Task<ScriptContext> GenerateAsync(
-            ICollection<ScriptContextNamespace> namespaces,
+            ICollection<ScriptContextScriptInfo> scriptInfos,
             IEnumerable<string>? directories = null,
+            int dependencyMaxDepth = int.MaxValue,
             CancellationToken cancellationToken = default)
         {
             var context = new ScriptContext();
-            var scripts = await GetScriptsAsync(namespaces, directories, cancellationToken);
+            var scripts = await GetScriptsAsync(scriptInfos, directories, dependencyMaxDepth, cancellationToken);
 
             foreach (var kvp in scripts.GetAll())
             {
