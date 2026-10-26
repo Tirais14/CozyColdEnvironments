@@ -1,4 +1,5 @@
 #if UNITY_EDITOR
+using CCEnvs.Collections;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using System;
@@ -32,14 +33,14 @@ namespace CCEnvs.UnityX.Editr.AITools
             var results = new Scripts();
             var scriptsDirs = new List<string>(1024);
 
-            if (directories.IsNull())
+            if (directories.IsNullOrEmpty() || directories.Count(dir => Directory.Exists(dir)) == 0)
                 scriptsDirs.AddRange(Directory.GetDirectories(Application.dataPath, "Scripts", SearchOption.AllDirectories));
             else
                 foreach (var dir in directories.Distinct())
                     scriptsDirs.AddRange(Directory.GetDirectories(Application.dataPath, dir, SearchOption.AllDirectories));
 
             bool includeFilesWithoutNamespace = namespaces.Any(ns => string.IsNullOrEmpty(ns.Name));
-            var allFilePaths = scriptsDirs.SelectMany(dir => Directory.GetFiles(dir, "*.cs")).ToList();
+            var allFilePaths = scriptsDirs.SelectMany(dir => Directory.GetFiles(dir, "*.cs", new EnumerationOptions { RecurseSubdirectories = true})).ToList();
 
             int maxDegreeOfParallelism = Math.Max(4, Environment.ProcessorCount);
 

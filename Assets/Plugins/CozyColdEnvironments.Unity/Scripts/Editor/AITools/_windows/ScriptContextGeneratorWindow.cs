@@ -497,7 +497,7 @@ namespace CCEnvs.UnityX.Editr.AITools
             try
             {
                 using var _ = disableCancellationToken.TryLinkTokens(cancelGenerateCancellationToken, out var cancellationToken);
-                var context = await ScriptContextGenerator.GenerateAsync(namespaces, directories.IsNotEmpty() ? directories : null, cancellationToken: cancellationToken);
+                var context = await ScriptContextGenerator.GenerateAsync(namespaces, directories.IsNotNullOrEmpty() ? directories : null, cancellationToken: cancellationToken);
                 var contextDirPath = Path.Combine(EditorLibrary.DataPath, EDITOR_LIBRARY_FOLDER);
 
                 if (!Directory.Exists(contextDirPath))
