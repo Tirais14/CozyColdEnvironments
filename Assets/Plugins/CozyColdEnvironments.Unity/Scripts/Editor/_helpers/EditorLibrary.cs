@@ -9,7 +9,7 @@ namespace CCEnvs.UnityX.Editr
 {
     public static class EditorLibrary
     {
-        public static string DataPath { get; } = Path.Combine(Path.Combine(Application.dataPath, "Editor"));
+        public static string DataPath { get; } = Path.Combine(Path.Combine(Application.dataPath, "Editor/CCEnvsData"));
 
         public static DirectoryInfo DataDirectory { get; } = new DirectoryInfo(DataPath);
 
@@ -20,7 +20,7 @@ namespace CCEnvs.UnityX.Editr
             if (!DataDirectory.Exists)
                 DataDirectory.Create();
 
-            var filePath = System.IO.Path.Combine(DataPath, "CCEnvsData", path);
+            var filePath = System.IO.Path.Combine(DataPath, path);
 
             var dirName = System.IO.Path.GetDirectoryName(filePath);
 
@@ -48,7 +48,7 @@ namespace CCEnvs.UnityX.Editr
             if (!DataDirectory.Exists)
                 return null;
 
-            var filePath = System.IO.Path.Combine(DataPath, "CCEnvsData", path);
+            var filePath = System.IO.Path.Combine(DataPath, path);
 
             if (!File.Exists(filePath))
                 return null;

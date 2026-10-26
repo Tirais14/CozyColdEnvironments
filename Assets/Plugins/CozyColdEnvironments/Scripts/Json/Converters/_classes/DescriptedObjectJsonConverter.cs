@@ -17,16 +17,12 @@ namespace CCEnvs.Json
         public override bool CanConvert(Type objectType)
         {
             if (TypeSerializationHelper.TypeDescriptors.ContainsKey(objectType))
-            {
                 return true;
-            }
 
             if (objectType.IsDefined<PolymorphSerializableAttribute>(inherit: true)
-                ||
-                objectType == TypeofCache<object>.Type
-                ||
-                objectType.IsAbstract || objectType.IsInterface
-                )
+                || objectType == TypeofCache<object>.Type
+                || objectType.IsAbstract
+                || objectType.IsInterface)
             {
                 return true;
             }
@@ -38,58 +34,76 @@ namespace CCEnvs.Json
             JsonReader reader,
             Type objectType,
             object? existingValue,
-            JsonSerializer serializer
-            )
+            JsonSerializer serializer)
         {
             if (reader.TokenType == JsonToken.Null)
                 return null;
 
             var jToken = JToken.Load(reader);
 
-            //if (jToken is not JObject jObj)
-            //    throw new JsonSerializationException($"Expected JObject. Current: {jToken.Type}: type: {objectType}");
-
-            if (jToken is not JObject jObj
-                ||
-                !jObj.Properties().Any(prop => prop.Name == DESCRIPTOR_PROPERTY_NAME))
+            // 1. Если это не JObject или в нем вообще нет свойства дескриптора
+            if (jToken is not JObject jObj || !jObj.Properties().Any(prop => prop.Name == DESCRIPTOR_PROPERTY_NAME))
             {
-                if (CCDebug.Instance.IsEnabled)
-                    this.PrintLog("Is not JsonObject or not container descriptor property. Try to deserialize by other converters");
-
-                var tSerializer = JsonSerializer.Create(serializer.GetSerializerSettings().ExcludeConverters(this));
-
-                var result = tSerializer.Deserialize(jToken.CreateReader(), objectType);
-
-                if (result is JToken && objectType.IsNotType<JToken>())
-                    throw new InvalidOperationException($"Cannot deserialize abstract type by other converters. Type: {objectType}");
-
-                return result;
+                return FallbackDeserialize(jToken, objectType, serializer);
             }
 
-            if (jObj.Property(DESCRIPTOR_PROPERTY_NAME).IsNull(out var descriptorProp))
-                return OnDescriptorPropertyNotFound(jObj, objectType, serializer);
+            // 2. Если свойство есть, но его значение null
+            if (jObj.Property(DESCRIPTOR_PROPERTY_NAME) is not { } descriptorProp || descriptorProp.Value.Type == JTokenType.Null)
+            {
+                return FallbackDeserialize(jToken, objectType, serializer);
+            }
 
+            // 3. Пытаемся прочитать дескриптор
             var descriptor = descriptorProp.Value.ToObject<TypeSerializationDescriptor>(serializer);
 
-            if (descriptor == default
-                ||
-                !TypeSerializationHelper.DescriptedTypes.TryGetValue(descriptor, out var resultType))
+            // 4. Если дескриптор невалиден или тип не найден в реестре
+            if (descriptor == default || !TypeSerializationHelper.DescriptedTypes.TryGetValue(descriptor, out var resultType))
             {
-                return OnDescriptorNotFound(jObj, objectType, serializer);
+                return FallbackDeserialize(jToken, objectType, serializer);
             }
 
+            // ✅ Успешный путь: дескриптор найден, удаляем его и читаем объект
             jObj.Remove(DESCRIPTOR_PROPERTY_NAME);
+            return OnReadJson(jObj, resultType, serializer);
+        }
 
-            var readed = OnReadJson(jObj, resultType, serializer);
+        /// <summary>
+        /// Попытка десериализовать объект другими конвертерами, исключая текущий, чтобы избежать бесконечной рекурсии.
+        /// </summary>
+        private object? FallbackDeserialize(JToken jToken, Type objectType, JsonSerializer originalSerializer)
+        {
+            if (CCDebug.Instance.IsEnabled)
+            {
+                this.PrintLog($"Descriptor missing or invalid for type '{objectType}'. Falling back to other converters.");
+            }
 
-            return readed;
+            // Создаем настройки, исключая текущий конвертер (используем ваш существующий метод расширения)
+            var fallbackSettings = originalSerializer.GetSerializerSettings().ExcludeConverters(this);
+            var fallbackSerializer = JsonSerializer.Create(fallbackSettings);
+
+            // Копируем важный контекст из оригинального сериализатора
+            fallbackSerializer.Context = originalSerializer.Context;
+            fallbackSerializer.Culture = originalSerializer.Culture;
+            fallbackSerializer.Formatting = originalSerializer.Formatting;
+
+            // Пытаемся десериализовать через остальные конвертеры
+            var result = fallbackSerializer.Deserialize(jToken.CreateReader(), objectType);
+
+            // Защита: если результат все еще JToken, значит ни один другой конвертер не смог обработать этот тип 
+            // (часто бывает с абстрактными классами/интерфейсами без подходящего конвертера)
+            if (result is JToken && objectType.IsNotType<JToken>())
+            {
+                throw new JsonSerializationException(
+                    $"Cannot deserialize type '{objectType}'. No suitable converter found after excluding DescriptedObjectJsonConverter.");
+            }
+
+            return result;
         }
 
         public override void WriteJson(
             JsonWriter writer,
             object? value,
-            JsonSerializer serializer
-            )
+            JsonSerializer serializer)
         {
             if (value.IsNull())
             {
@@ -99,9 +113,11 @@ namespace CCEnvs.Json
 
             var objType = value.GetType();
 
-            if (!TypeSerializationHelper.TryGetTypeSerializationDescriptor(objType, out var descriptor))
+            if (!TypeSerializationHelper.TryGetDescriptor(objType, out var descriptor))
                 throw new JsonSerializationException($"Type: {value.GetType()} hasn't type descriptor");
 
+            // Сохраняем оригинальное значение, чтобы восстановить его после записи
+            var originalTypeNameHandling = serializer.TypeNameHandling;
             serializer.TypeNameHandling = TypeNameHandling.None;
 
             var contract = serializer.ContractResolver.ResolveContract(objType);
@@ -111,15 +127,13 @@ namespace CCEnvs.Json
                 writer.WriteStartObject();
 
                 writer.WritePropertyName(DESCRIPTOR_PROPERTY_NAME);
-
                 serializer.Serialize(writer, descriptor);
 
                 JsonSerializerInternalWriterHelper.WriteObjectBody(
                     writer,
                     jObjContract,
                     serializer,
-                    value
-                    );
+                    value);
 
                 writer.WriteEndObject();
             }
@@ -134,33 +148,25 @@ namespace CCEnvs.Json
                 tSerializer.Serialize(writer, value);
                 writer.WriteEndObject();
             }
-            //else
-            //    throw new NotImplementedException(objType.ToString());
+
+            // Восстанавливаем настройку
+            serializer.TypeNameHandling = originalTypeNameHandling;
         }
 
-        protected virtual object? OnDescriptorPropertyNotFound(
-            JObject jObj,
-            Type objType,
-            JsonSerializer serializer
-            )
+        // Оставляем виртуальные методы для возможности переопределения в наследниках, 
+        // но по умолчанию они больше не выбрасывают исключения, а делегируют работу FallbackDeserialize.
+        // Если вам нужно строгое поведение в конкретных наследниках, переопределите их там.
+        protected virtual object? OnDescriptorPropertyNotFound(JObject jObj, Type objType, JsonSerializer serializer)
         {
-            throw new JsonSerializationException($"Object: {objType}, property: {DESCRIPTOR_PROPERTY_NAME} value is null");
+            return FallbackDeserialize(jObj, objType, serializer);
         }
 
-        protected virtual object? OnDescriptorNotFound(
-            JObject jObj,
-            Type objType,
-            JsonSerializer serializer
-            )
+        protected virtual object? OnDescriptorNotFound(JObject jObj, Type objType, JsonSerializer serializer)
         {
-            throw new JsonSerializationException($"Object: {objType} hasn't {nameof(TypeSerializationDescriptor)}");
+            return FallbackDeserialize(jObj, objType, serializer);
         }
 
-        protected virtual object? OnReadJson(
-            JObject jObj,
-            Type objType,
-            JsonSerializer serializer
-            )
+        protected virtual object? OnReadJson(JObject jObj, Type objType, JsonSerializer serializer)
         {
             var instance = JsonSerializerInternalReaderHelper.CreateNewObject(objType, jObj.CreateReader(), serializer);
             serializer.Populate(jObj.CreateReader(), instance);

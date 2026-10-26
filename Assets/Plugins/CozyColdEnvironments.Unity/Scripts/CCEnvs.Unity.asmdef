@@ -55,7 +55,8 @@
         "ObservableCollections.dll",
         "ObservableCollections.R3.dll",
         "Newtonsoft.Json.dll",
-        "ICSharpCode.SharpZipLib.dll"
+        "ICSharpCode.SharpZipLib.dll",
+        "Microsoft.CodeAnalysis.CSharp.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [],

@@ -27,6 +27,7 @@ namespace CCEnvs.UnityX.Editr
         public const string CONTEXT_MENU_CREATE_PATH = CONTEXT_MENU_TAB + "/" + CONTEXT_MENU_CREATE_TAB;
         public const string DEBUG_TAB = "Debug";
         public const string CREATE_TAB = "Create";
+        public const string AI_TAB = "AI";
 
         [Obsolete]
         /// <exception cref="ArgumentNullException"></exception>

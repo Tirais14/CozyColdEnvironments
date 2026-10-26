@@ -9,6 +9,7 @@ using ObservableCollections;
 using R3;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
@@ -269,6 +270,7 @@ namespace CCEnvs.UnityX.Items
 
             return ConvertLargeToNormalReadOnlyContainer(PutItem(readOnlyContainer.Item.CastTo<TItem>()!, readOnlyContainer.ItemCount));
         }
+        [DebuggerStepThrough]
         public TLargeReadOnlyItemContainer PutItem(TLargeReadOnlyItemContainer readOnlyContainer)
         {
             return PutItem(
@@ -373,7 +375,13 @@ namespace CCEnvs.UnityX.Items
                 return;
 
             double targetContainerCountRaw = targetSpace / (double)containerCapacity;
-            int targetContainerCount = (int)Math.Ceiling(targetContainerCountRaw);
+            int targetContainerCount;
+
+            if (targetContainerCountRaw >= int.MaxValue)
+                targetContainerCount = int.MaxValue;
+            else
+                targetContainerCount = (int)Math.Ceiling(targetContainerCountRaw);
+
             InstantiateContainers(targetContainerCount, cloneSample);
         }
 
@@ -963,8 +971,10 @@ namespace CCEnvs.UnityX.Items
             TContainer container
             );
 
+        [DebuggerStepThrough]
         protected abstract TItem? GetItemFromReadOnlyContainer(TLargeReadOnlyItemContainer largeReadOnlyContainer);
 
+        [DebuggerStepThrough]
         protected abstract long GetItemCountFromReadOnlytContainer(TLargeReadOnlyItemContainer largeReadOnlyContainer);
 
         protected virtual int ResolveID()

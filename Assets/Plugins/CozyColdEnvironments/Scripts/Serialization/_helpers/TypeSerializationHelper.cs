@@ -93,7 +93,7 @@ namespace CCEnvs.Serialization
             //#endif
         }
 
-        public static bool TryGetTypeSerializationDescriptor(
+        public static bool TryGetDescriptor(
             Type type,
             out TypeSerializationDescriptor result
             )

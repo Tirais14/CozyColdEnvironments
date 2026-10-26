@@ -141,8 +141,6 @@ namespace CCEnvs.Patterns.Factories
                 }
             }
 
-            CCDebug.PrintLog($"Method: {method}; Args: {args.Select(x => x.GetType()).SequenceToString()}");
-
             return method.Invoke(factory, args);
         }
 

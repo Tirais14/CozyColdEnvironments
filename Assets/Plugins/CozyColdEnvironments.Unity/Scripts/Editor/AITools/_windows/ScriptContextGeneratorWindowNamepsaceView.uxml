@@ -1,0 +1,11 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:VisualElement name="script-context-generator__namespace-root" style="flex-grow: 0;">
+        <ui:TextField label="" placeholder-text="filler text" name="script-context-generator__namespace"/>
+        <ui:MaskField label="Match Settings" name="script-context-generator__namespace-match-settings"/>
+        <ui:Toggle label="Only API" name="script-context-generator__only-api"/>
+        <ui:Toggle label="Inlucde Dependencies" name="script-context-generator__include-dependecies"/>
+        <ui:Toggle label="Remove Empty Lines" name="script-context-generator__remove-empty-lines"/>
+        <ui:Toggle label="Dependencies as API" name="script-context-generator__dependecies-only-api"/>
+        <ui:Toggle label="Dependecies Without Empty Lines" name="script-context-generator__dependecies-remove-empty-lines"/>
+    </ui:VisualElement>
+</ui:UXML>
