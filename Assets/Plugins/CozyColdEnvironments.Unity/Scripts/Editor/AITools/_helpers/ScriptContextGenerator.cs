@@ -2,12 +2,12 @@
 using CCEnvs.Collections;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -17,12 +17,6 @@ namespace CCEnvs.UnityX.Editr.AITools
 {
     public class ScriptContextGenerator
     {
-        // Быстрый регекс для поиска namespace (для построения карты)
-        private static readonly Regex NamespaceRegex = new Regex(@"^\s*namespace\s+([\w.]+)", RegexOptions.Multiline | RegexOptions.Compiled);
-
-        // Быстрый регекс для поиска using (для зависимостей)
-        private static readonly Regex UsingRegex = new Regex(@"^\s*using\s+(?:static\s+)?([\w.]+)(?:\s*=\s*[\w.]+)?\s*;", RegexOptions.Multiline | RegexOptions.Compiled);
-
         public static async Task<Scripts> GetScriptsAsync(
             ICollection<ScriptContextNamespace> namespaces,
             IEnumerable<string>? directories = null,
@@ -40,64 +34,75 @@ namespace CCEnvs.UnityX.Editr.AITools
                     scriptsDirs.AddRange(Directory.GetDirectories(Application.dataPath, dir, SearchOption.AllDirectories));
 
             bool includeFilesWithoutNamespace = namespaces.Any(ns => string.IsNullOrEmpty(ns.Name));
-            var allFilePaths = scriptsDirs.SelectMany(dir => Directory.GetFiles(dir, "*.cs", new EnumerationOptions { RecurseSubdirectories = true})).ToList();
+            var allFilePaths = scriptsDirs.SelectMany(dir => Directory.GetFiles(dir, "*.cs", new EnumerationOptions { RecurseSubdirectories = true })).ToList();
 
             int maxDegreeOfParallelism = Math.Max(4, Environment.ProcessorCount);
 
-            // ШАГ 1: Быстрое построение карты Namespace -> List<FilePath> (синхронно или параллельно, это быстро)
-            var namespaceToFileMap = new ConcurrentDictionary<string, List<string>>();
+            // ШАГ 1: Построение точной карты "ИмяТипа -> СписокФайлов" с помощью Roslyn Syntax Tree
+            var typeToFileMap = new ConcurrentDictionary<string, List<string>>();
 
             Parallel.ForEach(allFilePaths, new ParallelOptions { MaxDegreeOfParallelism = maxDegreeOfParallelism }, filePath =>
             {
                 try
                 {
-                    // ✅ ИСПРАВЛЕНИЕ: Используем простой и гарантированно работающий во всех версиях Unity метод.
-                    // Синхронное чтение здесь предпочтительнее, так как мы уже внутри Parallel.ForEach
                     string content = File.ReadAllText(filePath);
+                    var tree = CSharpSyntaxTree.ParseText(content, path: filePath);
+                    var root = tree.GetRoot();
 
-                    var matches = NamespaceRegex.Matches(content);
-                    if (matches.Count > 0)
+                    // Определяем текущий неймспейс файла
+                    string namespaceName = root.DescendantNodes()
+                        .OfType<BaseNamespaceDeclarationSyntax>()
+                        .FirstOrDefault()?.Name.ToString() ?? "";
+
+                    // Находим все объявления типов (class, struct, interface, enum, record)
+                    var typeDeclarations = root.DescendantNodes().OfType<TypeDeclarationSyntax>();
+
+                    foreach (var typeDecl in typeDeclarations)
                     {
-                        foreach (Match match in matches)
-                        {
-                            string ns = match.Groups[1].Value;
-                            namespaceToFileMap.AddOrUpdate(ns, _ => new List<string> { filePath }, (_, list) => { list.Add(filePath); return list; });
-                        }
-                    }
-                    else if (includeFilesWithoutNamespace)
-                    {
-                        namespaceToFileMap.AddOrUpdate(string.Empty, _ => new List<string> { filePath }, (_, list) => { list.Add(filePath); return list; });
+                        string typeName = typeDecl.Identifier.Text;
+                        string fullName = string.IsNullOrEmpty(namespaceName) ? typeName : $"{namespaceName}.{typeName}";
+
+                        // Добавляем в карту и полное имя, и короткое (для удобства поиска)
+                        AddToTypeMap(typeToFileMap, fullName, filePath);
+                        AddToTypeMap(typeToFileMap, typeName, filePath);
                     }
                 }
                 catch
                 {
-                    // Игнорируем ошибки чтения (например, если файл заблокирован или удален)
+                    // Игнорируем файлы с синтаксическими ошибками или недоступные
                 }
             });
 
-            // ШАГ 2: Асинхронная обработка с ограничением параллелизма через SemaphoreSlim
-            var processedFiles = new ConcurrentDictionary<string, byte>(); // Работает как HashSet для отслеживания добавленных файлов
+            // ШАГ 2: Обработка целевых файлов и рекурсивное разрешение зависимостей
+            var globallyProcessedFiles = new ConcurrentDictionary<string, byte>(); // Защита от дубликатов и циклов
             var semaphore = new SemaphoreSlim(maxDegreeOfParallelism, maxDegreeOfParallelism);
             var tasks = new List<Task>(allFilePaths.Count);
 
             foreach (var filePath in allFilePaths)
             {
-                var task = ProcessFileWithDependenciesAsync(filePath, namespaces, namespaceToFileMap, results, processedFiles, semaphore, cancellationToken);
+                var task = ProcessTargetFileAsync(
+                    filePath,
+                    namespaces,
+                    includeFilesWithoutNamespace,
+                    typeToFileMap,
+                    results,
+                    globallyProcessedFiles,
+                    semaphore,
+                    cancellationToken);
                 tasks.Add(task);
             }
 
-            // Ждем завершения всех задач
             await Task.WhenAll(tasks);
-
             return results;
         }
 
-        private static async Task ProcessFileWithDependenciesAsync(
+        private static async Task ProcessTargetFileAsync(
             string filePath,
             ICollection<ScriptContextNamespace> namespaces,
-            ConcurrentDictionary<string, List<string>> namespaceToFileMap,
+            bool includeFilesWithoutNamespace,
+            ConcurrentDictionary<string, List<string>> typeToFileMap,
             Scripts results,
-            ConcurrentDictionary<string, byte> processedFiles,
+            ConcurrentDictionary<string, byte> globallyProcessedFiles,
             SemaphoreSlim semaphore,
             CancellationToken cancellationToken)
         {
@@ -107,61 +112,60 @@ namespace CCEnvs.UnityX.Editr.AITools
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var content = await File.ReadAllTextAsync(filePath, cancellationToken);
-                var namespaceMatches = NamespaceRegex.Matches(content);
+                var tree = CSharpSyntaxTree.ParseText(content, path: filePath);
+                var root = tree.GetRoot();
 
-                string matchedNs = string.Empty;
+                string namespaceName = root.DescendantNodes()
+                    .OfType<BaseNamespaceDeclarationSyntax>()
+                    .FirstOrDefault()?.Name.ToString() ?? "";
+
                 bool isTargetMatch = false;
                 ScriptContextNamespace? targetRule = null;
 
-                if (namespaceMatches.Count == 0)
+                if (string.IsNullOrEmpty(namespaceName))
                 {
-                    isTargetMatch = namespaces.Any(ns => string.IsNullOrEmpty(ns.Name));
+                    isTargetMatch = includeFilesWithoutNamespace;
                     if (isTargetMatch) targetRule = namespaces.FirstOrDefault(ns => string.IsNullOrEmpty(ns.Name));
                 }
                 else
                 {
-                    foreach (Match match in namespaceMatches)
-                    {
-                        string ns = match.Groups[1].Value;
-                        targetRule = namespaces.FirstOrDefault(nsRule => nsRule.Name.Match(ns, nsRule.MatchSettings));
-                        if (targetRule != null)
-                        {
-                            isTargetMatch = true;
-                            matchedNs = ns;
-                            break;
-                        }
-                    }
+                    targetRule = namespaces.FirstOrDefault(nsRule => nsRule.Name.Match(namespaceName, nsRule.MatchSettings));
+                    if (targetRule != null)
+                        isTargetMatch = true;
                 }
 
                 if (isTargetMatch && targetRule != null)
                 {
-                    // 1. Обрабатываем целевой файл
-                    ProcessAndAddFile(filePath, matchedNs, content, results, processedFiles, isDependency: false, rule: targetRule);
+                    // 1. Обрабатываем сам целевой файл
+                    ProcessAndAddFile(filePath, namespaceName, content, results, globallyProcessedFiles, isDependency: false, rule: targetRule);
 
-                    // 2. Обрабатываем зависимости, если флаг включен
+                    // 2. Если нужны зависимости, запускаем рекурсивный обход графа
                     if (targetRule.IncludeDependecies)
                     {
-                        var usings = ExtractUsings(content);
-                        foreach (var usingNs in usings)
+                        var dependencyFiles = ResolveDependenciesRecursive(
+                            filePath,
+                            typeToFileMap,
+                            globallyProcessedFiles,
+                            cancellationToken);
+
+                        foreach (var depFilePath in dependencyFiles)
                         {
-                            if (namespaceToFileMap.TryGetValue(usingNs, out var depFiles))
+                            try
                             {
-                                foreach (var depFilePath in depFiles)
-                                {
-                                    // TryAdd гарантирует, что файл будет обработан только один раз
-                                    if (processedFiles.TryAdd(depFilePath, 0))
-                                    {
-                                        try
-                                        {
-                                            var depContent = await File.ReadAllTextAsync(depFilePath, cancellationToken);
-                                            ProcessAndAddFile(depFilePath, usingNs, depContent, results, processedFiles, isDependency: true, rule: targetRule);
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            typeof(ScriptContextGenerator).PrintException(ex);
-                                        }
-                                    }
-                                }
+                                cancellationToken.ThrowIfCancellationRequested();
+                                var depContent = await File.ReadAllTextAsync(depFilePath, cancellationToken);
+
+                                // Определяем неймспейс зависимости для корректной обработки флагов
+                                var depTree = CSharpSyntaxTree.ParseText(depContent, path: depFilePath);
+                                var depNs = depTree.GetRoot().DescendantNodes()
+                                    .OfType<BaseNamespaceDeclarationSyntax>()
+                                    .FirstOrDefault()?.Name.ToString() ?? "";
+
+                                ProcessAndAddFile(depFilePath, depNs, depContent, results, globallyProcessedFiles, isDependency: true, rule: targetRule);
+                            }
+                            catch (Exception ex)
+                            {
+                                typeof(ScriptContextGenerator).PrintException(ex);
                             }
                         }
                     }
@@ -181,6 +185,110 @@ namespace CCEnvs.UnityX.Editr.AITools
             }
         }
 
+        /// <summary>
+        /// Рекурсивно находит все файлы, содержащие типы, на которые есть ссылки, 
+        /// а также их базовые классы и интерфейсы.
+        /// </summary>
+        private static HashSet<string> ResolveDependenciesRecursive(
+            string startFilePath,
+            ConcurrentDictionary<string, List<string>> typeToFileMap,
+            ConcurrentDictionary<string, byte> globallyProcessedFiles,
+            CancellationToken ct)
+        {
+            var discoveredDependencies = new HashSet<string>();
+            var queue = new Queue<string>();
+            queue.Enqueue(startFilePath);
+
+            while (queue.Count > 0)
+            {
+                string currentFile = queue.Dequeue();
+
+                // TryAdd возвращает false, если файл уже был обработан (защита от циклических зависимостей)
+                if (!globallyProcessedFiles.TryAdd(currentFile, 0))
+                    continue;
+
+                if (currentFile != startFilePath)
+                    discoveredDependencies.Add(currentFile);
+
+                ct.ThrowIfCancellationRequested();
+
+                try
+                {
+                    var content = File.ReadAllText(currentFile);
+                    var tree = CSharpSyntaxTree.ParseText(content, path: currentFile);
+                    var root = tree.GetRoot();
+
+                    // А. Находим все типы, на которые есть ссылки в этом файле
+                    var referencedTypes = root.DescendantNodes()
+                        .OfType<TypeSyntax>()
+                        .Select(GetCleanTypeName)
+                        .Where(n => !string.IsNullOrEmpty(n))
+                        .Distinct();
+
+                    foreach (var refType in referencedTypes)
+                    {
+                        if (typeToFileMap.TryGetValue(refType, out var depFiles))
+                        {
+                            foreach (var depFile in depFiles)
+                                queue.Enqueue(depFile);
+                        }
+                    }
+
+                    // Б. Находим базовые классы и интерфейсы типов, ОБЪЯВЛЕННЫХ в этом файле
+                    // Это гарантирует, что если мы тянем MyClass, мы также вытянем его IMyInterface и MyBaseClass
+                    var hierarchyTypes = root.DescendantNodes()
+                        .OfType<TypeDeclarationSyntax>()
+                        .Where(t => t.BaseList != null)
+                        .SelectMany(t => t.BaseList.Types)
+                        .Select(bt => GetCleanTypeName(bt.Type))
+                        .Where(n => !string.IsNullOrEmpty(n))
+                        .Distinct();
+
+                    foreach (var hierType in hierarchyTypes)
+                    {
+                        if (typeToFileMap.TryGetValue(hierType, out var baseFiles))
+                        {
+                            foreach (var baseFile in baseFiles)
+                                queue.Enqueue(baseFile);
+                        }
+                    }
+                }
+                catch
+                {
+                    // Игнорируем ошибки парсинга зависимостей
+                }
+            }
+
+            return discoveredDependencies;
+        }
+
+        private static void AddToTypeMap(ConcurrentDictionary<string, List<string>> map, string typeName, string filePath)
+        {
+            map.AddOrUpdate(
+                typeName,
+                _ => new List<string> { filePath },
+                (_, list) =>
+                {
+                    if (!list.Contains(filePath))
+                        list.Add(filePath);
+                    return list;
+                });
+        }
+
+        private static string GetCleanTypeName(TypeSyntax typeSyntax)
+        {
+            if (typeSyntax is GenericNameSyntax generic)
+                return generic.Identifier.Text; // "List" из "List<T>"
+            if (typeSyntax is IdentifierNameSyntax id)
+                return id.Identifier.Text; // "IVendor"
+            if (typeSyntax is QualifiedNameSyntax qualified)
+                return qualified.ToString(); // "System.Collections.Generic.List"
+            if (typeSyntax is AliasQualifiedNameSyntax alias)
+                return alias.ToString();
+
+            return typeSyntax.ToString();
+        }
+
         private static void ProcessAndAddFile(
             string filePath,
             string ns,
@@ -190,7 +298,6 @@ namespace CCEnvs.UnityX.Editr.AITools
             bool isDependency,
             ScriptContextNamespace rule)
         {
-            // Гарантируем, что файл помечен как обработанный (на случай, если он пришел как зависимость)
             processedFiles.TryAdd(filePath, 0);
 
             bool onlyApi = isDependency ? rule.DependeciesOnlyAPI : rule.OnlyAPI;
@@ -209,20 +316,6 @@ namespace CCEnvs.UnityX.Editr.AITools
             }
 
             results.Add(filePath, ns, finalContent);
-        }
-
-        private static IEnumerable<string> ExtractUsings(string content)
-        {
-            // Используем Regex для скорости. Он игнорирует закомментированные using и корректно извлекает пространство имен.
-            var matches = UsingRegex.Matches(content);
-            var usings = new HashSet<string>();
-
-            foreach (Match match in matches)
-            {
-                usings.Add(match.Groups[1].Value);
-            }
-
-            return usings;
         }
 
         private static string RemoveEmptyLines(string content)
@@ -251,48 +344,10 @@ namespace CCEnvs.UnityX.Editr.AITools
         {
             var tree = CSharpSyntaxTree.ParseText(script);
             var root = tree.GetRoot();
-            var rewriter = new CSharpAPIExtractorRewriter(); // Ваш класс из предыдущего ответа
+            var rewriter = new CSharpAPIExtractorRewriter();
             var newRoot = rewriter.Visit(root);
             return newRoot.ToFullString();
         }
-
-        //public static string ExtractAPI(string script)
-        //{
-        //    // 1. Удаляем тела методов, оставляя сигнатуру до первой '{'
-        //    // Ищет: модификаторы + возвращаемый тип + имя + параметры + пробелы + { ... }
-        //    // Заменяет на: всё до '{' + ";"
-        //    string noMethodBodies = Regex.Replace(script,
-        //        @"(\b(?:public|private|protected|internal|virtual|override|abstract|sealed|static|async|new|extern)\s+)+[\w\s\<\>\,\.\[\]\?\:]+\s+\w+\s*\([^)]*\)\s*(?:where\s+[\w\s\,\:]+)?\s*\{[^}]*\}",
-        //        match =>
-        //        {
-        //            string signature = match.Value.Substring(0, match.Value.IndexOf('{')).Trim();
-        //            return signature + ";";
-        //        },
-        //        RegexOptions.Multiline | RegexOptions.Singleline);
-
-        //    // 2. Удаляем тела свойств с get/set (превращаем { get { ... } set { ... } } в { get; set; })
-        //    string noPropertyBodies = Regex.Replace(noMethodBodies,
-        //        @"\{\s*get\s*\{[^}]*\}\s*(?:set\s*\{[^}]*\})?\s*\}",
-        //        "{ get; set; }",
-        //        RegexOptions.Multiline);
-
-        //    noPropertyBodies = Regex.Replace(noPropertyBodies,
-        //        @"\{\s*set\s*\{[^}]*\}\s*(?:get\s*\{[^}]*\})?\s*\}",
-        //        "{ get; set; }",
-        //        RegexOptions.Multiline);
-
-        //    // 3. Удаляем инициализаторы полей (public int a = 5; -> public int a;)
-        //    string noInitializers = Regex.Replace(noPropertyBodies,
-        //        @"(\w+\s+\w+)\s*=\s*[^;]+;",
-        //        "$1;",
-        //        RegexOptions.Multiline);
-
-        //    // 4. Удаляем пустые строки для экономии токенов LLM
-        //    string[] lines = noInitializers.Split('\n');
-        //    string result = string.Join("\n", lines.Where(l => !string.IsNullOrWhiteSpace(l)));
-
-        //    return result;
-        //}
     }
 }
 #endif
