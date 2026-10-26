@@ -31,6 +31,9 @@ namespace CCEnvs.UnityX.Editr.AITools
             [DataMember(Name = "namespaces")]
             public ScriptContextNamespace[]? Namespaces { get; set; }
 
+            [DataMember(Name = "directories")]
+            public string[]? Directories { get; set; }
+
             [DataMember(Name = "namespaceMatchSettings")]
             public StringMatchSettings? NamespaceMatchSettings { get; set; }
 
@@ -51,6 +54,9 @@ namespace CCEnvs.UnityX.Editr.AITools
                 if (Namespaces is not null)
                     target.namespaces.AddRange(Namespaces);
 
+                if (Directories is not null)
+                    target.directories.AddRange(Directories);
+
                 if (NamespaceMatchSettings.HasValue)
                     target.namespaceMatchSettingsField.value = (int)NamespaceMatchSettings.Value;
             }
@@ -59,6 +65,7 @@ namespace CCEnvs.UnityX.Editr.AITools
             {
                 base.OnCapture(target);
                 Namespaces = target.namespaces.ToArray();
+                Directories = target.directories.ToArray();
                 NamespaceMatchSettings = (StringMatchSettings)Enum.ToObject(typeof(StringMatchSettings), target.namespaceMatchSettingsField.value);
             }
 
@@ -66,6 +73,7 @@ namespace CCEnvs.UnityX.Editr.AITools
             {
                 base.OnReset();
                 Namespaces = null;
+                Directories = null;
                 NamespaceMatchSettings = null;
             }
         }
@@ -79,6 +87,7 @@ namespace CCEnvs.UnityX.Editr.AITools
         private const string NAMESPACE_REMOVE_EMPTY_LINES_TOGGLE_NAME = "script-context-generator__remove-empty-lines";
         private const string NAMESPACE_DEPENDENCIES_ONLY_API_TOGGLE_NAME = "script-context-generator__dependecies-only-api";
         private const string NAMESPACE_DEPENDENCIES_REMOVE_EMPTY_LINES_TOGGLE_NAME = "script-context-generator__dependecies-remove-empty-lines";
+        private const string DIRECTORY_FIELD_NAME = "script-context-generator__directory-text-field";
 
         private readonly List<ScriptContextNamespace> namespaces = new();
 
@@ -122,12 +131,13 @@ namespace CCEnvs.UnityX.Editr.AITools
                     .ToStringAndDispose()
                     );
                 return;
-            }    
+            }
 
             var root = rootVisualElement;
             InitRootElement(root);
             InitStringMatchSettingsField(namespaceMatchSettingsField);
             namespaceMatchSettingsField.value = (int)StringMatchSettings.Ordinal;
+            SetupDirectoriesListView();
             SetupNamepsacesListView();
             BindGenerateButton();
             BindCancelGenerateButton();
@@ -186,6 +196,7 @@ namespace CCEnvs.UnityX.Editr.AITools
             root.Add(view.Instantiate());
 
             namespacesListView = root.QStrict<ListView>("script-context-generator__namespaces-list-view");
+            directoriesListView = root.QStrict<ListView>("script-context-generator__directories-list-view");
             generateButton = root.QStrict<Button>("script-context-generator__generate-button");
             namespaceMatchSettingsField = root.QStrict<MaskField>("script-context-generator__namespace-match-settings");
             cancelGenerateButton = root.QStrict<Button>("script-context-generator__cancel-generate-button");
@@ -197,6 +208,102 @@ namespace CCEnvs.UnityX.Editr.AITools
 
             maskField.choices = flags.Select(x => x.ToString()).ToList();
             maskField.choicesMasks = flags.Select(x => x.ToIntUnsafe()).ToList();
+        }
+
+        private void SetupDirectoriesListView()
+        {
+            VisualElement onMakeItem()
+            {
+                var root = directoriesListView.itemTemplate.Instantiate();
+                var field = root.QStrict<TextField>(DIRECTORY_FIELD_NAME);
+
+                void onFieldValueChanged(ChangeEvent<string> ev)
+                {
+                    directories[field.userData.CastTo<int>()] = ev.newValue;
+                }
+
+                var itemBindings = this.itemBindings.GetOrCreateNew(root);
+
+                field.RegisterValueChangedCallback(onFieldValueChanged);
+                CCDisposable.Create(() => field.UnregisterValueChangedCallback(onFieldValueChanged))
+                    .AddTo(itemBindings);
+
+                return root;
+            }
+
+            void onDestroyItem(VisualElement item)
+            {
+                if (itemBindings.TryGetValue(item, out var bindings))
+                    bindings.Dispose();
+            }
+
+            void onAdd(BaseListView list)
+            {
+                directories.Add(string.Empty);
+            }
+
+            void onRemove(BaseListView _)
+            {
+                bool hasSelected = directoriesListView.selectedIndices.IsNotEmpty();
+
+                if (hasSelected)
+                {
+                    foreach (var index in directoriesListView.selectedIndices.OrderByDescending(x => x))
+                        directories.RemoveAt(index);
+                }
+                else
+                    directories.RemoveAt(directories.Count - 1);
+
+                directoriesListView.RefreshItems();
+            }
+
+            void onBindItem(VisualElement item, int index)
+            {
+                var field = item.QStrict<TextField>(DIRECTORY_FIELD_NAME);
+
+                if (index >= directories.Count)
+                {
+                    throw new InvalidOperationException(DebugMessageBuilder.CreatePooled()
+                        .AddMessage("Not found directory at index")
+                        .AddProperty("Index", index)
+                        .ToStringAndDispose()
+                        );
+                }
+
+                field.userData = index;
+                field.value = directories[index];
+            }
+
+            void onUnbindItem(VisualElement item, int index)
+            {
+                // Оставляем пустым, так как очистка происходит в onDestroyItem
+            }
+
+            directoriesListView.makeItem += onMakeItem;
+            CCDisposable.Create(() => directoriesListView.makeItem -= onMakeItem)
+                .AddTo(bindings);
+
+            directoriesListView.destroyItem += onDestroyItem;
+            CCDisposable.Create(() => directoriesListView.destroyItem -= onDestroyItem)
+                .AddTo(bindings);
+
+            directoriesListView.onAdd += onAdd;
+            CCDisposable.Create(() => directoriesListView.onAdd -= onAdd)
+                .AddTo(bindings);
+
+            directoriesListView.onRemove += onRemove;
+            CCDisposable.Create(() => directoriesListView.onRemove -= onRemove)
+                .AddTo(bindings);
+
+            directoriesListView.bindItem += onBindItem;
+            CCDisposable.Create(() => directoriesListView.bindItem -= onBindItem)
+                .AddTo(bindings);
+
+            directoriesListView.unbindItem += onUnbindItem;
+            CCDisposable.Create(() => directoriesListView.unbindItem -= onUnbindItem)
+                .AddTo(bindings);
+
+            directoriesListView.itemsSource = directories;
         }
 
         private void SetupNamepsacesListView()
@@ -390,7 +497,7 @@ namespace CCEnvs.UnityX.Editr.AITools
             try
             {
                 using var _ = disableCancellationToken.TryLinkTokens(cancelGenerateCancellationToken, out var cancellationToken);
-                var context = await ScriptContextGenerator.GenerateAsync(namespaces, Range.From("*"), cancellationToken: cancellationToken);
+                var context = await ScriptContextGenerator.GenerateAsync(namespaces, directories.IsNotEmpty() ? directories : null, cancellationToken: cancellationToken);
                 var contextDirPath = Path.Combine(EditorLibrary.DataPath, EDITOR_LIBRARY_FOLDER);
 
                 if (!Directory.Exists(contextDirPath))
@@ -399,7 +506,7 @@ namespace CCEnvs.UnityX.Editr.AITools
                 var contextFilePath = Path.Combine(contextDirPath, "Context.txt");
                 await File.WriteAllTextAsync(contextFilePath, context.ToString(), cancellationToken);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 this.PrintException(ex);
             }
