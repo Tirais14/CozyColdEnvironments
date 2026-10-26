@@ -63,7 +63,7 @@ namespace CCEnvs
                     from member in members
                     select member
                     )
-                    //.Distinct()
+                    .Distinct()
                     .ToArray();
 
             static bool[] processAssemblyNames(string[] assemblyNames)

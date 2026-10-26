@@ -1,5 +1,6 @@
 using CCEnvs.Attributes;
 using CCEnvs.Attributes.Serialization;
+using CCEnvs.Diagnostics;
 using CCEnvs.Linq;
 using CommunityToolkit.Diagnostics;
 using System;
@@ -27,24 +28,43 @@ namespace CCEnvs.Serialization
         {
             Guard.IsNotNull(domainMembers, nameof(domainMembers));
 
-            typeDescriptors.Clear();
-            descriptedTypes.Clear();
-
-            (from type in domainMembers.AsParallel().OfType<Type>()
-             select (type, attr: type.GetCustomAttribute<SerializationDescriptorAttribute>(inherit: false)) into typeInfo
-             where typeInfo.attr is not null
-             select (typeInfo.type, desc: typeInfo.attr.ToDescriptor())
-            )
-            .ForAll(descTypeInfo =>
+            try
             {
-                lock (typeDescriptorsGate)
-                    typeDescriptors.Add(descTypeInfo.type, descTypeInfo.desc);
+                typeDescriptors.Clear();
+                descriptedTypes.Clear();
 
-                lock (descriptedTypesGate)
-                    descriptedTypes.Add(descTypeInfo.desc, descTypeInfo.type);
-            });
+                (from type in domainMembers.AsParallel().OfType<Type>()
+                 select (type, attr: type.GetCustomAttribute<SerializationDescriptorAttribute>(inherit: false)) into typeInfo
+                 where typeInfo.attr is not null
+                 select (typeInfo.type, desc: typeInfo.attr.ToDescriptor())
+                )
+                .ForAll(descTypeInfo =>
+                {
+                    if (typeDescriptors.TryGetValue(descTypeInfo.type, out var existingDescriptor))
+                    {
+                        typeof(TypeSerializationHelper).PrintError(DebugMessageBuilder.CreatePooled()
+                            .AddMessage("Descriptor already added")
+                            .AddProperty("Existing", existingDescriptor)
+                            .AddPredicatedProperty(descriptedTypes.TryGetValue(existingDescriptor, out var existingType), "ExistingType", existingType)
+                            .AddProperty("New", descTypeInfo)
+                            .ToStringAndDispose()
+                            );
+                        return;
+                    }
 
-            AddBaseTypes();
+                    lock (typeDescriptorsGate)
+                        typeDescriptors.Add(descTypeInfo.type, descTypeInfo.desc);
+
+                    lock (descriptedTypesGate)
+                        descriptedTypes.Add(descTypeInfo.desc, descTypeInfo.type);
+                });
+
+                AddBaseTypes();
+            }
+            catch (Exception ex)
+            {
+                typeof(TypeSerializationHelper).PrintException(ex);
+            }
 
             //var typeDescriptorsBuilder = ImmutableDictionary.CreateBuilder<Type, TypeSerializationDescriptor>();
             //var descriptedTypesBuilder = ImmutableDictionary.CreateBuilder<TypeSerializationDescriptor, Type>();

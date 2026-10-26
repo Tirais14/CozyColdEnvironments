@@ -25,7 +25,7 @@ namespace CCEnvs.UnityX.Editr.AITools
     public sealed class ScriptContextGeneratorWindow : EditorWindow
     {
         [DataContract]
-        [PolymorphSerializable, SerializationDescriptor("a49888a0-8b14-49ef-a6ca-4c21cb25487d")]
+        [PolymorphSerializable, SerializationDescriptor("16dc10ed-571d-4db9-bf10-61f005877906")]
         public sealed record Snapshot : Snapshot<ScriptContextGeneratorWindow>
         {
             [DataMember(Name = "scriptInfos")]
@@ -38,7 +38,10 @@ namespace CCEnvs.UnityX.Editr.AITools
             public StringMatchSettings? DefaultMatchSettings { get; set; }
 
             [DataMember(Name = "dependencyMaxDepth")]
-            public int DependencyMaxDepth { get; set; } = 6;
+            public int? DependencyMaxDepth { get; set; }
+
+            [DataMember(Name = "aiOutput")]
+            public string? AIOutput { get; set; }
 
             public Snapshot(Snapshot<ScriptContextGeneratorWindow> original) : base(original) { }
             public Snapshot() { }
@@ -49,7 +52,8 @@ namespace CCEnvs.UnityX.Editr.AITools
                 if (ScriptInfos is not null) target.scriptInfos.AddRange(ScriptInfos);
                 if (Directories is not null) target.directories.AddRange(Directories);
                 if (DefaultMatchSettings.HasValue) target.defaultMatchSettingsField.value = (int)DefaultMatchSettings.Value;
-                target.dependencyMaxDepthField.value = DependencyMaxDepth;
+                if (DependencyMaxDepth.HasValue) target.dependencyMaxDepthField.value = DependencyMaxDepth.Value;
+                if (AIOutput is not null) target.aiOutputField.value = AIOutput;
             }
 
             protected override void OnCapture(ScriptContextGeneratorWindow target)
@@ -59,6 +63,7 @@ namespace CCEnvs.UnityX.Editr.AITools
                 Directories = target.directories.ToArray();
                 DefaultMatchSettings = (StringMatchSettings)Enum.ToObject(typeof(StringMatchSettings), target.defaultMatchSettingsField.value);
                 DependencyMaxDepth = target.dependencyMaxDepthField.value;
+                AIOutput = target.aiOutputField.value;
             }
 
             protected override void OnReset()
@@ -67,7 +72,8 @@ namespace CCEnvs.UnityX.Editr.AITools
                 ScriptInfos = null;
                 Directories = null;
                 DefaultMatchSettings = null;
-                DependencyMaxDepth = 6;
+                DependencyMaxDepth = null;
+                AIOutput = null;
             }
         }
 
@@ -86,19 +92,20 @@ namespace CCEnvs.UnityX.Editr.AITools
 
         private readonly List<ScriptContextScriptInfo> scriptInfos = new();
         private readonly List<string> directories = new();
-        private readonly CompositeDisposable bindings = new();
+        private readonly CCCompositeDisposable bindings = new();
         private readonly CancellationTokenSource destroyCancellationTokenSource = new();
         private readonly Dictionary<VisualElement, CCCompositeDisposable> itemBindings = new();
 
         [SerializeField] private VisualTreeAsset view = null!;
-        [SerializeField] private VisualTreeAsset scriptInfoView = null!;
 
         private ListView scriptInfosListView = null!;
         private ListView directoriesListView = null!;
         private Button generateButton = null!;
         private Button cancelGenerateButton = null!;
+        private Button clearAIOutputButton = null!;
         private MaskField defaultMatchSettingsField = null!;
         private IntegerField dependencyMaxDepthField = null!;
+        private TextField aiOutputField = null!;
 
         private bool isGenerating;
         private CancellationTokenSource? disableCancellationTokenSource = new();
@@ -127,6 +134,7 @@ namespace CCEnvs.UnityX.Editr.AITools
 
             BindGenerateButton();
             BindCancelGenerateButton();
+            BindClearAIOutputButton();
             RestoreSavedData();
         }
 
@@ -177,6 +185,8 @@ namespace CCEnvs.UnityX.Editr.AITools
             defaultMatchSettingsField = root.QStrict<MaskField>("script-context-generator__script-name-match-settings");
             dependencyMaxDepthField = root.QStrict<IntegerField>(DEPENDENCY_MAX_DEPTH_FIELD_NAME);
             cancelGenerateButton = root.QStrict<Button>("script-context-generator__cancel-generate-button");
+            aiOutputField = root.QStrict<TextField>("script-context-generator__ai-output-text-field");
+            clearAIOutputButton = root.QStrict<Button>("script-context-generator__clear-ai-output-button");
         }
 
         private void InitStringMatchSettingsField(MaskField maskField)
@@ -463,6 +473,17 @@ namespace CCEnvs.UnityX.Editr.AITools
                 generateButton.enabledSelf = true;
                 cancelGenerateButton.enabledSelf = false;
             }
+        }
+
+        private void ClearAIOUtput()
+        {
+            aiOutputField.value = string.Empty;
+        }
+
+        private void BindClearAIOutputButton()
+        {
+            clearAIOutputButton.clicked += ClearAIOUtput;
+            CCDisposable.Create(() => clearAIOutputButton.clicked -= ClearAIOUtput).AddTo(bindings);
         }
     }
 }
