@@ -10,8 +10,8 @@
         </ui:VisualElement>
         <ui:TextField label="" multiline="true" name="script-context-generator__ai-input-text-field" placeholder-text="AI Input" vertical-scroller-visibility="Auto"/>
         <ui:TextField label="" multiline="true" name="script-context-generator__ai-output-text-field" placeholder-text="AI Output" vertical-scroller-visibility="Auto" style="height: 100px;"/>
+        <ui:Button text="Clear" name="script-context-generator__clear-ai-output-button" style="flex-grow: 1;"/>
         <ui:VisualElement name="script-context-generator__ai-output-controls" style="flex-grow: 0; flex-direction: row;">
-            <ui:Button text="Clear" name="script-context-generator__clear-ai-output-button" style="flex-grow: 1;"/>
             <ui:Button text="Cancel" name="script-context-generator__cancel-applying-ai-output-button" enabled="false" style="flex-grow: 1;"/>
             <ui:Button text="Apply" name="script-context-generator__apply-ai-output-button" style="flex-grow: 1;"/>
         </ui:VisualElement>

@@ -172,6 +172,7 @@ namespace CCEnvs.UnityX.Editr.AITools
             destroyCancellationTokenSource.CancelAndDispose();
             disableCancellationTokenSource?.CancelAndDispose();
             cancelGenerateCancellationTokenSource?.CancelAndDispose();
+            cancelApplyingAIOutputCancellationTokenSource?.CancelAndDispose();
         }
 
         [MenuItem(EditorHelper.WINDOWS_TAB_NAME + "/" + EditorHelper.CCENVS_TAB + "/" + EditorHelper.AI_TAB + "/" + "Script Context Generator")]
@@ -257,25 +258,25 @@ namespace CCEnvs.UnityX.Editr.AITools
                 var itemBindings = this.itemBindings.GetOrCreateNew(root);
 
                 field.RegisterValueChangedCallback(onFieldValueChanged);
-                CCDisposable.Create(() => field.UnregisterValueChangedCallback(onFieldValueChanged)).AddTo(itemBindings);
+                CCDisposable.Create(() => { if (field != null) field.UnregisterValueChangedCallback(onFieldValueChanged); }).AddTo(itemBindings);
 
                 matchSettingsField.RegisterValueChangedCallback(onMatchSettingsFieldValueChanged);
-                CCDisposable.Create(() => matchSettingsField.UnregisterValueChangedCallback(onMatchSettingsFieldValueChanged)).AddTo(itemBindings);
+                CCDisposable.Create(() => { if (matchSettingsField != null) matchSettingsField.UnregisterValueChangedCallback(onMatchSettingsFieldValueChanged); }).AddTo(itemBindings);
 
                 onlyApiToggle.RegisterValueChangedCallback(onOnlyAPIToggleValueChanged);
-                CCDisposable.Create(() => onlyApiToggle.UnregisterValueChangedCallback(onOnlyAPIToggleValueChanged)).AddTo(itemBindings);
+                CCDisposable.Create(() => { if (onlyApiToggle != null) onlyApiToggle.UnregisterValueChangedCallback(onOnlyAPIToggleValueChanged); }).AddTo(itemBindings);
 
                 includeDependenciesToggle.RegisterValueChangedCallback(onIncludeDependenciesToggleValueChanged);
-                CCDisposable.Create(() => includeDependenciesToggle.UnregisterValueChangedCallback(onIncludeDependenciesToggleValueChanged)).AddTo(itemBindings);
+                CCDisposable.Create(() => { if (includeDependenciesToggle != null) includeDependenciesToggle.UnregisterValueChangedCallback(onIncludeDependenciesToggleValueChanged); }).AddTo(itemBindings);
 
                 removeEmptyLinesToggle.RegisterValueChangedCallback(onRemoveEmptyLinesValueChanged);
-                CCDisposable.Create(() => removeEmptyLinesToggle.UnregisterValueChangedCallback(onRemoveEmptyLinesValueChanged)).AddTo(itemBindings);
+                CCDisposable.Create(() => { if (removeEmptyLinesToggle != null) removeEmptyLinesToggle.UnregisterValueChangedCallback(onRemoveEmptyLinesValueChanged); }).AddTo(itemBindings);
 
                 dependenciesOnlyApiToggle.RegisterValueChangedCallback(onDependenciesOnlyApiValueChanged);
-                CCDisposable.Create(() => dependenciesOnlyApiToggle.UnregisterValueChangedCallback(onDependenciesOnlyApiValueChanged)).AddTo(itemBindings);
+                CCDisposable.Create(() => { if (dependenciesOnlyApiToggle != null) dependenciesOnlyApiToggle.UnregisterValueChangedCallback(onDependenciesOnlyApiValueChanged); }).AddTo(itemBindings);
 
                 dependenciesRemoveEmptyLinesToggle.RegisterValueChangedCallback(onDependenciesRemoveEmptyLinesValueChanged);
-                CCDisposable.Create(() => dependenciesRemoveEmptyLinesToggle.UnregisterValueChangedCallback(onDependenciesRemoveEmptyLinesValueChanged)).AddTo(itemBindings);
+                CCDisposable.Create(() => { if (dependenciesRemoveEmptyLinesToggle != null) dependenciesRemoveEmptyLinesToggle.UnregisterValueChangedCallback(onDependenciesRemoveEmptyLinesValueChanged); }).AddTo(itemBindings);
 
                 return root;
             }
@@ -341,19 +342,19 @@ namespace CCEnvs.UnityX.Editr.AITools
             }
 
             scriptInfosListView.makeItem += onMakeItem;
-            CCDisposable.Create(() => scriptInfosListView.makeItem -= onMakeItem).AddTo(bindings);
+            CCDisposable.Create(() => { if (scriptInfosListView != null) scriptInfosListView.makeItem -= onMakeItem; }).AddTo(bindings);
 
             scriptInfosListView.destroyItem += onDestroyItem;
-            CCDisposable.Create(() => scriptInfosListView.destroyItem -= onDestroyItem).AddTo(bindings);
+            CCDisposable.Create(() => { if (scriptInfosListView != null) scriptInfosListView.destroyItem -= onDestroyItem; }).AddTo(bindings);
 
             scriptInfosListView.onAdd += onAdd;
-            CCDisposable.Create(() => scriptInfosListView.onAdd -= onAdd).AddTo(bindings);
+            CCDisposable.Create(() => { if (scriptInfosListView != null) scriptInfosListView.onAdd -= onAdd; }).AddTo(bindings);
 
             scriptInfosListView.onRemove += onRemove;
-            CCDisposable.Create(() => scriptInfosListView.onRemove -= onRemove).AddTo(bindings);
+            CCDisposable.Create(() => { if (scriptInfosListView != null) scriptInfosListView.onRemove -= onRemove; }).AddTo(bindings);
 
             scriptInfosListView.bindItem += onBindItem;
-            CCDisposable.Create(() => scriptInfosListView.bindItem -= onBindItem).AddTo(bindings);
+            CCDisposable.Create(() => { if (scriptInfosListView != null) scriptInfosListView.bindItem -= onBindItem; }).AddTo(bindings);
 
             scriptInfosListView.itemsSource = scriptInfos;
         }
@@ -373,7 +374,7 @@ namespace CCEnvs.UnityX.Editr.AITools
                 var itemBindings = this.itemBindings.GetOrCreateNew(root);
 
                 field.RegisterValueChangedCallback(onFieldValueChanged);
-                CCDisposable.Create(() => field.UnregisterValueChangedCallback(onFieldValueChanged)).AddTo(itemBindings);
+                CCDisposable.Create(() => { if (field != null) field.UnregisterValueChangedCallback(onFieldValueChanged); }).AddTo(itemBindings);
 
                 return root;
             }
@@ -426,22 +427,22 @@ namespace CCEnvs.UnityX.Editr.AITools
             void onUnbindItem(VisualElement item, int index) { }
 
             directoriesListView.makeItem += onMakeItem;
-            CCDisposable.Create(() => directoriesListView.makeItem -= onMakeItem).AddTo(bindings);
+            CCDisposable.Create(() => { if (directoriesListView != null) directoriesListView.makeItem -= onMakeItem; }).AddTo(bindings);
 
             directoriesListView.destroyItem += onDestroyItem;
-            CCDisposable.Create(() => directoriesListView.destroyItem -= onDestroyItem).AddTo(bindings);
+            CCDisposable.Create(() => { if (directoriesListView != null) directoriesListView.destroyItem -= onDestroyItem; }).AddTo(bindings);
 
             directoriesListView.onAdd += onAdd;
-            CCDisposable.Create(() => directoriesListView.onAdd -= onAdd).AddTo(bindings);
+            CCDisposable.Create(() => { if (directoriesListView != null) directoriesListView.onAdd -= onAdd; }).AddTo(bindings);
 
             directoriesListView.onRemove += onRemove;
-            CCDisposable.Create(() => directoriesListView.onRemove -= onRemove).AddTo(bindings);
+            CCDisposable.Create(() => { if (directoriesListView != null) directoriesListView.onRemove -= onRemove; }).AddTo(bindings);
 
             directoriesListView.bindItem += onBindItem;
-            CCDisposable.Create(() => directoriesListView.bindItem -= onBindItem).AddTo(bindings);
+            CCDisposable.Create(() => { if (directoriesListView != null) directoriesListView.bindItem -= onBindItem; }).AddTo(bindings);
 
             directoriesListView.unbindItem += onUnbindItem;
-            CCDisposable.Create(() => directoriesListView.unbindItem -= onUnbindItem).AddTo(bindings);
+            CCDisposable.Create(() => { if (directoriesListView != null) directoriesListView.unbindItem -= onUnbindItem; }).AddTo(bindings);
 
             directoriesListView.itemsSource = directories;
         }
@@ -449,7 +450,7 @@ namespace CCEnvs.UnityX.Editr.AITools
         private void BindGenerateButton()
         {
             generateButton.clicked += GenerateAndSaveToFile;
-            CCDisposable.Create(() => generateButton.clicked -= GenerateAndSaveToFile).AddTo(bindings);
+            CCDisposable.Create(() => { if (generateButton != null) generateButton.clicked -= GenerateAndSaveToFile; }).AddTo(bindings);
         }
 
         private void CancelGenerate()
@@ -465,7 +466,7 @@ namespace CCEnvs.UnityX.Editr.AITools
         private void BindCancelGenerateButton()
         {
             cancelGenerateButton.clicked += CancelGenerate;
-            CCDisposable.Create(() => cancelGenerateButton.clicked -= CancelGenerate).AddTo(bindings);
+            CCDisposable.Create(() => { if (cancelGenerateButton != null) cancelGenerateButton.clicked -= CancelGenerate; }).AddTo(bindings);
         }
 
         private async void GenerateAndSaveToFile()
@@ -480,7 +481,6 @@ namespace CCEnvs.UnityX.Editr.AITools
             {
                 using var _ = disableCancellationToken.TryLinkTokens(cancelGenerateCancellationToken, out var cancellationToken);
 
-                // ✅ Получаем значение глубины из UI
                 int maxDepth = dependencyMaxDepthField.value;
 
                 var context = await ScriptContextGenerator.GenerateAsync(
@@ -529,7 +529,7 @@ namespace CCEnvs.UnityX.Editr.AITools
         private void BindClearAIOutputButton()
         {
             clearAIOutputButton.clicked += ClearAIOUtput;
-            CCDisposable.Create(() => clearAIOutputButton.clicked -= ClearAIOUtput).AddTo(bindings);
+            CCDisposable.Create(() => { if (clearAIOutputButton != null) clearAIOutputButton.clicked -= ClearAIOUtput; }).AddTo(bindings);
         }
 
         private void ApplyAIOutput()
@@ -554,7 +554,7 @@ namespace CCEnvs.UnityX.Editr.AITools
         private void BindApplyAIOutputButton()
         {
             applyAIOutputButton.clicked += ApplyAIOutput;
-            CCDisposable.Create(() => applyAIOutputButton.clicked -= ApplyAIOutput).AddTo(bindings);
+            CCDisposable.Create(() => { if (applyAIOutputButton != null) applyAIOutputButton.clicked -= ApplyAIOutput; }).AddTo(bindings);
         }
 
         private void BindCancelApplyingAIOutputButton()
@@ -570,7 +570,7 @@ namespace CCEnvs.UnityX.Editr.AITools
             }
 
             cancelApplyingAIOutputButton.clicked += onClicked;
-            CCDisposable.Create(() => cancelApplyingAIOutputButton.clicked -= onClicked).AddTo(bindings);
+            CCDisposable.Create(() => { if (cancelApplyingAIOutputButton != null) cancelApplyingAIOutputButton.clicked -= onClicked; }).AddTo(bindings);
         }
     }
 }

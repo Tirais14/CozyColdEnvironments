@@ -3,7 +3,7 @@ using CommunityToolkit.Diagnostics;
 using System.Collections.Generic;
 using System.Text;
 
-namespace CCEnvs.UnityX
+namespace CCEnvs.UnityX.Editr.AITools
 {
     public class ScriptContext
     {

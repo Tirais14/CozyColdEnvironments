@@ -18,35 +18,41 @@ namespace CCEnvs.UnityX.Editr.AITools
         {
             Guard.IsNotNull(aiOutput, nameof(aiOutput));
 
-            // ✅ ИСПРАВЛЕНИЕ: Возвращаем управление, если строка пустая, а не наоборот
             if (aiOutput.IsNullOrWhiteSpace())
                 return;
 
             var filesToProcess = ExtractFiles(aiOutput);
             using var semaphore = new SemaphoreSlim(Math.Max(4, Environment.ProcessorCount));
-            var tasks = new List<Task>(256);
+            var tasks = new List<Task>(filesToProcess.Length);
 
             foreach (var fileInfo in filesToProcess)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 await semaphore.WaitAsync(cancellationToken);
 
-                if (!File.Exists(fileInfo.FilePath))
-                {
-                    typeof(ScriptRewriter).PrintLog(DebugMessageBuilder.CreatePooled()
-                        .AddMessage("Invalid file path")
-                        .AddProperty("FilePath", fileInfo.FilePath)
-                        .ToStringAndDispose()
-                        );
-                    semaphore.Release();
-                    continue;
-                }
-
                 var task = Task.Run(async () =>
                 {
                     try
                     {
-                        await File.ReadAllTextAsync(fileInfo.FilePath, cancellationToken);
+                        if (fileInfo.ToDelete)
+                        {
+                            // Если файл помечен на удаление, удаляем его (если он существует)
+                            if (File.Exists(fileInfo.FilePath))
+                            {
+                                File.Delete(fileInfo.FilePath);
+                            }
+                        }
+                        else
+                        {
+                            // Если файл нужно создать или обновить, гарантируем существование директории
+                            var directory = Path.GetDirectoryName(fileInfo.FilePath);
+                            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                            {
+                                Directory.CreateDirectory(directory);
+                            }
+
+                            await File.WriteAllTextAsync(fileInfo.FilePath, fileInfo.Content, cancellationToken);
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -56,20 +62,23 @@ namespace CCEnvs.UnityX.Editr.AITools
                     {
                         semaphore.Release();
                     }
-                });
+                }, cancellationToken);
 
                 tasks.Add(task);
             }
 
             await Task.WhenAll(tasks);
 
-            typeof(ScriptRewriter).PrintLog(filesToProcess.Select(
-                x => DebugMessageBuilder.CreatePooled()
-                    .AddMessage("File changed")
-                    .AddProperty("File", x.FilePath)
-                    .AddProperty("IsDeleted", x.ToDelete)
-                    .ToStringAndDispose()
-                ).SequenceToString());
+            // Логирование результатов
+            var logMessages = filesToProcess.Select(x => DebugMessageBuilder.CreatePooled()
+                .AddMessage(x.ToDelete ? "File deleted" : "File created/updated")
+                .AddProperty("FilePath", x.FilePath)
+                .ToStringAndDispose()).ToArray();
+
+            if (logMessages.Length > 0)
+            {
+                typeof(ScriptRewriter).PrintLog(string.Join("\n", logMessages));
+            }
         }
 
         private static ScriptRewriteInfo[] ExtractFiles(string aiOutput)
@@ -78,13 +87,10 @@ namespace CCEnvs.UnityX.Editr.AITools
 
             var results = new List<ScriptRewriteInfo>();
 
-            // Регулярное выражение для парсинга блока:
-            // 1. //----File Start----
-            // 2. //----FilePath: "путь"---- (кавычки опциональны)
-            // 3. //----Deleted---- (опционально)
-            // 4. Содержимое файла (любые символы, включая переносы строк)
-            // 5. //----File End----
-            const string pattern = @"//----File Start----\s*//----FilePath:\s*""?(?<path>[^""\r\n]+)""?----\s*(?<deleted>//----Deleted----)?\s*(?<content>[\s\S]*?)//----File End----";
+            // ✅ ИСПРАВЛЕННОЕ РЕГУЛЯРНОЕ ВЫРАЖЕНИЕ:
+            // 1. (?:----)? делает завершающие тире опциональными, что соответствует реальному выводу ИИ.
+            // 2. [^\r\n""]+ надежно захватывает путь до конца строки или кавычки.
+            const string pattern = @"//----File Start----\s*//----FilePath:\s*""?(?<path>[^\r\n""]+)""?(?:----)?\s*(?<deleted>//----Deleted----)?\s*(?<content>[\s\S]*?)//----File End----";
 
             var matches = Regex.Matches(aiOutput, pattern);
 
