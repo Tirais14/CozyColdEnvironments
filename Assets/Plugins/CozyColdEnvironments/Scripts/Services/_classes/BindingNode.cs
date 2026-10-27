@@ -7,6 +7,8 @@ namespace CCEnvs.Services
 {
     public sealed class BindingNode
     {
+        private const string FACTORY_INVOKE_ID = "0d8260bb-b79e-4542-ba7c-48b64cef25d9";
+
         public object? Target { get; private set; }
 
         public BindingType BindingType { get; }
@@ -52,7 +54,7 @@ namespace CCEnvs.Services
                 if (!HasFactory)
                     throw new InvalidOperationException("Invalid binding type");
 
-                return Factory!.Create(this, Array.Empty<object>());
+                return Factory!.Create(FACTORY_INVOKE_ID, Array.Empty<object>());
             }
             else if (BindingType == BindingType.Single)
             {
@@ -61,7 +63,7 @@ namespace CCEnvs.Services
 
                 if (!IsResolved)
                 {
-                    Target = Factory!.Create(this, Array.Empty<object>());
+                    Target = Factory!.Create(Array.Empty<object>());
                     IsResolved = true;
                 }
 

@@ -144,5 +144,47 @@ namespace CCEnvs.Threading.Tasks
                 action();
             }
         }
+        public static async Task Finally<TState>(this Task task, TState state, Action<TState> action, Action<Exception, TState>? fallback = null)
+        {
+            Guard.IsNotNull(task, nameof(task));
+            Guard.IsNotNull(action, nameof(action));
+
+            try
+            {
+                await task;
+            }
+            catch (Exception ex)
+            {
+                if (fallback is not null)
+                    fallback(ex, state);
+                else
+                    throw;
+            }
+            finally
+            {
+                action(state);
+            }
+        }
+        public static async Task Finally<T, TState>(this Task<T> task, TState state, Action<TState> action, Action<Exception, TState>? fallback = null)
+        {
+            Guard.IsNotNull(task, nameof(task));
+            Guard.IsNotNull(action, nameof(action));
+
+            try
+            {
+                await task;
+            }
+            catch (Exception ex)
+            {
+                if (fallback is not null)
+                    fallback(ex, state);
+                else
+                    throw;
+            }
+            finally
+            {
+                action(state);
+            }
+        }
     }
 }
