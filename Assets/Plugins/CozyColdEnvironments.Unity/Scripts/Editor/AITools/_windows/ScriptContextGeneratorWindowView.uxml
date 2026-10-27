@@ -2,13 +2,18 @@
     <ui:VisualElement name="script-context-generator__root" style="flex-grow: 0;">
         <ui:IntegerField label="Dependecy Max Depth" value="1" name="script-context-generator__dependecy-max-depth-integer-field"/>
         <ui:MaskField label="Default Namespace Match Settings" choices="" name="script-context-generator__script-name-match-settings"/>
-        <ui:ListView name="script-context-generator__script-names-list-view" item-template="project://database/Assets/Plugins/CozyColdEnvironments.Unity/Scripts/Editor/AITools/_windows/ScriptContextGeneratorWindowNamepsaceView.uxml?fileID=9197481963319205126&amp;guid=aa48a4c90ab7ea94c87a5f5e42aae734&amp;type=3#ScriptContextGeneratorWindowNamepsaceView" show-add-remove-footer="true" virtualization-method="DynamicHeight"/>
+        <ui:ListView name="script-context-generator__script-names-list-view" item-template="project://database/Assets/Plugins/CozyColdEnvironments.Unity/Scripts/Editor/AITools/_windows/ScriptContextGeneratorWindowScriptInfoView.uxml?fileID=9197481963319205126&amp;guid=aa48a4c90ab7ea94c87a5f5e42aae734&amp;type=3#ScriptContextGeneratorWindowScriptInfoView" show-add-remove-footer="true" virtualization-method="DynamicHeight"/>
         <ui:ListView name="script-context-generator__directories-list-view" show-add-remove-footer="true" item-template="project://database/Assets/Plugins/CozyColdEnvironments.Unity/Scripts/Editor/AITools/_windows/ScriptContextGeneratorWindowDirectoryView.uxml?fileID=9197481963319205126&amp;guid=1f635d84ede36994e9684446bb396f2e&amp;type=3#ScriptContextGeneratorWindowDirectoryView"/>
         <ui:VisualElement name="script-context-generator__generate-controls" style="flex-grow: 0; flex-direction: row; justify-content: space-around;">
             <ui:Button text="Cancel" name="script-context-generator__cancel-generate-button" enabled="false" style="flex-grow: 1;"/>
             <ui:Button text="Generate" name="script-context-generator__generate-button" style="flex-grow: 1;"/>
         </ui:VisualElement>
+        <ui:TextField label="" multiline="true" name="script-context-generator__ai-input-text-field" placeholder-text="AI Input" vertical-scroller-visibility="Auto"/>
         <ui:TextField label="" multiline="true" name="script-context-generator__ai-output-text-field" placeholder-text="AI Output" vertical-scroller-visibility="Auto" style="height: 100px;"/>
-        <ui:Button text="Clear" name="script-context-generator__clear-ai-output-button"/>
+        <ui:VisualElement name="script-context-generator__ai-output-controls" style="flex-grow: 0; flex-direction: row;">
+            <ui:Button text="Clear" name="script-context-generator__clear-ai-output-button" style="flex-grow: 1;"/>
+            <ui:Button text="Cancel" name="script-context-generator__cancel-applying-ai-output-button" enabled="false" style="flex-grow: 1;"/>
+            <ui:Button text="Apply" name="script-context-generator__apply-ai-output-button" style="flex-grow: 1;"/>
+        </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

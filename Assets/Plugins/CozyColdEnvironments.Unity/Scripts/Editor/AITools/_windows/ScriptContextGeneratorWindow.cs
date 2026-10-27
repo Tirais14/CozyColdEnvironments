@@ -7,6 +7,7 @@ using CCEnvs.Linq;
 using CCEnvs.Serialization;
 using CCEnvs.Snapshots;
 using CCEnvs.Threading;
+using CCEnvs.Threading.Tasks;
 using CCEnvs.UnityX.UI.Elements;
 using R3;
 using System;
@@ -43,6 +44,9 @@ namespace CCEnvs.UnityX.Editr.AITools
             [DataMember(Name = "aiOutput")]
             public string? AIOutput { get; set; }
 
+            [DataMember(Name = "aiInput")]
+            public string? AIInput { get; set; }
+
             public Snapshot(Snapshot<ScriptContextGeneratorWindow> original) : base(original) { }
             public Snapshot() { }
             public Snapshot(ScriptContextGeneratorWindow target) : base(target) { }
@@ -54,6 +58,7 @@ namespace CCEnvs.UnityX.Editr.AITools
                 if (DefaultMatchSettings.HasValue) target.defaultMatchSettingsField.value = (int)DefaultMatchSettings.Value;
                 if (DependencyMaxDepth.HasValue) target.dependencyMaxDepthField.value = DependencyMaxDepth.Value;
                 if (AIOutput is not null) target.aiOutputField.value = AIOutput;
+                if (AIInput is not null) target.aiInputField.value = AIInput;
             }
 
             protected override void OnCapture(ScriptContextGeneratorWindow target)
@@ -64,6 +69,7 @@ namespace CCEnvs.UnityX.Editr.AITools
                 DefaultMatchSettings = (StringMatchSettings)Enum.ToObject(typeof(StringMatchSettings), target.defaultMatchSettingsField.value);
                 DependencyMaxDepth = target.dependencyMaxDepthField.value;
                 AIOutput = target.aiOutputField.value;
+                AIInput = target.aiInputField.value;
             }
 
             protected override void OnReset()
@@ -74,6 +80,7 @@ namespace CCEnvs.UnityX.Editr.AITools
                 DefaultMatchSettings = null;
                 DependencyMaxDepth = null;
                 AIOutput = null;
+                AIInput = null;
             }
         }
 
@@ -103,17 +110,25 @@ namespace CCEnvs.UnityX.Editr.AITools
         private Button generateButton = null!;
         private Button cancelGenerateButton = null!;
         private Button clearAIOutputButton = null!;
+        private Button applyAIOutputButton = null!;
+        private Button cancelApplyingAIOutputButton = null!;
         private MaskField defaultMatchSettingsField = null!;
         private IntegerField dependencyMaxDepthField = null!;
         private TextField aiOutputField = null!;
+        private TextField aiInputField = null!;
 
         private bool isGenerating;
+        private bool isApllyingAIOutput;
         private CancellationTokenSource? disableCancellationTokenSource = new();
         private CancellationTokenSource? cancelGenerateCancellationTokenSource = new();
+        private CancellationTokenSource? cancelApplyingAIOutputCancellationTokenSource = new();
 
         private CancellationToken destroyCancellationToken => destroyCancellationTokenSource.Token;
         private CancellationToken disableCancellationToken => disableCancellationTokenSource?.Token ?? default;
         private CancellationToken cancelGenerateCancellationToken => cancelGenerateCancellationTokenSource?.Token ?? default;
+        private CancellationToken cancelApplyingAIOutputCancellationToken => cancelApplyingAIOutputCancellationTokenSource?.Token ?? default;
+
+        private string PersistentQueryPath => Path.Combine(EditorLibrary.DataPath, "PersistentQuery.txt");
 
         public void CreateGUI()
         {
@@ -131,10 +146,13 @@ namespace CCEnvs.UnityX.Editr.AITools
 
             SetupDirectoriesListView();
             SetupScriptInfosListView();
+            InitPersistentQueryFile();
 
             BindGenerateButton();
             BindCancelGenerateButton();
             BindClearAIOutputButton();
+            BindApplyAIOutputButton();
+            BindCancelApplyingAIOutputButton();
             RestoreSavedData();
         }
 
@@ -187,6 +205,9 @@ namespace CCEnvs.UnityX.Editr.AITools
             cancelGenerateButton = root.QStrict<Button>("script-context-generator__cancel-generate-button");
             aiOutputField = root.QStrict<TextField>("script-context-generator__ai-output-text-field");
             clearAIOutputButton = root.QStrict<Button>("script-context-generator__clear-ai-output-button");
+            aiInputField = root.QStrict<TextField>("script-context-generator__ai-input-text-field");
+            applyAIOutputButton = root.QStrict<Button>("script-context-generator__apply-ai-output-button");
+            cancelApplyingAIOutputButton = root.QStrict<Button>("script-context-generator__cancel-applying-ai-output-button");
         }
 
         private void InitStringMatchSettingsField(MaskField maskField)
@@ -194,6 +215,19 @@ namespace CCEnvs.UnityX.Editr.AITools
             var flags = Enum.GetValues(typeof(StringMatchSettings)).Cast<StringMatchSettings>().ToArray();
             maskField.choices = flags.Select(x => x.ToString()).ToList();
             maskField.choicesMasks = flags.Select(x => x.ToIntUnsafe()).ToList();
+        }
+
+        private void InitPersistentQueryFile()
+        {
+            try
+            {
+                if (!File.Exists(PersistentQueryPath))
+                    File.WriteAllText(PersistentQueryPath, $"Каждый файл помещается в подпапку в зависимости от его типа.{Environment.NewLine}Class/Record => _classes.{Environment.NewLine}static => _helpers. struct => _structs.{Environment.NewLine}interfaces => _interfaces.{Environment.NewLine}ISystem (DOTS) => _ecs/_systems.{Environment.NewLine}Component с данными (DOTS) => _ecs/_components.{Environment.NewLine}Component без данных (DOTS) => _ecs/_tags. {Environment.NewLine}Элемент буффера (DOTS) => _ecs/_buffers. {Environment.NewLine}Авторинг (DOTS) => _ecs/_autrhorings");
+            }
+            catch (Exception ex)
+            {
+                this.PrintWarning(ex);
+            }
         }
 
         private void SetupScriptInfosListView()
@@ -461,7 +495,19 @@ namespace CCEnvs.UnityX.Editr.AITools
                     Directory.CreateDirectory(contextDirPath);
 
                 var contextFilePath = Path.Combine(contextDirPath, "Context.txt");
-                await File.WriteAllTextAsync(contextFilePath, context.ToString(), cancellationToken);
+                var additionalQuery = aiInputField.value;
+
+                try
+                {
+                    if (File.Exists(PersistentQueryPath))
+                        additionalQuery += $"{Environment.NewLine}{File.ReadAllText(PersistentQueryPath)}";
+                }
+                catch (Exception ex)
+                {
+                    this.PrintException(ex);
+                }
+
+                await File.WriteAllTextAsync(contextFilePath, context.ToString(additionalQuery), cancellationToken);
             }
             catch (Exception ex)
             {
@@ -484,6 +530,47 @@ namespace CCEnvs.UnityX.Editr.AITools
         {
             clearAIOutputButton.clicked += ClearAIOUtput;
             CCDisposable.Create(() => clearAIOutputButton.clicked -= ClearAIOUtput).AddTo(bindings);
+        }
+
+        private void ApplyAIOutput()
+        {
+            if (isApllyingAIOutput)
+                return;
+
+            isApllyingAIOutput = true;
+            var cancellationTokenSource = destroyCancellationToken.TryLinkTokens(cancelApplyingAIOutputCancellationToken, out var cancellationToken);
+            cancelApplyingAIOutputButton.enabledSelf = true;
+
+            ScriptRewriter.ApplyAsync(aiOutputField.value, cancellationToken)
+                .Finally(() =>
+                {
+                    cancellationTokenSource?.Dispose();
+                    isApllyingAIOutput = false;
+                    cancelApplyingAIOutputButton.enabledSelf = false;
+                })
+                .Forget(ex => this.PrintException(ex));
+        }
+
+        private void BindApplyAIOutputButton()
+        {
+            applyAIOutputButton.clicked += ApplyAIOutput;
+            CCDisposable.Create(() => applyAIOutputButton.clicked -= ApplyAIOutput).AddTo(bindings);
+        }
+
+        private void BindCancelApplyingAIOutputButton()
+        {
+            void onClicked()
+            {
+                if (!isApllyingAIOutput)
+                    return;
+
+                cancelApplyingAIOutputCancellationTokenSource?.CancelAndDispose();
+                isApllyingAIOutput = false;
+                cancelApplyingAIOutputButton.enabledSelf = false;
+            }
+
+            cancelApplyingAIOutputButton.clicked += onClicked;
+            CCDisposable.Create(() => cancelApplyingAIOutputButton.clicked -= onClicked).AddTo(bindings);
         }
     }
 }
