@@ -165,7 +165,11 @@ namespace CCEnvs.UnityX.UI
 
                 viewModelCreated = true;
             }
-            else viewModelCreated = false;
+            else
+            {
+                CleanupViewModel();
+                viewModelCreated = false;
+            }
         }
 
         /// <inheritdoc cref="SetViewModel(TViewModel?)"/>
@@ -194,6 +198,8 @@ namespace CCEnvs.UnityX.UI
                     else
                         InitViewModelCore(vm);
                 }
+                else
+                    CleanupViewModel();
 
                 return vm;
             };
@@ -266,6 +272,8 @@ namespace CCEnvs.UnityX.UI
         /// <exception cref="NotImplementedException"></exception>
         protected virtual void OnSetViewModel(TViewModel? viewModel) { }
 
+        protected virtual void CleanupViewModel() { }
+
         protected virtual void OnModelChanged(object? model) { }
 
         protected abstract TViewModel? CreateViewModel();
@@ -275,16 +283,21 @@ namespace CCEnvs.UnityX.UI
             if (viewModel is IDisposable disposable)
                 disposable.Dispose();
 
-            if (viewModelDisposables.IsValueCreated)
-                ViewModelBindings.DisposeEachAndClear(bufferized: true);
+            DisposeViewModelBindings();
 
             modelBinding?.Dispose();
+        }
+
+        private void DisposeViewModelBindings()
+        {
+            if (viewModelDisposables.IsValueCreated)
+                ViewModelBindings.DisposeEachAndClear(bufferized: false);
         }
 
         private void OnModelChangedInternal(object? model)
         {
             CC.Guard.IsNotNull(ViewModel, nameof(ViewModel));
-            OnSetViewModel(default);
+            DisposeViewModelBindings();
             OnSetViewModel(ViewModel);
             InitViewModel(ViewModel);
             OnModelChanged(model);

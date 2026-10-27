@@ -66,7 +66,7 @@ namespace CCEnvs.UnityX.Editr.AITools
                 base.OnCapture(target);
                 ScriptInfos = target.scriptInfos.ToArray();
                 Directories = target.directories.ToArray();
-                DefaultMatchSettings = (StringMatchSettings)Enum.ToObject(typeof(StringMatchSettings), target.defaultMatchSettingsField.value);
+                DefaultMatchSettings = target.defaultMatchSettingsField is null ? null : (StringMatchSettings)Enum.ToObject(typeof(StringMatchSettings), target.defaultMatchSettingsField.value);
                 DependencyMaxDepth = target.dependencyMaxDepthField.value;
                 AIOutput = target.aiOutputField.value;
                 AIInput = target.aiInputField.value;
@@ -375,20 +375,10 @@ namespace CCEnvs.UnityX.Editr.AITools
             if (scriptInfosListView != null)
             {
                 scriptInfosListView.makeItem += onMakeItem;
-                CCDisposable.Create(() => scriptInfosListView.makeItem = null).AddTo(bindings);
-
                 scriptInfosListView.destroyItem += onDestroyItem;
-                CCDisposable.Create(() => scriptInfosListView.destroyItem = null).AddTo(bindings);
-
                 scriptInfosListView.onAdd += onAdd;
-                CCDisposable.Create(() => scriptInfosListView.onAdd = null).AddTo(bindings);
-
                 scriptInfosListView.onRemove += onRemove;
-                CCDisposable.Create(() => scriptInfosListView.onRemove = null).AddTo(bindings);
-
                 scriptInfosListView.bindItem += onBindItem;
-                CCDisposable.Create(() => scriptInfosListView.bindItem = null).AddTo(bindings);
-
                 scriptInfosListView.itemsSource = scriptInfos;
             }
         }
@@ -466,23 +456,11 @@ namespace CCEnvs.UnityX.Editr.AITools
             if (directoriesListView != null)
             {
                 directoriesListView.makeItem += onMakeItem;
-                CCDisposable.Create(() => directoriesListView.makeItem  = null).AddTo(bindings);
-
                 directoriesListView.destroyItem += onDestroyItem;
-                CCDisposable.Create(() => directoriesListView.destroyItem = null).AddTo(bindings);
-
                 directoriesListView.onAdd += onAdd;
-                CCDisposable.Create(() => directoriesListView.onAdd = null).AddTo(bindings);
-
                 directoriesListView.onRemove += onRemove;
-                CCDisposable.Create(() => directoriesListView.onRemove = null).AddTo(bindings);
-
                 directoriesListView.bindItem += onBindItem;
-                CCDisposable.Create(() => directoriesListView.bindItem = null).AddTo(bindings);
-
                 directoriesListView.unbindItem += onUnbindItem;
-                CCDisposable.Create(() => directoriesListView.unbindItem = null).AddTo(bindings);
-
                 directoriesListView.itemsSource = directories;
             }
         }
