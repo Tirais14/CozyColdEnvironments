@@ -260,6 +260,12 @@ namespace CCEnvs.UnityX.UI
             return ViewModel.As<T>().Let(out result).IsNotNull();
         }
 
+        internal void DisposeViewModelBindings()
+        {
+            if (viewModelDisposables.IsValueCreated)
+                ViewModelBindings.DisposeEachAndClear(bufferized: false);
+        }
+
         /// <summary>
         /// Invokes in <see cref="Start"/>, <see cref="SetViewModel(TViewModel)"/>, <see cref="SetModelUnsafe(TModel)"/>
         /// </summary>
@@ -288,18 +294,12 @@ namespace CCEnvs.UnityX.UI
             modelBinding?.Dispose();
         }
 
-        private void DisposeViewModelBindings()
-        {
-            if (viewModelDisposables.IsValueCreated)
-                ViewModelBindings.DisposeEachAndClear(bufferized: false);
-        }
-
         private void OnModelChangedInternal(object? model)
         {
             CC.Guard.IsNotNull(ViewModel, nameof(ViewModel));
-            DisposeViewModelBindings();
-            OnSetViewModel(ViewModel);
-            InitViewModel(ViewModel);
+            //DisposeViewModelBindings();
+            //OnSetViewModel(ViewModel);
+            //InitViewModel(ViewModel);
             OnModelChanged(model);
         }
 

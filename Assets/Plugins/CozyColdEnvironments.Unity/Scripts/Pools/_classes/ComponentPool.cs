@@ -48,7 +48,7 @@ namespace CCEnvs.UnityX.Pools
             base.OnReturn(obj);
             ComponentPool.OnTransfomrReturn(obj.transform);
 
-            if (objectsRoot != null)
+            if (objectsRoot != null && obj != null)
                 obj.transform.SetParent(objectsRoot);
         }
 

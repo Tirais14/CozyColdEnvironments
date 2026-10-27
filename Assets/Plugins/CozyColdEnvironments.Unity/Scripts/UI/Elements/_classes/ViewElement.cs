@@ -98,27 +98,32 @@ namespace CCEnvs.UnityX.UI.Elements
         {
             base.OnDestroy();
             CCDisposable.Dispose(ref rootElementBinding);
-            OnRootElementChanged(null);
+            OnRootElementChangedInternal(null);
         }
 
-        protected virtual void InitRootElement(VisualElement root)
-        {
+        protected virtual void OnRootElementChanged(VisualElement? root) { }
 
-        }
+        protected virtual void InitRootElement(VisualElement root) { }
 
-        protected virtual void CleanupRootElement()
-        {
-        }
+        protected virtual void CleanupRootElement() { }
 
-        protected virtual void OnRootElementChanged(VisualElement? root)
-        {
+        //protected virtual void OnRootElementOrViewModelChanged(VisualElement? root, TViewModel viewModel) { }
 
-        }
+        //protected virtual void InitRootElementAndViewModel(VisualElement root, TViewModel viewModel) { }
+
+        //protected virtual void CleanupRootElementAndViewModel() { }
 
         private void OnRootElementChangedInternal(VisualElement? root)
         {
             OnRootElementChanged(root);
+            DisposeViewModelBindings();
+            OnSetViewModel(ViewModel);
 
+            if (ViewModel.IsNotNull())
+                InitViewModel(ViewModel);
+            else
+                CleanupViewModel();
+            
             if (root is null)
             {
                 CleanupRootElement();
