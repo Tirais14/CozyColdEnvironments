@@ -1,5 +1,6 @@
 using CCEnvs.Patterns.Factories;
 using System;
+using System.Linq;
 
 #nullable enable
 namespace CCEnvs.Services
@@ -28,17 +29,22 @@ namespace CCEnvs.Services
                 return createdValue!;
 
             if (bindingType == BindingType.Transient)
-            {
-                return factory.Create(this, Array.Empty<object>());
-            }
+                return CreateInstance();
             else if (bindingType == BindingType.Single)
             {
-                createdValue = factory.Create(Array.Empty<object>());
+                createdValue = CreateInstance();
                 isCreated = true;
                 return createdValue;
             }
 
             throw CC.ThrowHelper.InvalidOperationException(bindingType);
+        }
+
+        private object CreateInstance()
+        {
+            var method = ServiceBinderHelper.GetResolveMethod(factory.GetType(), nameof(IFactory<object>.Create));
+            var arguments = ServiceBinderHelper.ResolveServices(method);
+            return method.Invoke(factory, arguments.ToArray());
         }
     }
 

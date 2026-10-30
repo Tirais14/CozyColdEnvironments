@@ -13,10 +13,10 @@ namespace CCEnvs.Services
 {
     public static class ServiceBinderHelper
     {
-        private static readonly MemoryCache emptyConstructorCache = new(
-            new MemoryCacheOptions()
+        private static readonly MemoryCache cache = new(
+            new MemoryCacheOptions
             {
-                ExpirationScanFrequency = 2.Minutes()
+            ExpirationScanFrequency = 2.Minutes()
             });
 
         public static IEnumerable<Type> FindInterfaces(
@@ -60,7 +60,8 @@ namespace CCEnvs.Services
             if (contract.IsInterface || contract.IsAbstract)
                 throw new ArgumentException("Contract is abstract type");
 
-            if (emptyConstructorCache.TryGetValue<ConstructorInfo>(contract, out var cachedEmptyCtor) &&
+            var cacheID = ("EmptyConstructor", contract);
+            if (cache.TryGetValue<ConstructorInfo>(cacheID, out var cachedEmptyCtor) &&
                 cachedEmptyCtor is not null
                 )
                 return cachedEmptyCtor.Invoke(Array.Empty<object>());
@@ -79,10 +80,115 @@ namespace CCEnvs.Services
                     );
 
             var instance = emptyCtor.Invoke(Array.Empty<object>());
-            using var cacheEntry = emptyConstructorCache.CreateEntry(contract);
+            using var cacheEntry = cache.CreateEntry(cacheID);
             cacheEntry.Value = emptyCtor;
             cacheEntry.AbsoluteExpirationRelativeToNow = 6.Minutes();
             return instance;
+        }
+
+        public static object CreateByConstructor(Type contract)
+        {
+            Guard.IsNotNull(contract, nameof(contract));
+            var ctor = GetResolveConstructor(contract);
+            var arguments = ResolveServices(ctor);
+            return ctor.Invoke(arguments.ToArray());
+        }
+
+        public static MethodInfo GetResolveMethod(
+            Type type,
+            string name,
+            BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Public,
+            StringMatchSettings nameMatchSettings = StringMatchSettings.Ordinal
+            )
+        {
+            Guard.IsNotNull(type);
+            Guard.IsNotNullOrWhiteSpace(name, nameof(name));
+
+            var cacheID = ("Method", type, name, bindingFlags, nameMatchSettings);
+            if (cache.TryGetValue<MethodInfo>(cacheID, out var cachedMethod) &&
+                cachedMethod is not null)
+                return cachedMethod;
+
+            foreach (var method in type.GetMethods(bindingFlags).OrderByDescending(x => x.IsDefined<ResolveAttribute>()))
+            {
+                if (!method.Name.Match(name, nameMatchSettings))
+                    continue;
+
+                using var cacheEntry = cache.CreateEntry(cacheID);
+                cacheEntry.Value = method;
+                cacheEntry.SlidingExpiration = 6.Minutes();
+                return method;
+            }
+
+            throw new InvalidOperationException(DebugMessageBuilder.CreatePooled()
+                .AddMessage("Not found any resolve method")
+                .AddProperty("Type", type)
+                .AddProperty("Name", name)
+                .AddProperty("NameMatchSettings", nameMatchSettings)
+                .ToStringAndDispose()
+                );
+        }
+
+        public static ConstructorInfo GetResolveConstructor(
+            Type type,
+            BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Public
+            )
+        {
+            Guard.IsNotNull(type, nameof(type));
+
+            var cacheID = ("Constructor", type, bindingFlags);
+            if (cache.TryGetValue<ConstructorInfo>(cacheID, out var cachedCtor) &&
+                cachedCtor.IsNotNull())
+                return cachedCtor;
+
+            foreach (var ctor in type.GetConstructors(bindingFlags).OrderByDescending(x => x.IsDefined<ResolveAttribute>()))
+            {
+                using var cacheEntry = cache.CreateEntry(cacheID);
+                cacheEntry.Value = ctor;
+                cacheEntry.SlidingExpiration = 6.Minutes();
+                return ctor;
+            }
+
+            throw new InvalidOperationException(DebugMessageBuilder.CreatePooled()
+                .AddMessage("Not found constructor")
+                .AddProperty("Type", type)
+                .AddProperty("BindingFlags", bindingFlags)
+                .ToStringAndDispose()
+                );
+        }
+
+        public static IList<object?> ResolveServices(MethodBase method)
+        {
+            Guard.IsNotNull(method, nameof(method));
+
+            var parameters = method.GetParameters();
+
+            if (parameters.Length == 0)
+                return Array.Empty<object>();
+
+            var results = new List<object?>(parameters.Length);
+
+            for (int i = 0; i < parameters.Length; i++)
+            {
+                ParameterInfo param = parameters[i];
+
+                if (param.IsDefined(typeof(ResolveOptionalAttribute), inherit: true))
+                {
+                    if (param.GetCustomAttribute<ResolveIDAttribute>(inherit: true).IsNotNull(out var resolveID))
+                        results.Add(CCServices.TryResolve(param.ParameterType, resolveID.ID));
+                    else
+                        results.Add(CCServices.TryResolve(param.ParameterType));
+                }
+                else
+                {
+                    if (param.GetCustomAttribute<ResolveIDAttribute>(inherit: true).IsNotNull(out var resolveID))
+                        results.Add(CCServices.Resolve(param.ParameterType, resolveID.ID));
+                    else
+                        results.Add(CCServices.Resolve(param.ParameterType));
+                }
+            }
+
+            return results;
         }
     }
 }

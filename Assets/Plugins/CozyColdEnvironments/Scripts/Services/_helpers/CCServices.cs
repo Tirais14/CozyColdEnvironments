@@ -81,71 +81,8 @@ namespace CCEnvs.Services
             }
 
             return CCDisposable.Create(bindingKey, bindingKey => Unbind(bindingKey));
-
-            //if (binder.Is<IServiceBinderInterfacesProvider>(out var interfacesProvider))
-            //{
-            //    bool hasError = false;
-            //    var ifaceBindingKeys = new List<BindingKey>(interfacesProvider.Interfaces.Count);
-
-            //    for (int i = 0; i < interfacesProvider.Interfaces.Count; i++)
-            //    {
-            //        Type iface = interfacesProvider.Interfaces[i];
-
-            //        if (!iface.IsInterface)
-            //        {
-            //            typeof(CCServices).PrintError(DebugMessageBuilder.CreatePooled()
-            //                .AddMessage("Unexpected interface type")
-            //                .AddProperty("Type", iface)
-            //                .ToStringAndDispose()
-            //                );
-            //            hasError = true;
-            //            break;
-            //        }
-
-            //        if (binder.Instance.IsNotInstanceOfType(iface))
-            //        {
-            //            typeof(CCServices).PrintError(DebugMessageBuilder.CreatePooled()
-            //                .AddMessage("Instance doesn't realize interface type")
-            //                .AddProperty("Interface", iface)
-            //                .AddProperty("Instance", binder.Instance.GetType())
-            //                .ToStringAndDispose()
-            //                );
-            //            hasError = true;
-            //            break;
-            //        }
-
-            //        if (!ignoreIfBound && HasBinding(iface, id))
-            //        {
-            //            typeof(CCServices).PrintError(DebugMessageBuilder.CreatePooled()
-            //                .AddMessage("Binding already exists")
-            //                .AddProperty("Contract", iface)
-            //                .AddProperty("ID", id)
-            //                .ToStringAndDispose()
-            //                );
-            //        }
-
-            //        ifaceBindingKeys.Add(new BindingKey(iface, id));
-            //    }
-
-            //    var compositeHandle = new CCCompositeDisposable(interfacesProvider.Interfaces.Count + 1)
-            //    {
-            //        CCDisposable.Create(bindingKey, bindingKey => Unbind(bindingKey))
-            //    };
-
-            //    if (!hasError)
-            //    {
-            //        foreach (var ifaceBindingKey in ifaceBindingKeys)
-            //        {
-            //            bindings.Add(ifaceBindingKey, new BindingNode(binder.Instance, BindingType.Single));
-            //            compositeHandle.Add(CCDisposable.Create(ifaceBindingKey, (ifaceBindingKey) => Unbind(ifaceBindingKey)));
-            //        }
-            //    }
-
-            //    return compositeHandle;
-            //}
-
-            //return CCDisposable.Create(bindingKey, bindingKey => Unbind(bindingKey));
         }
+
         public static ServiceBinderNonGeneric Bind(Type contract)
         {
             return new ServiceBinderNonGeneric(contract);

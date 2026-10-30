@@ -42,7 +42,7 @@ namespace CCEnvs.Services
         {
             return new ServiceFactoryBinderNonGeneric(
                 ToContract ?? Contract,
-                Factory.Create(() => ServiceBinderHelper.CreateByEmptyConstructor(Contract))
+                Factory.Create(() => ServiceBinderHelper.CreateByConstructor(Contract))
                 );
         }
     }

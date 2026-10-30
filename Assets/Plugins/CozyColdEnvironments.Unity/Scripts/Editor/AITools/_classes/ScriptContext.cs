@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 #nullable enable
 using CommunityToolkit.Diagnostics;
 using System.Collections.Generic;
@@ -69,3 +70,4 @@ namespace CCEnvs.UnityX.Editr.AITools
         }
     }
 }
+#endif

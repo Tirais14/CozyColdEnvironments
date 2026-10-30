@@ -22,6 +22,10 @@ namespace CCEnvs.Services
         {
             return new ServiceFactoryBinderGeneric<T>(factory);
         }
+        public ServiceFactoryBinderNonGeneric FromFactory(IFactory factory)
+        {
+            return new ServiceFactoryBinderNonGeneric(typeof(T), factory);
+        }
 
         public ServiceFactoryBinderGeneric<T> FromMethod(Func<T> factory)
         {
@@ -55,6 +59,10 @@ namespace CCEnvs.Services
         {
             return new ServiceFactoryBinderGeneric<TTo>(factory);
         }
+        public ServiceFactoryBinderNonGeneric FromFactory(IFactory factory)
+        {
+            return new ServiceFactoryBinderNonGeneric(typeof(TTo), factory);
+        }
 
         public ServiceFactoryBinderGeneric<TTo> FromMethod(Func<TTo> factory)
         {
@@ -64,7 +72,7 @@ namespace CCEnvs.Services
         public ServiceFactoryBinderGeneric<TTo> FromNew()
         {
             return new ServiceFactoryBinderGeneric<TTo>(
-                Factory.Create(() => ServiceBinderHelper.CreateByEmptyConstructor(typeof(T)).CastTo<TTo>())
+                Factory.Create(() => ServiceBinderHelper.CreateByConstructor(typeof(T)).CastTo<TTo>())
                 );
         }
         public ServiceFactoryBinderGeneric<TTo> FromNew<TNew>()

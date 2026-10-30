@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CommunityToolkit.Diagnostics;
@@ -115,3 +116,4 @@ namespace CCEnvs.UnityX.Editr.AITools
         }
     }
 }
+#endif

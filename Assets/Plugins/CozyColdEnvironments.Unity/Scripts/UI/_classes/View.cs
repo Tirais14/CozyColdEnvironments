@@ -63,6 +63,11 @@ namespace CCEnvs.UnityX.UI
                 return elementShowable;
             }
         }
+
+        internal static bool MustUpdateBindingsWhenModelChanged(IView view)
+        {
+            return view.GetType().IsDefined<UpdateBindingsWhenModelChangedAttribute>(inherit: false);
+        }
     }
     [DisallowMultipleComponent]
     public abstract class View<TViewModel>
@@ -300,9 +305,17 @@ namespace CCEnvs.UnityX.UI
         private void OnModelChangedInternal(object? model)
         {
             CC.Guard.IsNotNull(ViewModel, nameof(ViewModel));
-            //DisposeViewModelBindings();
-            //OnSetViewModel(ViewModel);
-            //InitViewModel(ViewModel);
+
+            if (MustUpdateBindingsWhenModelChanged(this))
+            {
+                var cachedViewModel = viewModel.Value;
+                viewModel.Value = default;
+                viewModel.Value = cachedViewModel;
+                DisposeViewModelBindings();
+                OnSetViewModel(ViewModel);
+                InitViewModel(ViewModel);
+            }
+
             OnModelChanged(model);
         }
 

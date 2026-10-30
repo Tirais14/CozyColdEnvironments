@@ -4,7 +4,9 @@
             <ui:IntegerField label="Dependecy Max Depth" value="1" name="script-context-generator__dependecy-max-depth-integer-field"/>
             <ui:MaskField label="Default Namespace Match Settings" choices="" name="script-context-generator__script-name-match-settings"/>
         </ui:Foldout>
-        <ui:ListView name="script-context-generator__script-names-list-view" item-template="project://database/Assets/Plugins/CozyColdEnvironments.Unity/Scripts/Editor/AITools/_windows/ScriptContextGeneratorWindowScriptInfoView.uxml?fileID=9197481963319205126&amp;guid=aa48a4c90ab7ea94c87a5f5e42aae734&amp;type=3#ScriptContextGeneratorWindowScriptInfoView" show-add-remove-footer="true" virtualization-method="DynamicHeight"/>
+        <ui:Foldout text="Scripts" name="script-context-generator__script-names-foldout" value="false">
+            <ui:ListView name="script-context-generator__script-names-list-view" item-template="project://database/Assets/Plugins/CozyColdEnvironments.Unity/Scripts/Editor/AITools/_windows/ScriptContextGeneratorWindowScriptInfoView.uxml?fileID=9197481963319205126&amp;guid=aa48a4c90ab7ea94c87a5f5e42aae734&amp;type=3#ScriptContextGeneratorWindowScriptInfoView" show-add-remove-footer="true" virtualization-method="DynamicHeight"/>
+        </ui:Foldout>
         <ui:Foldout text="Directories" name="script-context-generator__directroies-foldout" value="false">
             <ui:ListView name="script-context-generator__directories-list-view" show-add-remove-footer="true" item-template="project://database/Assets/Plugins/CozyColdEnvironments.Unity/Scripts/Editor/AITools/_windows/ScriptContextGeneratorWindowDirectoryView.uxml?fileID=9197481963319205126&amp;guid=1f635d84ede36994e9684446bb396f2e&amp;type=3#ScriptContextGeneratorWindowDirectoryView"/>
         </ui:Foldout>
