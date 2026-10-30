@@ -84,7 +84,10 @@ namespace CCEnvs.UnityX.UI.Elements
     {
         private readonly Lazy<List<IDisposable>> rootElementDisposables = new(() => new());
 
+        private VisualElement? rootElement;
+
         private IDisposable? rootElementBinding;
+        private IDisposable? viewModelBinding;
 
         protected ICollection<IDisposable> RootElementBindings => rootElementDisposables.Value;
 
@@ -92,12 +95,14 @@ namespace CCEnvs.UnityX.UI.Elements
         {
             base.Start();
             BindRootElement();
+            BindViewModel();
         }
 
         protected override void OnDestroy()
         {
             base.OnDestroy();
             CCDisposable.Dispose(ref rootElementBinding);
+            CCDisposable.Dispose(ref viewModelBinding);
             OnRootElementChangedInternal(null);
         }
 
@@ -113,8 +118,19 @@ namespace CCEnvs.UnityX.UI.Elements
 
         protected virtual void CleanupRootElementAndViewModel() { }
 
+        private void OnRootElementOrViewModelChangedInternal(VisualElement? root, TViewModel? viewModel)
+        {
+            OnRootElementOrViewModelChanged(root, viewModel);
+
+            if (root is not null && viewModel.IsNotNull())
+                InitRootElementAndViewModel(root, viewModel);
+            else
+                CleanupRootElementAndViewModel();
+        }
+
         private void OnRootElementChangedInternal(VisualElement? root)
         {
+            rootElement = root;
             OnRootElementChanged(root);
             
             if (root is null)
@@ -128,15 +144,7 @@ namespace CCEnvs.UnityX.UI.Elements
             DisposeViewModelBindings();
             OnSetViewModel(ViewModel);
 
-            if (ViewModel.IsNotNull())
-                InitViewModel(ViewModel);
-            else
-                CleanupViewModel();
-
-            OnRootElementOrViewModelChanged(root, ViewModel);
-
-            if (root is not null && ViewModel.IsNotNull())
-                InitRootElementAndViewModel(root, ViewModel);
+            OnRootElementOrViewModelChangedInternal(root, ViewModel);   
         }
 
         private void BindRootElement()
@@ -149,6 +157,16 @@ namespace CCEnvs.UnityX.UI.Elements
         {
             foreach (var field in ViewElement.ResolveRootDependentFields(GetType()))
                 field.SetValue(this, null);
+        }
+
+        private void OnViewModelChangedInternal(TViewModel? viewModel)
+        {
+            OnRootElementOrViewModelChangedInternal(rootElement, viewModel);
+        }
+
+        private void BindViewModel()
+        {
+            viewModelBinding = ObserveViewModel().Subscribe(OnViewModelChangedInternal);
         }
     }
 }

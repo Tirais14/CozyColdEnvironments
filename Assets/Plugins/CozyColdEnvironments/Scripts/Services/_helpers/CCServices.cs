@@ -16,7 +16,7 @@ namespace CCEnvs.Services
 {
     public static class CCServices
     {
-        private static readonly Dictionary<BindingKey, BindingNode> bindings = new();
+        private static readonly Dictionary<BindingKey, IBindingNode> bindings = new();
 
         public static IDisposable Bind(IServiceBinder binder, BindingType bindingType)
         {
@@ -52,9 +52,9 @@ namespace CCEnvs.Services
                     binder is IServiceBindingLazyStateProvider lazyStateProvider &&
                     !lazyStateProvider.IsLazy
                     )
-                    bindings.Add(bindingKey, new BindingNode(factoryProvider.Factory.Create("5268d3f4-7422-4b47-ac56-99daae47ae18", Array.Empty<object>()), bindingType));
+                    bindings.Add(bindingKey, new InstanceBindingNode(factoryProvider.Factory.Create(Array.Empty<object>())));
                 else
-                    bindings.Add(bindingKey, new BindingNode(factoryProvider.Factory, bindingType));
+                    bindings.Add(bindingKey, new FactoryBindingNode(factoryProvider.Factory, bindingType));
 
             }
             else if (binder is IServiceBindingInstanceProvider instanceProvider)
@@ -68,7 +68,7 @@ namespace CCEnvs.Services
                         );
                 }
 
-                bindings.Add(bindingKey, new BindingNode(instanceProvider.Instance, bindingType));
+                bindings.Add(bindingKey, new InstanceBindingNode(instanceProvider.Instance));
             }
             else
             {

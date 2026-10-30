@@ -74,7 +74,7 @@ namespace CCEnvs.UnityX.UI
     {
         private readonly Lazy<List<IDisposable>> viewModelDisposables = new(() => new List<IDisposable>());
 
-        private TViewModel? viewModel;
+        private readonly ReactiveProperty<TViewModel?> viewModel = new();
 
         private Func<TViewModel?>? viewModelFactory;
 
@@ -108,6 +108,7 @@ namespace CCEnvs.UnityX.UI
             base.OnDestroy();
             TryDisposeViewModel();
             OnSetViewModel(default);
+            viewModel.Dispose();
         }
 
         public View<TViewModel> SetSuppressViewModelCreation(bool value)
@@ -118,8 +119,8 @@ namespace CCEnvs.UnityX.UI
 
         public TViewModel? GetViewModel()
         {
-            if (viewModel.IsNotNull())
-                return viewModel;
+            if (viewModel.Value.IsNotNull())
+                return viewModel.Value;
 
             if (viewModelCreated
                 ||
@@ -131,16 +132,16 @@ namespace CCEnvs.UnityX.UI
             if (viewModelFactory == null)
                 SetViewModelFactory(CreateViewModel);
 
-            viewModel = viewModelFactory!();
+            viewModel.Value = viewModelFactory!();
 
-            if (viewModel.IsNull())
+            if (viewModel.Value.IsNull())
             {
                 viewModelFactoryReturnsValue = false;
                 return default;
             }
 
             viewModelCreated = true;
-            return viewModel;
+            return viewModel.Value;
         }
 
         /// <summary>
@@ -149,11 +150,11 @@ namespace CCEnvs.UnityX.UI
         /// <param name="viewModel"></param>
         public void SetViewModel(TViewModel? viewModel)
         {
-            if (!EqualityComparer<TViewModel?>.Default.Equals(this.viewModel, viewModel))
+            if (!EqualityComparer<TViewModel?>.Default.Equals(this.viewModel.Value, viewModel))
                 TryDisposeViewModel();
 
             viewModelFactoryReturnsValue = true;
-            this.viewModel = viewModel;
+            this.viewModel.Value = viewModel;
             OnSetViewModel(viewModel);
 
             if (viewModel.IsNotNull())
@@ -187,7 +188,7 @@ namespace CCEnvs.UnityX.UI
             {
                 factory ??= CreateViewModel;
                 var vm = factory();
-                viewModel = vm;
+                viewModel.Value = vm;
 
                 OnSetViewModel(vm);
 
@@ -260,6 +261,8 @@ namespace CCEnvs.UnityX.UI
             return ViewModel.As<T>().Let(out result).IsNotNull();
         }
 
+        public Observable<TViewModel?> ObserveViewModel() => viewModel;
+
         internal void DisposeViewModelBindings()
         {
             if (viewModelDisposables.IsValueCreated)
@@ -286,7 +289,7 @@ namespace CCEnvs.UnityX.UI
 
         protected void TryDisposeViewModel()
         {
-            if (viewModel is IDisposable disposable)
+            if (viewModel.Value is IDisposable disposable)
                 disposable.Dispose();
 
             DisposeViewModelBindings();

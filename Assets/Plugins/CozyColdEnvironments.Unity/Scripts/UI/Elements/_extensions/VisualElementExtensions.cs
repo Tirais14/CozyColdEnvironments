@@ -1,5 +1,7 @@
 using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
+using CCEnvs.FuncLanguage;
+using CCEnvs.TypeMatching;
 using System;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -15,7 +17,10 @@ namespace CCEnvs.UnityX.UI.Elements
             return element.Q<T>(name) ??
                 throw new System.InvalidOperationException(DebugMessageBuilder.CreatePooled()
                 .AddMessage("Not found element")
-                .AddProperty("SearchRoot", element)
+                .AddPreidcateMessage(element.Q<VisualElement>(name).Let(out var foundElement).Maybe().Map(x => x is not T).GetValue().Let(out var isInvalidElementType), () => "Invalid element type")
+                .AddPredicatedProperty(isInvalidElementType, "CurrentType", foundElement, static foundElement => foundElement.GetType())
+                .AddPredicatedProperty(isInvalidElementType, "ExpectedType", static () => typeof(T))
+                .AddProperty("Root", element.name)
                 .AddProperty("Name", name)
                 .AddProperty("Type", typeof(T))
                 .ToStringAndDispose()
@@ -27,7 +32,10 @@ namespace CCEnvs.UnityX.UI.Elements
             return element.Q<T>(name, className) ??
                 throw new System.InvalidOperationException(DebugMessageBuilder.CreatePooled()
                 .AddMessage("Not found element")
-                .AddProperty("SearchRoot", element)
+                .AddPreidcateMessage(element.Q<VisualElement>(name).Let(out var foundElement).Maybe().Map(x => x is not T).GetValue().Let(out var isInvalidElementType), () => "Invalid element type")
+                .AddPredicatedProperty(isInvalidElementType, "CurrentType", foundElement, static foundElement => foundElement.GetType())
+                .AddPredicatedProperty(isInvalidElementType, "ExpectedType", static () => typeof(T))
+                .AddProperty("Root", element.name)
                 .AddProperty("Name", name)
                 .AddProperty("Type", typeof(T))
                 .AddPredicatedProperty(className.IsNotNullOrWhiteSpace(), "Class", className)
@@ -42,7 +50,10 @@ namespace CCEnvs.UnityX.UI.Elements
             return element.Q<T>(name, classNames) ??
                 throw new System.InvalidOperationException(DebugMessageBuilder.CreatePooled()
                 .AddMessage("Not found element")
-                .AddProperty("SearchRoot", element)
+                .AddPreidcateMessage(element.Q<VisualElement>(name).Let(out var foundElement).Maybe().Map(x => x is not T).GetValue().Let(out var isInvalidElementType), () => "Invalid element type")
+                .AddPredicatedProperty(isInvalidElementType, "CurrentType", foundElement, static foundElement => foundElement.GetType())
+                .AddPredicatedProperty(isInvalidElementType, "ExpectedType", static () => typeof(T))
+                .AddProperty("Root", element.name)
                 .AddProperty("Name", name)
                 .AddProperty("Type", typeof(T))
                 .AddPredicatedProperty(classNames.Length >= 1, "Classes", classNames.SequenceToString())

@@ -67,9 +67,9 @@ namespace CCEnvs.UnityX.Editr.AITools
                 ScriptInfos = target.scriptInfos.ToArray();
                 Directories = target.directories.ToArray();
                 DefaultMatchSettings = target.defaultMatchSettingsField is null ? null : (StringMatchSettings)Enum.ToObject(typeof(StringMatchSettings), target.defaultMatchSettingsField.value);
-                DependencyMaxDepth = target.dependencyMaxDepthField.value;
-                AIOutput = target.aiOutputField.value;
-                AIInput = target.aiInputField.value;
+                DependencyMaxDepth = target.dependencyMaxDepthField?.value;
+                AIOutput = target.aiOutputField?.value;
+                AIInput = target.aiInputField?.value;
             }
 
             protected override void OnReset()

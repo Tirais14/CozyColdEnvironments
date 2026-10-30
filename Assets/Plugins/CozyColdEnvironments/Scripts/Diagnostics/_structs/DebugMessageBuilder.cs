@@ -1,5 +1,6 @@
 using CCEnvs.Pools;
 using CCEnvs.Reflection.Caching;
+using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -61,6 +62,32 @@ namespace CCEnvs.Diagnostics
             return this;
         }
 
+        public DebugMessageBuilder AddPreidcateMessage(bool condition, string? msg = null)
+        {
+            if (!condition)
+                return this;
+
+            return AddMessage(msg);
+        }
+        public DebugMessageBuilder AddPreidcateMessage(bool condition, Func<string> msgFactory)
+        {
+            Guard.IsNotNull(msgFactory, nameof(msgFactory));
+
+            if (!condition)
+                return this;
+
+            return AddMessage(msgFactory());
+        }
+        public DebugMessageBuilder AddPreidcateMessage<TState>(bool condition, TState state, Func<TState, string> msgFactory)
+        {
+            Guard.IsNotNull(msgFactory, nameof(msgFactory));
+
+            if (!condition)
+                return this;
+
+            return AddMessage(msgFactory(state));
+        }
+
         public DebugMessageBuilder AddProperty<T>(string? propName, T? value)
         {
             bool hasValue = value.IsNotNull();
@@ -95,6 +122,33 @@ namespace CCEnvs.Diagnostics
         {
             if (condition)
                 return AddProperty(propName, value);
+
+            return this;
+        }
+        public DebugMessageBuilder AddPredicatedProperty<T>(
+            bool condition,
+            string? propName,
+            Func<T> valueFactory
+            )
+        {
+            Guard.IsNotNull(valueFactory, nameof(valueFactory));
+
+            if (condition)
+                return AddProperty(propName, valueFactory());
+
+            return this;
+        }
+        public DebugMessageBuilder AddPredicatedProperty<T, TState>(
+            bool condition,
+            string? propName,
+            TState state,
+            Func<TState, T> valueFactory
+            )
+        {
+            Guard.IsNotNull(valueFactory, nameof(valueFactory));
+
+            if (condition)
+                return AddProperty(propName, valueFactory(state));
 
             return this;
         }
