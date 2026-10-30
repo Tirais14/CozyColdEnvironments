@@ -107,22 +107,15 @@ namespace CCEnvs.UnityX.UI.Elements
 
         protected virtual void CleanupRootElement() { }
 
-        //protected virtual void OnRootElementOrViewModelChanged(VisualElement? root, TViewModel viewModel) { }
+        protected virtual void OnRootElementOrViewModelChanged(VisualElement? root, TViewModel? viewModel) { }
 
-        //protected virtual void InitRootElementAndViewModel(VisualElement root, TViewModel viewModel) { }
+        protected virtual void InitRootElementAndViewModel(VisualElement root, TViewModel viewModel) { }
 
-        //protected virtual void CleanupRootElementAndViewModel() { }
+        protected virtual void CleanupRootElementAndViewModel() { }
 
         private void OnRootElementChangedInternal(VisualElement? root)
         {
             OnRootElementChanged(root);
-            DisposeViewModelBindings();
-            OnSetViewModel(ViewModel);
-
-            if (ViewModel.IsNotNull())
-                InitViewModel(ViewModel);
-            else
-                CleanupViewModel();
             
             if (root is null)
             {
@@ -131,6 +124,19 @@ namespace CCEnvs.UnityX.UI.Elements
             }
             else
                 InitRootElement(root);
+
+            DisposeViewModelBindings();
+            OnSetViewModel(ViewModel);
+
+            if (ViewModel.IsNotNull())
+                InitViewModel(ViewModel);
+            else
+                CleanupViewModel();
+
+            OnRootElementOrViewModelChanged(root, ViewModel);
+
+            if (root is not null && ViewModel.IsNotNull())
+                InitRootElementAndViewModel(root, ViewModel);
         }
 
         private void BindRootElement()
