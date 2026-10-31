@@ -1,49 +1,44 @@
 #nullable enable
+using CommunityToolkit.Diagnostics;
+using System;
+using System.Linq;
+
 namespace CCEnvs.Patterns.States
 {
-    //public class CompositeState : IState
-    //{
-    //    private readonly List<IState> states = new();
+    public abstract class CompositeState : IState
+    {
+        private readonly IState[] states;
 
-    //    public string ID { get; }
+        public abstract Type StateType { get; }
 
-    //    public CompositeState(string id)
-    //    {
-    //        Guard.IsNotNull(id, nameof(id));
+        public CompositeState(params IState[] states)
+        {
+            Guard.IsNotNull(states, nameof(states));
 
-    //        ID = id;
-    //    }
+            this.states = states.ToArray();
+        }
 
-    //    public CompositeState(string id, IEnumerable<IState> states)
-    //        :
-    //        this(id)
-    //    {
-    //        CC.Guard.IsNotNull(states, nameof(states));
+        //public CompositeState Add(IState state)
+        //{
+        //    CC.Guard.IsNotNull(state, nameof(state));
 
-    //        AddRange(states);
-    //    }
+        //    states.Add(state);
+        //    return this;
+        //}
 
-    //    public CompositeState Add(IState state)
-    //    {
-    //        CC.Guard.IsNotNull(state, nameof(state));
+        //public CompositeState AddRange(IEnumerable<IState> states)
+        //{
+        //    CC.Guard.IsNotNull(states, nameof(states));
 
-    //        states.Add(state);
-    //        return this;
-    //    }
+        //    this.states.AddRange(states);
+        //    return this;
+        //}
 
-    //    public CompositeState AddRange(IEnumerable<IState> states)
-    //    {
-    //        CC.Guard.IsNotNull(states, nameof(states));
+        //public bool Remove(IState state)
+        //{
+        //    CC.Guard.IsNotNull(state, nameof(state));
 
-    //        this.states.AddRange(states);
-    //        return this;
-    //    }
-
-    //    public bool Remove(IState state)
-    //    {
-    //        CC.Guard.IsNotNull(state, nameof(state));
-
-    //        return states.Remove(state);
-    //    }
-    //}
+        //    return states.Remove(state);
+        //}
+    }
 }

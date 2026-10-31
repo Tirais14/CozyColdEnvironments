@@ -34,17 +34,6 @@ namespace CCEnvs.Patterns.States
 
         //    return composite;
         //}
-
-        public static string GetIDFromType(Type type)
-        {
-            Guard.IsNotNull(type, nameof(type));
-            return type.FullName;
-        }
-
-        public static string GetIDFromType<T>()
-        {
-            return TypeofCache<T>.Type.FullName;
-        }
     }
 
     public partial class State : IState
