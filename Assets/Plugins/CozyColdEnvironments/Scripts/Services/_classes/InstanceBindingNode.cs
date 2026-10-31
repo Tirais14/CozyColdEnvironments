@@ -1,4 +1,8 @@
 #nullable enable
+using CCEnvs.FuncLanguage;
+using System;
+using System.Threading;
+
 namespace CCEnvs.Services
 {
     public class InstanceBindingNode : IBindingNode
@@ -13,5 +17,14 @@ namespace CCEnvs.Services
         }
 
         public object GetInstance() => instance;
+
+        private int disposed;
+        public void Dispose()
+        {
+            if (Interlocked.Exchange(ref disposed, 1) != 0)
+                return;
+
+            instance.Maybe().Cast<IDisposable>().IfSome(x => x.Dispose());
+        }
     }
 }

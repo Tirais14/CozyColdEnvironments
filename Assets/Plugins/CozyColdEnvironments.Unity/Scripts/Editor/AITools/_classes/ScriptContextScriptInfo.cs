@@ -8,7 +8,6 @@ using System.Runtime.Serialization;
 namespace CCEnvs.UnityX.Editr.AITools
 {
     [Serializable, DataContract]
-    [PolymorphSerializable, SerializationDescriptor("b1234567-8c9d-4e0f-a1b2-3c4d5e6f7a8b")] // Сгенерируйте новый GUID
     [PolymorphSerializable, SerializationDescriptor("b1234567-8c9d-4e0f-a1b2-3c4d5e6f7a8b")]
     public sealed class ScriptContextScriptInfo
     {

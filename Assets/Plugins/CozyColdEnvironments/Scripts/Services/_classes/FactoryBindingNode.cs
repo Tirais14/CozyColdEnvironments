@@ -1,6 +1,8 @@
+using CCEnvs.FuncLanguage;
 using CCEnvs.Patterns.Factories;
 using System;
 using System.Linq;
+using System.Threading;
 
 #nullable enable
 namespace CCEnvs.Services
@@ -38,6 +40,18 @@ namespace CCEnvs.Services
             }
 
             throw CC.ThrowHelper.InvalidOperationException(bindingType);
+        }
+
+        private int disposed;
+        public void Dispose()
+        {
+            if (Interlocked.Exchange(ref disposed, 1) != 0)
+                return;
+
+            if (isCreated)
+                createdValue.Maybe().Cast<IDisposable>().IfSome(x => x.Dispose());
+
+            factory.Maybe().Cast<IDisposable>().IfSome(x => x.Dispose());
         }
 
         private object CreateInstance()

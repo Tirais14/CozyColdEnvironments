@@ -8,7 +8,8 @@ namespace CCEnvs.Services
         IServiceBinder,
         IServiceBindingIDProvider,
         IServiceBindingNotBoundStateProvider,
-        IServiceBindingInstanceProvider<T>
+        IServiceBindingInstanceProvider<T>,
+        ISingleBindable
     {
         public Type Contract => typeof(T);
 

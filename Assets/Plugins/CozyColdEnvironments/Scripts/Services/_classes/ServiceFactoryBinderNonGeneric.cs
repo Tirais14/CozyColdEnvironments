@@ -10,7 +10,9 @@ namespace CCEnvs.Services
         IServiceBinder, 
         IServiceBindingNotBoundStateProvider,
         IServiceBindingFactoryProvider,
-        IServiceBindingLazyStateProvider
+        IServiceBindingLazyStateProvider,
+        ITransientBindable,
+        ISingleBindable
     {
         public Type Contract { get; }
 

@@ -217,7 +217,7 @@ namespace CCEnvs.Services
             if (!bindings.Remove(new BindingKey(contractType, id), out var node))
                 return false;
 
-            node.GetInstance().Maybe().Cast<IDisposable>().IfSome(x => x.Dispose());
+            node.Dispose();
             return true;
         }
 

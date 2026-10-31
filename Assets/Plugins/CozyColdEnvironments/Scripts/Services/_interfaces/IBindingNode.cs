@@ -1,9 +1,9 @@
-using UnityEngine;
+using System;
 
 #nullable enable
 namespace CCEnvs.Services
 {
-    public interface IBindingNode 
+    public interface IBindingNode : IDisposable
     {
         public object GetInstance();
     }   

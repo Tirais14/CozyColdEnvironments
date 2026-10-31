@@ -3,6 +3,8 @@ using CCEnvs.Attributes.Serialization;
 using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CCEnvs.Disposables;
+using CCEnvs.Extensions;
+using CCEnvs.FuncLanguage;
 using CCEnvs.Linq;
 using CCEnvs.Serialization;
 using CCEnvs.Snapshots;
@@ -613,13 +615,20 @@ namespace CCEnvs.UnityX.Editr.AITools
                 if (!Directory.Exists(contextDirPath))
                     Directory.CreateDirectory(contextDirPath);
 
+                static string commentText(string text)
+                {
+                    return text.SplitByLines()
+                        .Select(line => line.Maybe().Where(line => !line.StartsWith("//")).Map(line => $"//{line}").GetValue(line))
+                        .JoinStrings(Environment.NewLine);
+                }
+
                 var contextFilePath = Path.Combine(contextDirPath, "Context.txt");
-                var additionalQuery = aiInputField.value;
+                var additionalQuery = commentText(aiInputField.value);
 
                 try
                 {
                     if (File.Exists(PersistentQueryPath))
-                        additionalQuery += $"{Environment.NewLine}{File.ReadAllText(PersistentQueryPath)}";
+                        additionalQuery += $"{Environment.NewLine}{commentText(File.ReadAllText(PersistentQueryPath))}";
                 }
                 catch (Exception ex)
                 {
@@ -690,6 +699,7 @@ namespace CCEnvs.UnityX.Editr.AITools
                     return;
 
                 cancelApplyingAIOutputCancellationTokenSource?.CancelAndDispose();
+                cancelApplyingAIOutputCancellationTokenSource = new CancellationTokenSource();
                 isApllyingAIOutput = false;
                 cancelApplyingAIOutputButton.enabledSelf = false;
             }

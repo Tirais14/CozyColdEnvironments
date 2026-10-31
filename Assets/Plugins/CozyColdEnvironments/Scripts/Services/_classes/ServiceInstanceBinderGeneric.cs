@@ -7,7 +7,8 @@ namespace CCEnvs.Services
         :
         IServiceBinder<T>,
         IServiceBindingNotBoundStateProvider,
-        IServiceBindingInstanceProvider<T>
+        IServiceBindingInstanceProvider<T>,
+        ISingleBindable
     {
         public T Instance { get; }
 

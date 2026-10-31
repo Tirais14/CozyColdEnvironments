@@ -9,7 +9,9 @@ namespace CCEnvs.Services
         IServiceBinder<T>, 
         IServiceBindingNotBoundStateProvider, 
         IServiceBindingFactoryProvider<T>, 
-        IServiceBindingLazyStateProvider
+        IServiceBindingLazyStateProvider,
+        ITransientBindable,
+        ISingleBindable
     {
         public IFactory<T> Factory { get; }
 

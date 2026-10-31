@@ -8,7 +8,8 @@ namespace CCEnvs.Services
         :
         IServiceBinder,
         IServiceBindingNotBoundStateProvider,
-        IServiceBindingInstanceProvider
+        IServiceBindingInstanceProvider,
+        ISingleBindable
     {
         public Type Contract { get; }
 
