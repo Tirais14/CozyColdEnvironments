@@ -35,7 +35,7 @@ namespace CCEnvs.Services
         public ServiceFactoryBinderGeneric<T> FromNew()
         {
             return new ServiceFactoryBinderGeneric<T>(
-                Factory.Create(() => ServiceBinderHelper.CreateByEmptyConstructor(typeof(T)).CastTo<T>())
+                Factory.Create(() => ServiceBinderHelper.CreateByConstructor(typeof(T)).CastTo<T>())
                 );
         }
         public ServiceFactoryBinderGeneric<T> FromNew<TNew>()

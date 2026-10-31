@@ -41,7 +41,7 @@ namespace CCEnvs.UnityX.Services
 
             try
             {
-                OnInstalledInternal();
+                onInstalled?.Invoke(this);
             }
             catch (Exception ex)
             {
@@ -50,7 +50,7 @@ namespace CCEnvs.UnityX.Services
 
             try
             {
-                onInstalled?.Invoke(this);
+                OnInstalledInternal();
             }
             catch (Exception ex)
             {

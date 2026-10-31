@@ -1,5 +1,6 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.Patterns.States;
+using CCEnvs.Reflection;
 using CommunityToolkit.Diagnostics;
 using R3;
 using System;
@@ -11,16 +12,16 @@ namespace CCEnvs.UnityX.States
 {
     public class StateMachine : IStateMachine, IDisposable
     {
-        private readonly Dictionary<Type, IStateNode> nodes = new();
+        private readonly Dictionary<string, IStateNode> nodes = new();
         private readonly List<IStateTransition> anyTransitions = new();
 
         private readonly ReactiveProperty<IStateNode?> _currentNode = new();
 
-        public IReadOnlyDictionary<Type, IStateNode> Nodes => nodes;
+        public IReadOnlyDictionary<string, IStateNode> Nodes => nodes;
 
         public IReadOnlyList<IStateTransition> AnyTransitions => anyTransitions;
 
-        public Type? CurrentStateType => currentNode?.State.StateType;
+        public string? CurrentStateID => currentNode?.State.ID;
 
         protected IStateNode? currentNode {
             get => _currentNode.Value;
@@ -60,45 +61,61 @@ namespace CCEnvs.UnityX.States
             return null;
         }
 
-        public void SetState(Type? stateType)
+        public void SetState(string? id)
         {
             if (currentNode.IsNotNull())
             {
                 currentNode.State.Exit();
 
                 if (CCDebug<StateMachine>.IsEnabled)
-                    this.PrintLog($"State exited. State: {currentNode}");
+                {
+                    this.PrintLog(DebugMessageBuilder.CreatePooled()
+                        .AddMessage("State exited")
+                        .AddProperty("ID", currentNode.State.ID)
+                        .ToStringAndDispose()
+                        );
+                }
             }
 
             currentNode = null;
 
-            if (stateType is null)
+            if (id is null)
                 return;
 
-            var nextNode = nodes[stateType];
+            var nextNode = nodes[id];
 
             if (nextNode.IsNotNull())
             {
                 nextNode.State.Enter();
 
                 if (CCDebug<StateMachine>.IsEnabled)
-                    this.PrintLog($"State entered. State: {nextNode}");
+                {
+                    this.PrintLog(DebugMessageBuilder.CreatePooled()
+                        .AddMessage("State entered")
+                        .AddProperty("ID", nextNode.State.ID)
+                        .ToStringAndDispose()
+                        );
+                }
             }
 
             currentNode = nextNode;
+        }
+        public void SetState(Type? stateType)
+        {
+            SetState(stateType.GetName(TypeNameConvertingAttributes.None));
         }
         public void SetState<T>() => SetState(typeof(T));
 
         public void SetState(IState? state)
         {
-            SetState(state?.StateType);
+            SetState(state?.ID);
         }
 
         public IStateMachine AddNode(IStateNode node)
         {
             CC.Guard.IsNotNull(node, nameof(node));
 
-            nodes[node.State.StateType] = node;
+            nodes[node.State.ID] = node;
             return this;
         }
 
@@ -124,20 +141,42 @@ namespace CCEnvs.UnityX.States
             return this;
         }
 
-        public bool RemoveNode(Type stateType)
+        public bool RemoveNode(string? id)
         {
-            Guard.IsNotNull(stateType, nameof(stateType));
+            Guard.IsNotNull(id, nameof(id));
 
-            return nodes.Remove(stateType);
+            if (id is null)
+                return false;
+
+            return nodes.Remove(id);
+        }
+        public bool RemoveNode(Type? stateType)
+        {
+            if (stateType is null)
+                return false;
+
+            return RemoveNode(stateType.GetName(TypeNameConvertingAttributes.None));
+        }
+        public bool RemoveNode<T>()
+        {
+            return RemoveNode(typeof(T).GetName(TypeNameConvertingAttributes.None));
         }
 
+        public bool ContainsNode(string? id)
+        {
+            if (id is null)
+                return false;
+
+            return nodes.ContainsKey(id);
+        }
         public bool ContainsNode(Type? stateType)
         {
             if (stateType is null)
                 return false;
 
-            return nodes.ContainsKey(stateType);
+            return ContainsNode(stateType.GetName(TypeNameConvertingAttributes.None));
         }
+        public bool ContainsNode<T>() => ContainsNode(typeof(T));
 
         public IStateMachine AddTransition(IStateTransition transition)
         {
@@ -162,9 +201,9 @@ namespace CCEnvs.UnityX.States
             return anyTransitions.Contains(transition);
         }
 
-        public Observable<Type?> ObserveCurrentStateType()
+        public Observable<string?> ObserveCurrentStateID()
         {
-            return _currentNode.Select(node => node?.State.GetType());
+            return _currentNode.Select(node => node?.State.ID);
         }
 
         public void Dispose()

@@ -5,7 +5,7 @@ namespace CCEnvs.Patterns.States
 {
     public interface IState
     {
-        Type StateType { get; }
+        string ID { get; }
 
         void Enter() { }
 
