@@ -30,7 +30,7 @@ namespace CCEnvs.Services
         }
 
         public static void AsTransientFrom<TBinder>(this TBinder binder, IServiceInstaller installer)
-            where TBinder : ITransientBindable
+            where TBinder : ITransientBindable, IServiceBinder
         {
             CC.Guard.IsNotNull(binder, nameof(binder));
             CC.Guard.IsNotNull(installer, nameof(installer));
