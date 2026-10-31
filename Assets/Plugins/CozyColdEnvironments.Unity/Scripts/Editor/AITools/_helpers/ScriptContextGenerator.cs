@@ -20,7 +20,7 @@ namespace CCEnvs.UnityX.Editr.AITools
         public static async Task<Scripts> GetScriptsAsync(
             ICollection<ScriptContextScriptInfo> scriptInfos,
             IEnumerable<string>? directories = null,
-            int dependencyMaxDepth = int.MaxValue,
+            IEnumerable<string>? excludeDirectories = null,
             CancellationToken cancellationToken = default)
         {
             CC.Guard.IsNotNull(scriptInfos, nameof(scriptInfos));
@@ -32,12 +32,34 @@ namespace CCEnvs.UnityX.Editr.AITools
                 scriptsDirs.AddRange(Directory.GetDirectories(Application.dataPath, "Scripts", SearchOption.AllDirectories));
             else
                 foreach (var dir in directories.Distinct())
-                    scriptsDirs.AddRange(Directory.GetDirectories(Application.dataPath, dir, SearchOption.AllDirectories));
+                    if (Directory.Exists(dir))
+                        scriptsDirs.AddRange(Directory.GetDirectories(Application.dataPath, dir, SearchOption.AllDirectories));
 
             var allFilePaths = scriptsDirs.SelectMany(dir => Directory.GetFiles(dir, "*.cs", new EnumerationOptions { RecurseSubdirectories = true })).ToList();
+
+            // Фильтрация исключаемых директорий
+            if (excludeDirectories != null && excludeDirectories.Any())
+            {
+                var excludeDirsNormalized = excludeDirectories
+                    .Where(d => !string.IsNullOrWhiteSpace(d))
+                    .Select(d => Path.GetFullPath(d).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar))
+                    .ToList();
+
+                if (excludeDirsNormalized.Count > 0)
+                {
+                    allFilePaths = allFilePaths.Where(filePath =>
+                    {
+                        var normalizedFilePath = Path.GetFullPath(filePath);
+                        return !excludeDirsNormalized.Any(exclude =>
+                            normalizedFilePath.StartsWith(exclude + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) ||
+                            normalizedFilePath.StartsWith(exclude + Path.AltDirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) ||
+                            normalizedFilePath.Equals(exclude, StringComparison.OrdinalIgnoreCase));
+                    }).ToList();
+                }
+            }
+
             int maxDegreeOfParallelism = Math.Max(4, Environment.ProcessorCount);
 
-            // ШАГ 1: Построение карты "ИмяТипа -> СписокФайлов"
             var typeToFileMap = new ConcurrentDictionary<string, List<string>>();
 
             Parallel.ForEach(allFilePaths, new ParallelOptions { MaxDegreeOfParallelism = maxDegreeOfParallelism }, filePath =>
@@ -66,7 +88,6 @@ namespace CCEnvs.UnityX.Editr.AITools
                 catch { }
             });
 
-            // ШАГ 2: Обработка файлов, чьи типы совпадают с правилами
             var semaphore = new SemaphoreSlim(maxDegreeOfParallelism, maxDegreeOfParallelism);
             var tasks = new List<Task>(allFilePaths.Count);
 
@@ -77,7 +98,6 @@ namespace CCEnvs.UnityX.Editr.AITools
                     scriptInfos,
                     typeToFileMap,
                     results,
-                    dependencyMaxDepth,
                     semaphore,
                     cancellationToken);
                 tasks.Add(task);
@@ -92,7 +112,6 @@ namespace CCEnvs.UnityX.Editr.AITools
             ICollection<ScriptContextScriptInfo> scriptInfos,
             ConcurrentDictionary<string, List<string>> typeToFileMap,
             Scripts results,
-            int dependencyMaxDepth,
             SemaphoreSlim semaphore,
             CancellationToken cancellationToken)
         {
@@ -137,16 +156,14 @@ namespace CCEnvs.UnityX.Editr.AITools
 
                 if (isTargetMatch && matchedRule != null)
                 {
-                    // 1. Добавляем сам целевой файл
                     ProcessAndAddFile(filePath, namespaceName, content, results, isDependency: false, rule: matchedRule);
 
-                    // 2. Если нужны зависимости и глубина > 0, запускаем рекурсивный обход графа
-                    if (matchedRule.IncludeDependecies && dependencyMaxDepth > 0)
+                    if (matchedRule.IncludeDependecies && matchedRule.DependenciesMaxDepth > 0)
                     {
                         var dependencyFiles = ResolveDependenciesRecursive(
                             filePath,
                             typeToFileMap,
-                            dependencyMaxDepth,
+                            matchedRule.DependenciesMaxDepth,
                             cancellationToken);
 
                         foreach (var depFilePath in dependencyFiles)
@@ -199,13 +216,11 @@ namespace CCEnvs.UnityX.Editr.AITools
             {
                 var (currentFile, currentDepth) = queue.Dequeue();
 
-                // Добавляем в результат только если это не стартовый файл
                 if (currentFile != startFilePath)
                 {
                     discoveredDependencies.Add(currentFile);
                 }
 
-                // Если достигли максимальной глубины, не идем дальше
                 if (currentDepth >= maxDepth)
                 {
                     continue;
@@ -219,7 +234,6 @@ namespace CCEnvs.UnityX.Editr.AITools
                     var tree = CSharpSyntaxTree.ParseText(content, path: currentFile);
                     var root = tree.GetRoot();
 
-                    // А. Находим все типы, на которые есть ссылки в этом файле
                     var referencedTypes = root.DescendantNodes()
                         .OfType<TypeSyntax>()
                         .Select(GetCleanTypeName)
@@ -240,7 +254,6 @@ namespace CCEnvs.UnityX.Editr.AITools
                         }
                     }
 
-                    // Б. Находим базовые классы и интерфейсы типов, ОБЪЯВЛЕННЫХ в этом файле
                     var hierarchyTypes = root.DescendantNodes()
                         .OfType<TypeDeclarationSyntax>()
                         .Where(t => t.BaseList != null)
@@ -313,11 +326,11 @@ namespace CCEnvs.UnityX.Editr.AITools
         public static async Task<ScriptContext> GenerateAsync(
             ICollection<ScriptContextScriptInfo> scriptInfos,
             IEnumerable<string>? directories = null,
-            int dependencyMaxDepth = int.MaxValue,
+            IEnumerable<string>? excludeDirectories = null,
             CancellationToken cancellationToken = default)
         {
             var context = new ScriptContext();
-            var scripts = await GetScriptsAsync(scriptInfos, directories, dependencyMaxDepth, cancellationToken);
+            var scripts = await GetScriptsAsync(scriptInfos, directories, excludeDirectories, cancellationToken);
 
             foreach (var kvp in scripts.GetAll())
             {

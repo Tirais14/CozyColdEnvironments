@@ -35,11 +35,11 @@ namespace CCEnvs.UnityX.Editr.AITools
             [DataMember(Name = "directories")]
             public string[]? Directories { get; set; }
 
+            [DataMember(Name = "excludeDirectories")]
+            public string[]? ExcludeDirectories { get; set; }
+
             [DataMember(Name = "defaultMatchSettings")]
             public StringMatchSettings? DefaultMatchSettings { get; set; }
-
-            [DataMember(Name = "dependencyMaxDepth")]
-            public int? DependencyMaxDepth { get; set; }
 
             [DataMember(Name = "aiOutput")]
             public string? AIOutput { get; set; }
@@ -55,8 +55,8 @@ namespace CCEnvs.UnityX.Editr.AITools
             {
                 if (ScriptInfos is not null) target.scriptInfos.AddRange(ScriptInfos);
                 if (Directories is not null) target.directories.AddRange(Directories);
+                if (ExcludeDirectories is not null) target.excludeDirectories.AddRange(ExcludeDirectories);
                 if (DefaultMatchSettings.HasValue) target.defaultMatchSettingsField.value = (int)DefaultMatchSettings.Value;
-                if (DependencyMaxDepth.HasValue) target.dependencyMaxDepthField.value = DependencyMaxDepth.Value;
                 if (AIOutput is not null) target.aiOutputField.value = AIOutput;
                 if (AIInput is not null) target.aiInputField.value = AIInput;
             }
@@ -66,8 +66,8 @@ namespace CCEnvs.UnityX.Editr.AITools
                 base.OnCapture(target);
                 ScriptInfos = target.scriptInfos.ToArray();
                 Directories = target.directories.ToArray();
+                ExcludeDirectories = target.excludeDirectories.ToArray();
                 DefaultMatchSettings = target.defaultMatchSettingsField is null ? null : (StringMatchSettings)Enum.ToObject(typeof(StringMatchSettings), target.defaultMatchSettingsField.value);
-                DependencyMaxDepth = target.dependencyMaxDepthField?.value;
                 AIOutput = target.aiOutputField?.value;
                 AIInput = target.aiInputField?.value;
             }
@@ -77,8 +77,8 @@ namespace CCEnvs.UnityX.Editr.AITools
                 base.OnReset();
                 ScriptInfos = null;
                 Directories = null;
+                ExcludeDirectories = null;
                 DefaultMatchSettings = null;
-                DependencyMaxDepth = null;
                 AIOutput = null;
                 AIInput = null;
             }
@@ -95,10 +95,12 @@ namespace CCEnvs.UnityX.Editr.AITools
         private const string DEPENDENCIES_ONLY_API_TOGGLE_NAME = "script-context-generator__dependecies-only-api";
         private const string DEPENDENCIES_REMOVE_EMPTY_LINES_TOGGLE_NAME = "script-context-generator__dependecies-remove-empty-lines";
         private const string DIRECTORY_FIELD_NAME = "script-context-generator__directory-text-field";
-        private const string DEPENDENCY_MAX_DEPTH_FIELD_NAME = "script-context-generator__dependecy-max-depth-integer-field";
+        private const string EXCLUDE_DIRECTORY_FIELD_NAME = DIRECTORY_FIELD_NAME;
+        private const string DEPENDENCIES_MAX_DEPTH_FIELD_NAME = "script-context-generator__dependencies-max-depth-int-field";
 
         private readonly List<ScriptContextScriptInfo> scriptInfos = new();
         private readonly List<string> directories = new();
+        private readonly List<string> excludeDirectories = new();
         private readonly CCCompositeDisposable bindings = new();
         private readonly CancellationTokenSource destroyCancellationTokenSource = new();
         private readonly Dictionary<VisualElement, CCCompositeDisposable> itemBindings = new();
@@ -107,13 +109,13 @@ namespace CCEnvs.UnityX.Editr.AITools
 
         private ListView scriptInfosListView = null!;
         private ListView directoriesListView = null!;
+        private ListView excludeDirectoriesListView = null!;
         private Button generateButton = null!;
         private Button cancelGenerateButton = null!;
         private Button clearAIOutputButton = null!;
         private Button applyAIOutputButton = null!;
         private Button cancelApplyingAIOutputButton = null!;
         private MaskField defaultMatchSettingsField = null!;
-        private IntegerField dependencyMaxDepthField = null!;
         private TextField aiOutputField = null!;
         private TextField aiInputField = null!;
 
@@ -142,9 +144,9 @@ namespace CCEnvs.UnityX.Editr.AITools
             InitRootElement(root);
             InitStringMatchSettingsField(defaultMatchSettingsField);
             defaultMatchSettingsField.value = (int)StringMatchSettings.Ordinal;
-            dependencyMaxDepthField.value = 6;
 
             SetupDirectoriesListView();
+            SetupExcludeDirectoriesListView();
             SetupScriptInfosListView();
             InitPersistentQueryFile();
 
@@ -200,9 +202,9 @@ namespace CCEnvs.UnityX.Editr.AITools
             root.Add(view.Instantiate());
             scriptInfosListView = root.QStrict<ListView>("script-context-generator__script-names-list-view");
             directoriesListView = root.QStrict<ListView>("script-context-generator__directories-list-view");
+            excludeDirectoriesListView = root.QStrict<ListView>("script-context-generator__exclude-directories-list-view");
             generateButton = root.QStrict<Button>("script-context-generator__generate-button");
             defaultMatchSettingsField = root.QStrict<MaskField>("script-context-generator__script-name-match-settings");
-            dependencyMaxDepthField = root.QStrict<IntegerField>(DEPENDENCY_MAX_DEPTH_FIELD_NAME);
             cancelGenerateButton = root.QStrict<Button>("script-context-generator__cancel-generate-button");
             aiOutputField = root.QStrict<TextField>("script-context-generator__ai-output-text-field");
             clearAIOutputButton = root.QStrict<Button>("script-context-generator__clear-ai-output-button");
@@ -243,6 +245,7 @@ namespace CCEnvs.UnityX.Editr.AITools
                 var removeEmptyLinesToggle = root.QStrict<Toggle>(REMOVE_EMPTY_LINES_TOGGLE_NAME);
                 var dependenciesOnlyApiToggle = root.QStrict<Toggle>(DEPENDENCIES_ONLY_API_TOGGLE_NAME);
                 var dependenciesRemoveEmptyLinesToggle = root.QStrict<Toggle>(DEPENDENCIES_REMOVE_EMPTY_LINES_TOGGLE_NAME);
+                var dependenciesMaxDepthField = root.QStrict<IntegerField>(DEPENDENCIES_MAX_DEPTH_FIELD_NAME);
 
                 InitStringMatchSettingsField(matchSettingsField);
                 matchSettingsField.value = defaultMatchSettingsField.value;
@@ -254,6 +257,7 @@ namespace CCEnvs.UnityX.Editr.AITools
                 void onRemoveEmptyLinesValueChanged(ChangeEvent<bool> ev) => scriptInfos[field.userData.CastTo<int>()].RemoveEmptyLines = ev.newValue;
                 void onDependenciesOnlyApiValueChanged(ChangeEvent<bool> ev) => scriptInfos[field.userData.CastTo<int>()].DependeciesOnlyAPI = ev.newValue;
                 void onDependenciesRemoveEmptyLinesValueChanged(ChangeEvent<bool> ev) => scriptInfos[field.userData.CastTo<int>()].DependeciesRemoveEmptyLines = ev.newValue;
+                void onDependenciesMaxDepthValueChanged(ChangeEvent<int> ev) => scriptInfos[field.userData.CastTo<int>()].DependenciesMaxDepth = ev.newValue;
 
                 var itemBindings = this.itemBindings.GetOrCreateNew(root);
 
@@ -299,6 +303,12 @@ namespace CCEnvs.UnityX.Editr.AITools
                     CCDisposable.Create(() => dependenciesRemoveEmptyLinesToggle.UnregisterValueChangedCallback(onDependenciesRemoveEmptyLinesValueChanged)).AddTo(itemBindings);
                 }
 
+                if (dependenciesMaxDepthField != null)
+                {
+                    dependenciesMaxDepthField.RegisterValueChangedCallback(onDependenciesMaxDepthValueChanged);
+                    CCDisposable.Create(() => dependenciesMaxDepthField.UnregisterValueChangedCallback(onDependenciesMaxDepthValueChanged)).AddTo(itemBindings);
+                }
+
                 return root;
             }
 
@@ -314,10 +324,11 @@ namespace CCEnvs.UnityX.Editr.AITools
                     Name = string.Empty,
                     MatchSettings = (StringMatchSettings)Enum.ToObject(typeof(StringMatchSettings), defaultMatchSettingsField.value),
                     OnlyAPI = false,
-                    IncludeDependecies = true,
-                    RemoveEmptyLines = true,
+                    IncludeDependecies = false,
+                    RemoveEmptyLines = false,
                     DependeciesOnlyAPI = true,
-                    DependeciesRemoveEmptyLines = true
+                    DependeciesRemoveEmptyLines = false,
+                    DependenciesMaxDepth = 6
                 });
             }
 
@@ -355,6 +366,7 @@ namespace CCEnvs.UnityX.Editr.AITools
                 var removeEmptyLinesToggle = item.QStrict<Toggle>(REMOVE_EMPTY_LINES_TOGGLE_NAME);
                 var dependenciesOnlyApiToggle = item.QStrict<Toggle>(DEPENDENCIES_ONLY_API_TOGGLE_NAME);
                 var dependenciesRemoveEmptyLinesToggle = item.QStrict<Toggle>(DEPENDENCIES_REMOVE_EMPTY_LINES_TOGGLE_NAME);
+                var dependenciesMaxDepthField = item.QStrict<IntegerField>(DEPENDENCIES_MAX_DEPTH_FIELD_NAME);
 
                 if (index >= scriptInfos.Count)
                 {
@@ -370,6 +382,9 @@ namespace CCEnvs.UnityX.Editr.AITools
                 removeEmptyLinesToggle.value = info.RemoveEmptyLines;
                 dependenciesOnlyApiToggle.value = info.DependeciesOnlyAPI;
                 dependenciesRemoveEmptyLinesToggle.value = info.DependeciesRemoveEmptyLines;
+
+                if (dependenciesMaxDepthField != null)
+                    dependenciesMaxDepthField.value = info.DependenciesMaxDepth;
             }
 
             if (scriptInfosListView != null)
@@ -465,6 +480,88 @@ namespace CCEnvs.UnityX.Editr.AITools
             }
         }
 
+        private void SetupExcludeDirectoriesListView()
+        {
+            VisualElement onMakeItem()
+            {
+                var root = excludeDirectoriesListView.itemTemplate.Instantiate();
+                var field = root.QStrict<TextField>(EXCLUDE_DIRECTORY_FIELD_NAME);
+
+                void onFieldValueChanged(ChangeEvent<string> ev)
+                {
+                    excludeDirectories[field.userData.CastTo<int>()] = ev.newValue;
+                }
+
+                var itemBindings = this.itemBindings.GetOrCreateNew(root);
+
+                if (field != null)
+                {
+                    field.RegisterValueChangedCallback(onFieldValueChanged);
+                    CCDisposable.Create(() => field.UnregisterValueChangedCallback(onFieldValueChanged)).AddTo(itemBindings);
+                }
+
+                return root;
+            }
+
+            void onDestroyItem(VisualElement item)
+            {
+                if (itemBindings.TryGetValue(item, out var bindings))
+                    bindings.Dispose();
+            }
+
+            void onAdd(BaseListView list)
+            {
+                excludeDirectories.Add(string.Empty);
+            }
+
+            void onRemove(BaseListView _)
+            {
+                bool hasSelected = excludeDirectoriesListView.selectedIndices.IsNotEmpty();
+
+                if (hasSelected)
+                {
+                    foreach (var index in excludeDirectoriesListView.selectedIndices.OrderByDescending(x => x))
+                        excludeDirectories.RemoveAt(index);
+                }
+                else
+                {
+                    excludeDirectories.RemoveAt(excludeDirectories.Count - 1);
+                }
+
+                excludeDirectoriesListView.RefreshItems();
+            }
+
+            void onBindItem(VisualElement item, int index)
+            {
+                var field = item.QStrict<TextField>(EXCLUDE_DIRECTORY_FIELD_NAME);
+
+                if (index >= excludeDirectories.Count)
+                {
+                    throw new InvalidOperationException(DebugMessageBuilder.CreatePooled()
+                        .AddMessage("Not found exclude directory at index")
+                        .AddProperty("Index", index)
+                        .ToStringAndDispose()
+                        );
+                }
+
+                field.userData = index;
+                field.value = excludeDirectories[index];
+            }
+
+            void onUnbindItem(VisualElement item, int index) { }
+
+            if (excludeDirectoriesListView != null)
+            {
+                excludeDirectoriesListView.makeItem += onMakeItem;
+                excludeDirectoriesListView.destroyItem += onDestroyItem;
+                excludeDirectoriesListView.onAdd += onAdd;
+                excludeDirectoriesListView.onRemove += onRemove;
+                excludeDirectoriesListView.bindItem += onBindItem;
+                excludeDirectoriesListView.unbindItem += onUnbindItem;
+                excludeDirectoriesListView.itemsSource = excludeDirectories;
+            }
+        }
+
         private void BindGenerateButton()
         {
             if (generateButton != null)
@@ -505,12 +602,10 @@ namespace CCEnvs.UnityX.Editr.AITools
             {
                 using var _ = disableCancellationToken.TryLinkTokens(cancelGenerateCancellationToken, out var cancellationToken);
 
-                int maxDepth = dependencyMaxDepthField.value;
-
                 var context = await ScriptContextGenerator.GenerateAsync(
                     scriptInfos,
                     directories.IsNotNullOrEmpty() ? directories : null,
-                    dependencyMaxDepth: maxDepth,
+                    excludeDirectories.IsNotNullOrEmpty() ? excludeDirectories : null,
                     cancellationToken: cancellationToken);
 
                 var contextDirPath = Path.Combine(EditorLibrary.DataPath, EDITOR_LIBRARY_FOLDER);

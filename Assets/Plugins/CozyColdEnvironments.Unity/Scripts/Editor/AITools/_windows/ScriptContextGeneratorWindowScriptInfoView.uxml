@@ -7,5 +7,6 @@
         <ui:Toggle label="Remove Empty Lines" name="script-context-generator__remove-empty-lines"/>
         <ui:Toggle label="Dependencies as API" name="script-context-generator__dependecies-only-api"/>
         <ui:Toggle label="Dependecies Without Empty Lines" name="script-context-generator__dependecies-remove-empty-lines"/>
+        <ui:IntegerField label="Max Dependecy Depth" value="10" name="script-context-generator__dependencies-max-depth-int-field"/>
     </ui:VisualElement>
 </ui:UXML>

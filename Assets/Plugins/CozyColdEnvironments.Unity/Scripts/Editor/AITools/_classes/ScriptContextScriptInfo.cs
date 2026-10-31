@@ -9,6 +9,7 @@ namespace CCEnvs.UnityX.Editr.AITools
 {
     [Serializable, DataContract]
     [PolymorphSerializable, SerializationDescriptor("b1234567-8c9d-4e0f-a1b2-3c4d5e6f7a8b")] // Сгенерируйте новый GUID
+    [PolymorphSerializable, SerializationDescriptor("b1234567-8c9d-4e0f-a1b2-3c4d5e6f7a8b")]
     public sealed class ScriptContextScriptInfo
     {
         [DataMember(Name = "name")]
@@ -31,6 +32,10 @@ namespace CCEnvs.UnityX.Editr.AITools
 
         [DataMember(Name = "dependenciesRemoveEmptyLines")]
         public bool DependeciesRemoveEmptyLines { get; set; }
+
+        // Новое свойство для ограничения глубины на уровне правила
+        [DataMember(Name = "dependenciesMaxDepth")]
+        public int DependenciesMaxDepth { get; set; } = 6; // Значение по умолчанию, как было в глобальном поле
     }
 }
 #endif

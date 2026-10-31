@@ -1,7 +1,6 @@
 <ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
     <ui:VisualElement name="script-context-generator__root" style="flex-grow: 0;">
         <ui:Foldout text="Settings" name="script-context-generator__settings-foldout" value="false">
-            <ui:IntegerField label="Dependecy Max Depth" value="1" name="script-context-generator__dependecy-max-depth-integer-field"/>
             <ui:MaskField label="Default Namespace Match Settings" choices="" name="script-context-generator__script-name-match-settings"/>
         </ui:Foldout>
         <ui:Foldout text="Scripts" name="script-context-generator__script-names-foldout" value="false">
@@ -9,6 +8,9 @@
         </ui:Foldout>
         <ui:Foldout text="Directories" name="script-context-generator__directroies-foldout" value="false">
             <ui:ListView name="script-context-generator__directories-list-view" show-add-remove-footer="true" item-template="project://database/Assets/Plugins/CozyColdEnvironments.Unity/Scripts/Editor/AITools/_windows/ScriptContextGeneratorWindowDirectoryView.uxml?fileID=9197481963319205126&amp;guid=1f635d84ede36994e9684446bb396f2e&amp;type=3#ScriptContextGeneratorWindowDirectoryView"/>
+        </ui:Foldout>
+        <ui:Foldout text="Exclude Directories" name="script-context-generator__exclude-directories-foldout" value="false">
+            <ui:ListView name="script-context-generator__exclude-directories-list-view" virtualization-method="DynamicHeight" item-template="project://database/Assets/Plugins/CozyColdEnvironments.Unity/Scripts/Editor/AITools/_windows/ScriptContextGeneratorWindowDirectoryView.uxml?fileID=9197481963319205126&amp;guid=1f635d84ede36994e9684446bb396f2e&amp;type=3#ScriptContextGeneratorWindowDirectoryView" show-add-remove-footer="true"/>
         </ui:Foldout>
         <ui:VisualElement name="script-context-generator__generate-controls" style="flex-grow: 0; flex-direction: row; justify-content: space-around;">
             <ui:Button text="Cancel" name="script-context-generator__cancel-generate-button" enabled="false" style="flex-grow: 1;"/>
