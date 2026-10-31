@@ -162,7 +162,7 @@ namespace CCEnvs.Services
             }
             else if (type.IsValueType && ctors.Length == 2)
             {
-                ctor = ctors.First(x => x.GetParameters().Length >= 1);
+                ctor = ctors.First(x => x.GetParameters().Length != 0);
                 cacheConstructor(ctor);
                 return ctor;
             }
