@@ -60,6 +60,59 @@ namespace CCEnvs.UnityX.ECS.Collections
             return true;
         }
 
+        public int IndexOf(T item)
+        {
+            for (int i = 0; i < _items.Length; i++)
+            {
+                if (_comparer.Compare(_items[i], item) == 0)
+                    return i;
+            }
+            return -1;
+        }
+
+        public bool Contains(T item) => IndexOf(item) >= 0;
+
+        public T this[int index]
+        {
+            get => _items[index];
+            set => ReplaceAt(index, value);
+        }
+
+        /// <summary>
+        /// Заменяет элемент по индексу с восстановлением свойств кучи.
+        /// Возвращает старое значение.
+        /// </summary>
+        public T ReplaceAt(int index, T newItem)
+        {
+            if ((uint)index >= (uint)_items.Length)
+                throw new ArgumentOutOfRangeException(nameof(index));
+
+            T oldItem = _items[index];
+            int cmp = _comparer.Compare(newItem, oldItem);
+            _items[index] = newItem;
+
+            if (cmp < 0)
+                SiftUp(index);
+            else if (cmp > 0)
+                SiftDown(index);
+
+            return oldItem;
+        }
+
+        /// <summary>
+        /// Ищет элемент, эквивалентный <paramref name="oldItem"/> (по компаратору),
+        /// и заменяет его на <paramref name="newItem"/>.
+        /// </summary>
+        public bool TryReplace(T oldItem, T newItem)
+        {
+            int index = IndexOf(oldItem);
+            if (index < 0)
+                return false;
+
+            ReplaceAt(index, newItem);
+            return true;
+        }
+
         public void Clear() => _items.Clear();
 
         public void Dispose()
