@@ -95,7 +95,7 @@ namespace CCEnvs.Services
             return ctor.Invoke(arguments.ToArray());
         }
 
-        public static MethodInfo GetResolveMethod(
+        public static MethodInfo ResolveMethod(
             Type type,
             string name,
             BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Public,

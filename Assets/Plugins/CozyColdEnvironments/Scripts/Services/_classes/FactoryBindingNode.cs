@@ -56,7 +56,7 @@ namespace CCEnvs.Services
 
         private object CreateInstance()
         {
-            var method = ServiceBinderHelper.GetResolveMethod(factory.GetType(), nameof(IFactory<object>.Create));
+            var method = ServiceBinderHelper.ResolveMethod(factory.GetType(), nameof(IFactory<object>.Create));
             var arguments = ServiceBinderHelper.ResolveServices(method);
             return method.Invoke(factory, arguments.ToArray());
         }
