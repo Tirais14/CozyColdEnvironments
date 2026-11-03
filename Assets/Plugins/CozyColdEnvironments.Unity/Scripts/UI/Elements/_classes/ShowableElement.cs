@@ -218,15 +218,19 @@ namespace CCEnvs.UnityX.UI.Elements
 
             if (!ShowOnInited)
             {
-                var hideCmd = GetHideCommand(default);
-                CommandHelper.ExecuteNonGeneric(hideCmd, ex => this.PrintException(ex));
-                Utilizable.Utilize(hideCmd);
+                //var hideCmd = GetHideCommand(default);
+                //CommandHelper.ExecuteNonGeneric(hideCmd, ex => this.PrintException(ex));
+                //Utilizable.Utilize(hideCmd);
+                HideInternal();
+                IsShown = false;
             }
             else
             {
-                var showCmd = GetShowCommand(default);
-                CommandHelper.ExecuteNonGeneric(showCmd, ex => this.PrintException(ex));
-                Utilizable.Utilize(showCmd);
+                //var showCmd = GetShowCommand(default);
+                //CommandHelper.ExecuteNonGeneric(showCmd, ex => this.PrintException(ex));
+                //Utilizable.Utilize(showCmd);
+                ShowInternal();
+                IsShown = true;
             }
         }
 

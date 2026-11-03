@@ -155,6 +155,9 @@ namespace CCEnvs.Patterns.Commands
         {
             CC.Guard.IsNotNull(command, nameof(command));
 
+            if (command.IsDone)
+                return;
+
             if (command is ICommand simpleCommand)
                 simpleCommand.Execute();
             else if (command is ICommandAsync asyncCommand)
