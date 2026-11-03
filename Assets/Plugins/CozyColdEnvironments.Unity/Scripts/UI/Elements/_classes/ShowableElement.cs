@@ -217,7 +217,17 @@ namespace CCEnvs.UnityX.UI.Elements
             ShowInternal();
 
             if (!ShowOnInited)
-                HideInternal();
+            {
+                var hideCmd = GetHideCommand(default);
+                CommandHelper.ExecuteNonGeneric(hideCmd, ex => this.PrintException(ex));
+                Utilizable.Utilize(hideCmd);
+            }
+            else
+            {
+                var showCmd = GetShowCommand(default);
+                CommandHelper.ExecuteNonGeneric(showCmd, ex => this.PrintException(ex));
+                Utilizable.Utilize(showCmd);
+            }
         }
 
         private void OnParentShowableRootElementChanged(VisualElement? parentRoot)

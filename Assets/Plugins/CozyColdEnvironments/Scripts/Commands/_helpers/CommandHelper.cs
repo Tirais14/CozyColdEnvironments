@@ -1,5 +1,9 @@
+using System;
 using System.Threading.Tasks;
+using CCEnvs.Diagnostics;
 using CCEnvs.Pools;
+using CCEnvs.Threading.Tasks;
+
 
 #if UNITASK_PLUGIN
 using Cysharp.Threading.Tasks;
@@ -145,6 +149,17 @@ namespace CCEnvs.Patterns.Commands
             CC.Guard.IsNotNullSource(source);
             CC.CommandScheduler.Schedule(source);
             return source;
+        }
+
+        public static void ExecuteNonGeneric(ICommandBase command, Action<Exception>? asyncFallback = null)
+        {
+            CC.Guard.IsNotNull(command, nameof(command));
+
+            if (command is ICommand simpleCommand)
+                simpleCommand.Execute();
+            else if (command is ICommandAsync asyncCommand)
+                asyncCommand.ExecuteAsync().Forget(asyncFallback);
+                
         }
     }
 }

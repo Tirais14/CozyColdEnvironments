@@ -103,6 +103,7 @@ namespace CCEnvs.Threading.Tasks
 
         public static async void Forget(
             this ValueTask task,
+            Action<Exception>? fallback = null,
             bool suppresCancellationThrow = true
             )
         {
@@ -119,42 +120,14 @@ namespace CCEnvs.Threading.Tasks
                     CCDebug.Instance.PrintLog(ex);
                 else
                     CCDebug.Instance.PrintException(ex);
-            }
-        }
 
-        public static async void Forget<TCaller>(
-            this ValueTask task,
-            TCaller? caller,
-            bool suppresCancellationThrow = true
-            )
-        {
-            if (task.IsCompleted || task.IsFaulted)
-                return;
-
-            try
-            {
-                await task;
+                fallback?.Invoke(ex);
             }
-            catch (Exception ex)
-            {
-                if (suppresCancellationThrow && ex.IsCancellationException())
-                    caller.PrintLog(ex);
-                else
-                    caller.PrintException(ex);
-            }
-        }
-
-        public static async void ForgetByPrintException<TCaller>(
-            this ValueTask task,
-            TCaller? caller,
-            bool suppresCancellationThrow = true
-            )
-        {
-            task.Forget(caller, suppresCancellationThrow);
         }
 
         public static async void Forget<T>(
             this ValueTask<T> task,
+            Action<Exception>? fallback = null,
             bool suppresCancellationThrow = true
             )
         {
@@ -171,28 +144,8 @@ namespace CCEnvs.Threading.Tasks
                     CCDebug.Instance.PrintLog(ex);
                 else
                     CCDebug.Instance.PrintException(ex);
-            }
-        }
 
-        public static async void Forget<T, TCaller>(
-            this ValueTask<T> task,
-            TCaller? caller,
-            bool suppresCancellationThrow = true
-            )
-        {
-            if (task.IsCompleted || task.IsFaulted)
-                return;
-
-            try
-            {
-                await task;
-            }
-            catch (Exception ex)
-            {
-                if (suppresCancellationThrow && ex.IsCancellationException())
-                    caller.PrintLog(ex);
-                else
-                    caller.PrintException(ex);
+                fallback?.Invoke(ex);
             }
         }
 
@@ -201,16 +154,7 @@ namespace CCEnvs.Threading.Tasks
             bool suppresCancellationThrow = true
             )
         {
-            task.Forget(suppresCancellationThrow);
-        }
-
-        public static async void ForgetByPrintException<T, TCaller>(
-            this ValueTask<T> task,
-            TCaller? caller,
-            bool suppresCancellationThrow = true
-            )
-        {
-            task.Forget(caller, suppresCancellationThrow);
+            task.Forget(suppresCancellationThrow: suppresCancellationThrow);
         }
     }
 }

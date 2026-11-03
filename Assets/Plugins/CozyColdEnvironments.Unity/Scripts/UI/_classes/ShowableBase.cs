@@ -297,7 +297,7 @@ namespace CCEnvs.UnityX.UI
         {
             return this.Q()
                 .FromChildrens()
-                .WithDepthLimiter<IShowable>()
+                .WithDepthLimiter<IShowableBase>()
                 .Components<T>()
                 .ToArray();
         }
@@ -353,7 +353,8 @@ namespace CCEnvs.UnityX.UI
             var childs = this.Q()
                 .FromChildrens()
                 .ExcludeSelf()
-                .Components<IShowable>();
+                .Components<IShowableBase>()
+                .ToArray();
 
             if (childs.IsNotEmpty())
             {
