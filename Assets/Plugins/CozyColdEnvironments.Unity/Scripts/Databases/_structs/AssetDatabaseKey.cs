@@ -10,12 +10,12 @@ namespace CCEnvs.UnityX.Databases
     [DebuggerDisplay("HashCode: {GetHashCode()}; String: {ToString()}")]
     public readonly struct AssetDatabaseKey
         : IEquatable<AssetDatabaseKey>,
-        IIDMarked<Identifier>
+        IIDProvider<Identifier>
     {
         public Maybe<Type> AssetType { get; }
         public Maybe<Identifier> DatabaseID { get; }
 
-        Identifier IIDMarked<Identifier>.ID => DatabaseID.GetValue();
+        Identifier IIDProvider<Identifier>.ID => DatabaseID.GetValue();
 
         public AssetDatabaseKey(Type? dbAssetType)
             :

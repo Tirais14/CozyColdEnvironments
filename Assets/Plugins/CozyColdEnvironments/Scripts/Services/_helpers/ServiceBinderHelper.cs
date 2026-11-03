@@ -14,6 +14,11 @@ namespace CCEnvs.Services
 {
     public static class ServiceBinderHelper
     {
+        private const string CONSTRUCTOR_CACHE_ID = "Constructor";
+        private const string EMPTY_CONSTRUCTOR_CACHE_ID = "Empty Constructor";
+        private const string METHOD_CACHE_ID = "Method";
+        private const string METHOD_PARAMETERS_CACHE_ID = "Method Parameters";
+
         private static readonly MemoryCache cache = new(
             new MemoryCacheOptions
             {
@@ -61,7 +66,7 @@ namespace CCEnvs.Services
             if (contract.IsInterface || contract.IsAbstract)
                 throw new ArgumentException("Contract is abstract type");
 
-            var cacheID = ("EmptyConstructor", contract);
+            object cacheID = (EMPTY_CONSTRUCTOR_CACHE_ID, contract);
             if (cache.TryGetValue<ConstructorInfo>(cacheID, out var cachedEmptyCtor) &&
                 cachedEmptyCtor is not null
                 )
@@ -99,13 +104,14 @@ namespace CCEnvs.Services
             Type type,
             string name,
             BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Public,
-            StringMatchSettings nameMatchSettings = StringMatchSettings.Ordinal
+            StringMatchSettings nameMatchSettings = StringMatchSettings.Ordinal,
+            bool cached = false
             )
         {
             Guard.IsNotNull(type);
             Guard.IsNotNullOrWhiteSpace(name, nameof(name));
 
-            var cacheID = ("Method", type, name, bindingFlags, nameMatchSettings);
+            object cacheID = (METHOD_CACHE_ID, type, name, bindingFlags, nameMatchSettings);
             if (cache.TryGetValue<MethodInfo>(cacheID, out var cachedMethod) &&
                 cachedMethod is not null)
                 return cachedMethod;
@@ -115,9 +121,13 @@ namespace CCEnvs.Services
                 if (!method.Name.Match(name, nameMatchSettings))
                     continue;
 
-                using var cacheEntry = cache.CreateEntry(cacheID);
-                cacheEntry.Value = method;
-                cacheEntry.SlidingExpiration = 6.Minutes();
+                if (cached)
+                {
+                    using var cacheEntry = cache.CreateEntry(cacheID);
+                    cacheEntry.Value = method;
+                    cacheEntry.SlidingExpiration = 6.Minutes();
+                }
+
                 return method;
             }
 
@@ -137,7 +147,7 @@ namespace CCEnvs.Services
         {
             Guard.IsNotNull(type, nameof(type));
 
-            var cacheID = ("Constructor", type, bindingFlags);
+            object cacheID = (CONSTRUCTOR_CACHE_ID, type, bindingFlags);
 
             if (cache.TryGetValue<ConstructorInfo>(cacheID, out var cachedCtor) &&
                 cachedCtor.IsNotNull())
@@ -215,11 +225,25 @@ namespace CCEnvs.Services
             return CanResolveServices(method.GetParameters());
         }
 
-        public static IList<object?> ResolveServices(MethodBase method)
+        public static IList<object?> ResolveServices(MethodBase method, bool cached = false)
         {
             Guard.IsNotNull(method, nameof(method));
 
-            var parameters = method.GetParameters();
+            ParameterInfo[]? parameters;
+
+            object cacheID = (METHOD_PARAMETERS_CACHE_ID, method);
+
+            if (!cache.TryGetValue(cacheID, out parameters) || parameters is null)
+            {
+                parameters = method.GetParameters();
+
+                if (cached)
+                {
+                    using var cacheEntry = cache.CreateEntry(cacheID);
+                    cacheEntry.Value = parameters;
+                    cacheEntry.SlidingExpiration = 6.Minutes();
+                }
+            }
 
             if (parameters.Length == 0)
                 return Array.Empty<object>();

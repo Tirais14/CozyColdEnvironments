@@ -3,7 +3,7 @@ using UnityEngine;
 #nullable enable
 namespace CCEnvs.UnityX.Items
 {
-    public interface IItem : IIDMarked<int>, INamed
+    public interface IItem : IIDProvider<int>, INamed
     {
         Sprite Icon { get; }
 

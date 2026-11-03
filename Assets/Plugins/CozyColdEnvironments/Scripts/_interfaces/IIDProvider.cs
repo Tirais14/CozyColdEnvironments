@@ -5,7 +5,7 @@ namespace CCEnvs
     {
         object? ID { get; }
     }
-    public interface IIDMarked<out T> : IIDMarked
+    public interface IIDProvider<out T> : IIDMarked
     {
         new T ID { get; }
 

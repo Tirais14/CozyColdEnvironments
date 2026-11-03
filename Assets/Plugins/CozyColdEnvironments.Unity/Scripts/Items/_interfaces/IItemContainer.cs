@@ -5,7 +5,7 @@ namespace CCEnvs.UnityX.Items
         :
         IItemAccessor,
         IItemContainerInfo,
-        IIDMarked<int?>,
+        IIDProvider<int?>,
         IShallowCloneable<IItemContainer>
     {
         bool IsReadOnlyContainer { get; }
@@ -15,7 +15,7 @@ namespace CCEnvs.UnityX.Items
 
         new int? ID { get; set; }
 
-        int? IIDMarked<int?>.ID => ID;
+        int? IIDProvider<int?>.ID => ID;
 
         IInventory? ParentInventory { get; }
 

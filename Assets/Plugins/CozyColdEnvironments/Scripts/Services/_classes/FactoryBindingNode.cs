@@ -1,5 +1,7 @@
 using CCEnvs.FuncLanguage;
 using CCEnvs.Patterns.Factories;
+using Humanizer;
+using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Linq;
 using System.Threading;
@@ -56,7 +58,7 @@ namespace CCEnvs.Services
 
         private object CreateInstance()
         {
-            var method = ServiceBinderHelper.ResolveMethod(factory.GetType(), nameof(IFactory<object>.Create));
+            var method = ServiceBinderHelper.ResolveMethod(factory.GetType(), nameof(IFactory<object>.Create), cached: bindingType == BindingType.Transient);
             var arguments = ServiceBinderHelper.ResolveServices(method);
             return method.Invoke(factory, arguments.ToArray());
         }
