@@ -168,7 +168,7 @@ namespace CCEnvs.Saves
                 Loader.LoadSaveDataFromFileAsync(
                     cancellationToken: DisposeCancellationToken
                     )
-                    .Forget(this);
+                    .Forget(ex => this.PrintException(ex));
             }
 
             objectWasRegistered = true;

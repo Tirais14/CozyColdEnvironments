@@ -149,12 +149,36 @@ namespace CCEnvs.Threading.Tasks
             }
         }
 
+        public static async void ForgetByPrintException(
+            this ValueTask task, 
+            bool suppresCancellationThrow = true
+            )
+        {
+            task.Forget(ex => CCDebug.PrinException(ex), suppresCancellationThrow);
+        }
+        public static async void ForgetByPrintException(
+            this ValueTask task,
+            object context,
+            bool suppresCancellationThrow = true
+            )
+        {
+            task.Forget(ex => context.PrintException(ex), suppresCancellationThrow);
+        }
+
         public static async void ForgetByPrintException<T>(
             this ValueTask<T> task,
             bool suppresCancellationThrow = true
             )
         {
-            task.Forget(suppresCancellationThrow: suppresCancellationThrow);
+            task.Forget(ex => CCDebug.PrinException(ex), suppresCancellationThrow);
+        }
+        public static async void ForgetByPrintException<T>(
+            this ValueTask<T> task,
+            object context,
+            bool suppresCancellationThrow = true
+            )
+        {
+            task.Forget(ex => context.PrintException(ex), suppresCancellationThrow);
         }
     }
 }
