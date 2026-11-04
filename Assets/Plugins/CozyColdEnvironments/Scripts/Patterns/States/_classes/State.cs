@@ -1,8 +1,6 @@
 using CCEnvs.Reflection;
 using CommunityToolkit.Diagnostics;
-using System;
 using System.Text;
-using System.Threading;
 
 #nullable enable
 namespace CCEnvs.Patterns.States
@@ -59,6 +57,8 @@ namespace CCEnvs.Patterns.States
     {
         public string ID { get; }
 
+        protected bool IsEntered { get; private set; }
+
         public State()
         {
             ID = GetType().GetName(TypeNameConvertingAttributes.None);
@@ -71,7 +71,6 @@ namespace CCEnvs.Patterns.States
 
         public virtual void Enter()
         {
-
         }
 
         public virtual void Tick()
@@ -92,6 +91,18 @@ namespace CCEnvs.Patterns.States
         public virtual void Exit()
         {
 
+        }
+
+        void IState.Enter()
+        {
+            IsEntered = true;
+            Enter();
+        }
+
+        void IState.Exit()
+        {
+            IsEntered = false;
+            Exit();
         }
     }
 }

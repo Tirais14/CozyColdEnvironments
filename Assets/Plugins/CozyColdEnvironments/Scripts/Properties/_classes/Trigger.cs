@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 #nullable enable
 namespace CCEnvs.Proeprties
 {
-    public class Trigger<T>
+    public class Trigger<T> : ITrigger<T>
     {
         private readonly T? @default;
         private T? value;
@@ -42,12 +42,12 @@ namespace CCEnvs.Proeprties
             return true;
         }
 
-        public void SetValue(T value)
+        public void SetValue(T? value)
         {
             this.value = value;
         }
     }
 
-    public class Trigger : Trigger<bool> { }
+    public class Trigger : Trigger<bool>, ITrigger { }
 
 }
