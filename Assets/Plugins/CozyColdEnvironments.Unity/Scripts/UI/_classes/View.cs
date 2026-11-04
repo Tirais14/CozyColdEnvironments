@@ -191,6 +191,9 @@ namespace CCEnvs.UnityX.UI
 
             viewModelFactory = () =>
             {
+                if (IsDestroyed)
+                    return default;
+
                 factory ??= CreateViewModel;
                 var vm = factory();
                 viewModel.Value = vm;

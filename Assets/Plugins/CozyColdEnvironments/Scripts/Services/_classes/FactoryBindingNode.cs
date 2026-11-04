@@ -3,17 +3,20 @@ using CCEnvs.Patterns.Factories;
 using Humanizer;
 using Microsoft.Extensions.Caching.Memory;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 
 #nullable enable
 namespace CCEnvs.Services
 {
-    public class FactoryBindingNode : IBindingNode
+    public sealed class FactoryBindingNode : IBindingNode, IDisposable
     {
         private readonly IFactory factory;
 
         private readonly BindingType bindingType;
+
+        private readonly Lazy<List<object>> factored = new(() => new());
 
         private object? createdValue;
 
@@ -37,6 +40,7 @@ namespace CCEnvs.Services
             else if (bindingType == BindingType.Single)
             {
                 createdValue = CreateInstance();
+                factored.Value.Add(createdValue);
                 isCreated = true;
                 return createdValue;
             }
@@ -52,6 +56,9 @@ namespace CCEnvs.Services
 
             if (isCreated)
                 createdValue.Maybe().Cast<IDisposable>().IfSome(x => x.Dispose());
+
+            if (factored.IsValueCreated)
+                factored.Value.OfType<IDisposable>().DisposeEach(bufferized: false);
 
             factory.Maybe().Cast<IDisposable>().IfSome(x => x.Dispose());
         }
