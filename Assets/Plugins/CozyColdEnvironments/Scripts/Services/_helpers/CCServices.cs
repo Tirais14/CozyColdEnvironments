@@ -120,7 +120,7 @@ namespace CCEnvs.Services
 
             if (!bindings.TryGetValue(bindingKey, out var result))
             {
-                throw new CCException(DebugMessageBuilder.CreatePooled()
+                throw new ArgumentException(DebugMessageBuilder.CreatePooled()
                     .AddMessage("Not found binding")
                     .AddProperty(nameof(contract), contract)
                     .AddProperty(nameof(id), id)

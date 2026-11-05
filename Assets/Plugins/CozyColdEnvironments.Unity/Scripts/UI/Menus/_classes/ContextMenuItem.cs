@@ -12,7 +12,7 @@ namespace CCEnvs.UnityX.UI.Menus
 
         public void Invoke()
         {
-            InvokeCore();
+            OnInvokeInternal();
             if (OnInvoke is not null)
             {
                 try
@@ -35,6 +35,6 @@ namespace CCEnvs.UnityX.UI.Menus
             }
         }
 
-        protected abstract void InvokeCore();
+        protected abstract void OnInvokeInternal();
     }
 }
