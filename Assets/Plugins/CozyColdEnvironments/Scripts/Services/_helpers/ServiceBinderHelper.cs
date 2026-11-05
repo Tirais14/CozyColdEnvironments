@@ -257,7 +257,11 @@ namespace CCEnvs.Services
                 if (param.HasDefaultValue || param.IsDefined(typeof(ResolveOptionalAttribute), inherit: true))
                 {
                     var resolveID = param.GetCustomAttribute<ResolveIDAttribute>(inherit: true)?.ID;
-                    results.Add(CCServices.TryResolve(param.ParameterType, resolveID));
+
+                    if (CCServices.TryResolveOut(param.ParameterType, out var resolved, resolveID))
+                        results.Add(resolved);
+                    else
+                        results.Add(param.HasDefaultValue ? param.DefaultValue : TypeHelper.GetDefaultValue(param.ParameterType));
                 }
                 else
                 {

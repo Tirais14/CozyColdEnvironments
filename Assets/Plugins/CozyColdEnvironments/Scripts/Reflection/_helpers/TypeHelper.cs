@@ -833,7 +833,7 @@ namespace CCEnvs.Reflection
                 &&
                 defaultValues.Value.TryGetValue(type, out var defaultValue))
             {
-                return default;
+                return defaultValue;
             }
 
             defaultValue = Activator.CreateInstance(type);

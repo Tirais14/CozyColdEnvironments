@@ -26,7 +26,7 @@ namespace CCEnvs.UnityX.Services
             }
             remove
             {
-                if (isInstalled || onInstalled is null)
+                if (onInstalled is null)
                     return;
 
                 onInstalled -= value;
@@ -47,17 +47,12 @@ namespace CCEnvs.UnityX.Services
             {
                 this.PrintException(ex);
             }
-
-            try
+            finally
             {
-                OnInstalledInternal();
-            }
-            catch (Exception ex)
-            {
-                this.PrintException(ex);
+                onInstalled = null;
             }
 
-            onInstalled = null;
+            OnInstalledInternal();
         }
 
         protected override void OnDestroy()

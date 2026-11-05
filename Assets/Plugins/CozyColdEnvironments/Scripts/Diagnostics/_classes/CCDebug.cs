@@ -235,10 +235,20 @@ namespace CCEnvs.Diagnostics
                 onEnabledTypeChangedAction();
         }
 
+#if UNITY_2017_1_OR_NEWER
+        private static Object? ResolveUnityContext(object? context)
+        {
+            if (context is DebugContext dbg)
+                return dbg.Target as Object;
+            else
+                return context as Object;
+        }
+#endif
+
         void IDebugLogger.PrintLog(object message, object? context)
         {
 #if UNITY_2017_1_OR_NEWER
-            Debug.Log(GetMessage(message, context), context as Object);
+            Debug.Log(GetMessage(message, context), ResolveUnityContext(context));
 #else
             System.Diagnostics.Debug.WriteLine(message);
 #endif
@@ -247,7 +257,7 @@ namespace CCEnvs.Diagnostics
         void IDebugLogger.PrintWarning(object message, object? context)
         {
 #if UNITY_2017_1_OR_NEWER
-            Debug.LogWarning(GetMessage(message, context), context as Object);
+            Debug.LogWarning(GetMessage(message, context), ResolveUnityContext(context));
 #else
             System.Diagnostics.Debug.WriteLine(message);
 #endif
@@ -256,7 +266,7 @@ namespace CCEnvs.Diagnostics
         void IDebugLogger.PrintError(object message, object? context)
         {
 #if UNITY_2017_1_OR_NEWER
-            Debug.LogError(GetMessage(message, context), context as Object);
+            Debug.LogError(GetMessage(message, context), ResolveUnityContext(context));
 #else
             System.Diagnostics.Debug.WriteLine(message);
 #endif
@@ -265,7 +275,7 @@ namespace CCEnvs.Diagnostics
         void IDebugLogger.PrintExceptionAsLog(Exception exception, object? context)
         {
 #if UNITY_2017_1_OR_NEWER
-            Debug.Log($"{exception.GetType().Name}: {exception.Message}", context as Object);
+            Debug.Log($"{exception.GetType().Name}: {exception.Message}", ResolveUnityContext(context));
 #else
             System.Diagnostics.Debug.WriteLine(exception.Message);
 #endif
@@ -274,7 +284,7 @@ namespace CCEnvs.Diagnostics
         void IDebugLogger.PrintExceptionAsWarning(Exception exception, object? context)
         {
 #if UNITY_2017_1_OR_NEWER
-            Debug.LogWarning($"{exception.GetType().Name}: {exception.Message}", context as Object);
+            Debug.LogWarning($"{exception.GetType().Name}: {exception.Message}", ResolveUnityContext(context));
 #else
             System.Diagnostics.Debug.WriteLine(exception.Message);
 #endif
@@ -283,7 +293,7 @@ namespace CCEnvs.Diagnostics
         void IDebugLogger.PrintException(Exception exception, object? context)
         {
 #if UNITY_2017_1_OR_NEWER
-            Debug.LogException(exception, context as Object);
+            Debug.LogException(exception, ResolveUnityContext(context));
 #else
             System.Diagnostics.Debug.WriteLine(exception.Message);
 #endif
@@ -295,7 +305,7 @@ namespace CCEnvs.Diagnostics
                 return;
 
 #if UNITY_2017_1_OR_NEWER
-            Debug.Log(GetMessage(message, context), context as Object);
+            Debug.Log(GetMessage(message, context), ResolveUnityContext(context));
 #else
             System.Diagnostics.Debug.WriteLine(message);
 #endif
@@ -307,7 +317,7 @@ namespace CCEnvs.Diagnostics
                 return;
 
 #if UNITY_2017_1_OR_NEWER
-            Debug.LogWarning(GetMessage(message, context), context as Object);
+            Debug.LogWarning(GetMessage(message, context), ResolveUnityContext(context));
 #else
             System.Diagnostics.Debug.WriteLine(message);
 #endif
@@ -319,7 +329,7 @@ namespace CCEnvs.Diagnostics
                 return;
 
 #if UNITY_2017_1_OR_NEWER
-            Debug.LogError(GetMessage(message, context), context as Object);
+            Debug.LogError(GetMessage(message, context), ResolveUnityContext(context));
 #else
             System.Diagnostics.Debug.WriteLine(message);
 #endif
@@ -331,7 +341,7 @@ namespace CCEnvs.Diagnostics
                 return;
 
 #if UNITY_2017_1_OR_NEWER
-            Debug.LogException(exception, context as Object);
+            Debug.LogException(exception, ResolveUnityContext(context));
 #else
             System.Diagnostics.Debug.WriteLine(exception);
 #endif

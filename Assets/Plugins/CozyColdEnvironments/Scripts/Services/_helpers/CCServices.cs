@@ -48,13 +48,15 @@ namespace CCEnvs.Services
 
             if (binder is IServiceBindingFactoryProvider factoryProvider)
             {
-                if (bindingType != BindingType.Transient &&
+                var node = new FactoryBindingNode(factoryProvider.Factory, bindingType);
+
+                if (bindingType == BindingType.Single &&
                     binder is IServiceBindingLazyStateProvider lazyStateProvider &&
                     !lazyStateProvider.IsLazy
                     )
-                    bindings.Add(bindingKey, new InstanceBindingNode(factoryProvider.Factory.Create(Array.Empty<object>())));
-                else
-                    bindings.Add(bindingKey, new FactoryBindingNode(factoryProvider.Factory, bindingType));
+                    node.GetInstance();
+
+                bindings.Add(bindingKey, node);
 
             }
             else if (binder is IServiceBindingInstanceProvider instanceProvider)
