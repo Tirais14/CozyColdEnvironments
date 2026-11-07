@@ -51,5 +51,17 @@ namespace CCEnvs.Services
                 installer.AddBinding(CCServices.Bind(binder, BindingType.Transient));
             };
         }
+
+        public static IDisposable AsSingle(this IServiceBinder binder)
+        {
+            CC.Guard.IsNotNull(binder, nameof(binder));
+            return CCServices.Bind(binder, BindingType.Single);
+        }
+
+        public static IDisposable AsTransient(this IServiceBinder binder)
+        {
+            CC.Guard.IsNotNull(binder, nameof(binder));
+            return CCServices.Bind(binder, BindingType.Transient);
+        }
     }
 }
