@@ -22,6 +22,26 @@ namespace CCEnvs.Services
         private static readonly HashSet<BindingKey> nowResolving = new();
 #endif
 
+        private static readonly Dictionary<BindingKey, Action> unregisterGlobalServiceActions = new();
+
+        public static void RegisterOnUnbindCallback(Type contract, Action action, object? id = null)
+        {
+            Guard.IsNotNull(contract, nameof(contract));
+            Guard.IsNotNull(action, nameof(action));
+
+            if (!HasBinding(contract, id))
+            {
+                throw new BindingNotFoundException(DebugMessageBuilder.CreatePooled()
+                    .AddMessage("Binding not found")
+                    .AddProperty("Contract", contract)
+                    .AddProperty("ID", id)
+                    .ToStringAndDispose()
+                    );
+            }
+
+            unregisterGlobalServiceActions.Add(new BindingKey(contract, id), action);
+        }
+
         public static IDisposable Bind(IServiceBinder binder, BindingType bindingType)
         {
             CC.Guard.IsNotNull(binder, nameof(binder));
@@ -246,8 +266,22 @@ namespace CCEnvs.Services
 
         public static bool Unbind(Type contractType, object? id = null)
         {
-            if (!bindings.Remove(new BindingKey(contractType, id), out var node))
+            var key = new BindingKey(contractType, id);
+
+            if (!bindings.Remove(key, out var node))
                 return false;
+
+            if (unregisterGlobalServiceActions.TryGetValue(key, out var action))
+            {
+                try
+                {
+                    action();
+                }
+                catch (Exception ex)
+                {
+                    typeof(CCServices).PrintException(ex);
+                }
+            }
 
             node.Dispose();
             return true;
