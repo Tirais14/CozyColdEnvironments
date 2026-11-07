@@ -24,7 +24,10 @@ namespace CCEnvs.Services
             if (Interlocked.Exchange(ref disposed, 1) != 0)
                 return;
 
-            instance.Maybe().Cast<IDisposable>().IfSome(x => x.Dispose());
+            if (instance is IUtilizable utilizable)
+                utilizable.Utilize();
+            else if (instance is IDisposable disposable)
+                disposable.Dispose();
         }
     }
 }

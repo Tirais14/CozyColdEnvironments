@@ -278,7 +278,7 @@ namespace CCEnvs.Services
 
                     if (!CCServices.TryResolveOut(param.ParameterType, out var resolved, resolveID))
                     {
-                        throw new ServiceResolveException(DebugMessageBuilder.CreatePooled()
+                        throw new BindingNotFoundException(DebugMessageBuilder.CreatePooled()
                             .AddMessage("Not found binding")
                             .AddProperty("Contract", param.ParameterType)
                             .AddPredicatedProperty(resolveID is not null, "ID", resolveID)

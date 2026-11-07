@@ -2,15 +2,15 @@ using System;
 
 namespace CCEnvs.Services
 {
-    public class ServiceResolveException : Exception
+    public class BindingNotFoundException : Exception
     {
-        public ServiceResolveException(string message)
+        public BindingNotFoundException(string message)
             :
             base(message)
         {
         }
 
-        public ServiceResolveException(string message, Exception innerException)
+        public BindingNotFoundException(string message, Exception innerException)
             :
             base(message, innerException)
         {

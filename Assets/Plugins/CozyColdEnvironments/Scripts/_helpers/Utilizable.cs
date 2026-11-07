@@ -21,7 +21,7 @@ namespace CCEnvs
                 disposable.Dispose();
         }
 
-        public static void UtilizeEach<T>(IEnumerable<T>? source, bool bufferized = true)
+        public static void UtilizeEach<T>(this IEnumerable<T>? source, bool bufferized = true)
             where T : IUtilizable
         {
             if (source.IsNullOrEmpty())
@@ -59,7 +59,7 @@ namespace CCEnvs
             }
         }
 
-        public static void UtilizeEachAndClear<T>(ICollection<T>? source, bool bufferized = true)
+        public static void UtilizeEachAndClear<T>(this ICollection<T>? source, bool bufferized = true)
             where T : IUtilizable
         {
             if (source.IsNullOrEmpty())
@@ -69,7 +69,7 @@ namespace CCEnvs
             source.Clear();
         }
 
-        public static void UtilizeOrDisposeEach<T>(IEnumerable<T>? source, bool bufferized = true)
+        public static void UtilizeOrDisposeEach<T>(this IEnumerable<T>? source, bool bufferized = true)
         {
             if (TypeofCache<T>.Type.IsType<IUtilizable>())
                 UtilizeEach(source.Cast<IUtilizable>(), bufferized);
@@ -77,7 +77,7 @@ namespace CCEnvs
                 source.Cast<IDisposable>().DisposeEach(bufferized);
         }
 
-        public static void UtilizeOrDisposeAndClear<T>(ICollection<T> source, bool bufferized = true)
+        public static void UtilizeOrDisposeEachAndClear<T>(this ICollection<T> source, bool bufferized = true)
         {
             UtilizeOrDisposeEach(source, bufferized);
             source.Clear();

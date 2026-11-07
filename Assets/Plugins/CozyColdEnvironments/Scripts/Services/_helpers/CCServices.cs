@@ -139,7 +139,7 @@ namespace CCEnvs.Services
             if (!bindings.TryGetValue(bindingKey, out var result))
             {
                 nowResolving.Clear();
-                throw new ServiceResolveException(DebugMessageBuilder.CreatePooled()
+                throw new BindingNotFoundException(DebugMessageBuilder.CreatePooled()
                     .AddMessage("Not found binding")
                     .AddProperty(nameof(contract), contract)
                     .AddProperty(nameof(id), id)
