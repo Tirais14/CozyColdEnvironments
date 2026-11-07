@@ -16,7 +16,7 @@ namespace CCEnvs.Services
 
         static GlobalService()
         {
-            CCProjectHelper.SubscribeOnInstallIfNot<GlobalService<T>>(ResetValue);
+            CCProjectHelper.SubscribeOnInstallIfNot<GlobalService<T>>(Reset);
         }
 
         public static T GetValue(object? id = null)
@@ -30,8 +30,8 @@ namespace CCEnvs.Services
                 valueRef.SetTarget(value);
                 IsResolved = value.IsNotNull();
                 resolvedID = id;
-                CCServices.UnregisterOnUnbindCallback(typeof(T), ResetValue, id);
-                CCServices.RegisterOnUnbindCallback(typeof(T), ResetValue, id);
+                CCServices.UnregisterOnUnbindCallback(typeof(T), Reset, id);
+                CCServices.RegisterOnUnbindCallback(typeof(T), Reset, id);
             }
 
             return value!;
@@ -49,7 +49,7 @@ namespace CCEnvs.Services
                     valueRef.SetTarget(value);
                     IsResolved = value.IsNotNull();
                     resolvedID = id;
-                    CCServices.RegisterOnUnbindCallback(typeof(T), ResetValue, id); 
+                    CCServices.RegisterOnUnbindCallback(typeof(T), Reset, id); 
                 }
             }
 
@@ -57,15 +57,15 @@ namespace CCEnvs.Services
             return IsResolved;
         }
 
-        private static bool IsIDChanged(object? otherID)
-        {
-            return !EqualityComparer<object?>.Default.Equals(otherID, resolvedID);
-        }
-
-        private static void ResetValue()
+        public static void Reset()
         {
             valueRef.SetTarget(null);
             IsResolved = false;
+        }
+
+        private static bool IsIDChanged(object? otherID)
+        {
+            return !EqualityComparer<object?>.Default.Equals(otherID, resolvedID);
         }
     }
 }
