@@ -1,3 +1,6 @@
+using CCEnvs.Patterns.Factories;
+using CommunityToolkit.Diagnostics;
+using Humanizer;
 using System;
 
 #nullable enable
@@ -82,6 +85,41 @@ namespace CCEnvs.Services
         {
             binder.IgnoreIfBound = true;
             return binder;
+        }
+
+        public static ServiceFactoryBinderNonGeneric FromResolve(this ServiceBinderNonGeneric binder, object? id = null)
+        {
+            Guard.IsNotNull(binder, nameof(binder));
+
+            if (binder.ToContract is not null)
+            {
+                return new ServiceFactoryBinderNonGeneric(
+                    binder.ToContract,
+                    Factory.Create((binder.ToContract, id), args => CCServices.Resolve(args.ToContract, args.id))
+                    );
+            }
+            else
+            {
+                return new ServiceFactoryBinderNonGeneric(
+                    binder.Contract,
+                    Factory.Create((binder.Contract, id), args => CCServices.Resolve(args.Contract, args.id))
+                    );
+            }
+        }
+        public static ServiceFactoryBinderGeneric<T> FromResolve<T>(this ServiceBinderGeneric<T> binder, object? id = null)
+        {
+            Guard.IsNotNull(binder, nameof(binder));
+            return new ServiceFactoryBinderGeneric<T>(
+                Factory.Create(id, id => CCServices.Resolve<T>(id))
+                );
+        }
+        public static ServiceFactoryBinderGeneric<TTo> FromResolve<TFrom, TTo>(this ServiceBinderGeneric<TFrom, TTo> binder, object? id = null)
+            where TFrom : TTo
+        {
+            Guard.IsNotNull(binder, nameof(binder));
+            return new ServiceFactoryBinderGeneric<TTo>(
+                Factory.Create(id, id => (TTo)CCServices.Resolve<TFrom>(id))
+                );
         }
     }
 }

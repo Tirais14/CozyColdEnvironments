@@ -39,7 +39,11 @@ namespace CCEnvs.Services
                     );
             }
 
-            unregisterGlobalServiceActions[new BindingKey(contract, id)] += action;
+            var key = new BindingKey(contract, id);
+            if (!unregisterGlobalServiceActions.ContainsKey(key))
+                unregisterGlobalServiceActions.Add(key, action);
+            else
+                unregisterGlobalServiceActions[key] += action;
         }
 
         public static bool UnregisterOnUnbindCallback(Type contract, Action action, object? id = null)

@@ -11,7 +11,6 @@ namespace CCEnvs.Patterns.Factories
 
         public AnonymousStatedFactory(TState state, Func<TState, TOut> factory)
         {
-            CC.Guard.IsNotNullState(state);
             Guard.IsNotNull(factory, nameof(factory));
 
             this.state = state;
@@ -28,7 +27,6 @@ namespace CCEnvs.Patterns.Factories
 
         public AnonymousStatedFactory(TState state, Func<TState, T1, TOut> factory)
         {
-            CC.Guard.IsNotNullState(state);
             Guard.IsNotNull(factory, nameof(factory));
 
             this.state = state;

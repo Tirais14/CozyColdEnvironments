@@ -34,5 +34,20 @@ namespace CCEnvs.UnityX.Services
                     return GameObjectQuery.Scene.IncludeInactive(includeInactive).Component<T>().Strict();
                 }));
         }
+
+        public static ServiceFactoryBinderGeneric<TTo> FromComponentInHierarchy<TFrom, TTo>(
+            this ServiceBinderGeneric<TFrom, TTo> binder,
+            bool includeInactive = false
+            )
+            where TFrom : TTo
+        {
+            Guard.IsNotNull(binder, nameof(binder));
+
+            return new ServiceFactoryBinderGeneric<TTo>(
+                Factory.Create(includeInactive, includeInactive =>
+                {
+                    return (TTo)GameObjectQuery.Scene.IncludeInactive(includeInactive).Component<TFrom>().Strict();
+                }));
+        }
     }
 }
