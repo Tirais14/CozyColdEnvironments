@@ -254,6 +254,15 @@ namespace CCEnvs.Services
             {
                 ParameterInfo param = parameters[i];
 
+                if (param.ParameterType == method.DeclaringType)
+                {
+                    typeof(ServiceBinderHelper).PrintWarning(DebugMessageBuilder.CreatePooled()
+                        .AddMessage("Found circular dependecy")
+                        .AddProperty("Contract", param.ParameterType)
+                        .ToStringAndDispose()
+                        );
+                }
+
                 if (param.HasDefaultValue || param.IsDefined(typeof(ResolveOptionalAttribute), inherit: true))
                 {
                     var resolveID = param.GetCustomAttribute<ResolveIDAttribute>(inherit: true)?.ID;
@@ -269,7 +278,7 @@ namespace CCEnvs.Services
 
                     if (!CCServices.TryResolveOut(param.ParameterType, out var resolved, resolveID))
                     {
-                        throw new ArgumentException(DebugMessageBuilder.CreatePooled()
+                        throw new ServiceResolveException(DebugMessageBuilder.CreatePooled()
                             .AddMessage("Not found binding")
                             .AddProperty("Contract", param.ParameterType)
                             .AddPredicatedProperty(resolveID is not null, "ID", resolveID)

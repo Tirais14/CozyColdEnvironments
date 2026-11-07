@@ -1,10 +1,13 @@
+using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.Patterns.Factories;
+using CCEnvs.TypeMatching;
 using Humanizer;
 using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 
 #nullable enable
@@ -22,6 +25,11 @@ namespace CCEnvs.Services
 
         private bool isCreated;
 
+        private bool? isValueDisposable;
+        private bool? isValueUtilizable;
+
+        private int recursionDepth;
+
         public FactoryBindingNode(IFactory factory, BindingType bindingType)
         {
             CC.Guard.IsNotNull(factory, nameof(factory));
@@ -32,20 +40,57 @@ namespace CCEnvs.Services
 
         public object GetInstance()
         {
-            if (isCreated)
-                return createdValue!;
-
-            if (bindingType == BindingType.Transient)
-                return CreateInstance();
-            else if (bindingType == BindingType.Single)
+            if (recursionDepth >= 1)
             {
-                createdValue = CreateInstance();
-                factored.Value.Add(createdValue);
-                isCreated = true;
-                return createdValue;
+                //Type lastFactoryGenericArgument = factored.GetType().GetInterfaces()
+                //    .Where(iface => iface.IsGenericType && iface.Name.StartsWith(nameof(IFactory)) && iface.Namespace.StartsWith(nameof(CCEnvs)))
+                //    .Select(iface => iface.GetGenericArguments())
+                //    .Select(args => args[args.Length - 1])
+                //    .FirstOrDefault();
+
+                throw new InvalidOperationException(DebugMessageBuilder.CreatePooled()
+                    .AddMessage("Cannot resolve circular dependecy")
+                    .AddProperty("Factory", factory.GetType())
+                    .ToStringAndDispose()
+                    );
             }
 
-            throw CC.ThrowHelper.InvalidOperationException(bindingType);
+            recursionDepth++;
+
+            try
+            {
+                if (isCreated)
+                    return createdValue!;
+
+                if (bindingType == BindingType.Transient)
+                    return CreateInstance();
+                else if (bindingType == BindingType.Single)
+                {
+                    createdValue = CreateInstance();
+
+                    if (!isValueDisposable.HasValue ||
+                        !isValueUtilizable.HasValue
+                        )
+                    {
+                        isValueUtilizable = createdValue is IUtilizable;
+                        isValueDisposable = createdValue is IDisposable;
+                    }
+
+                    if ((isValueDisposable.HasValue && isValueDisposable.Value) ||
+                        (isValueUtilizable.HasValue && isValueUtilizable.Value)
+                        )
+                        factored.Value.Add(createdValue);
+
+                    isCreated = true;
+                    return createdValue;
+                }
+
+                throw CC.ThrowHelper.InvalidOperationException(bindingType);
+            }
+            finally
+            {
+                recursionDepth--;
+            }
         }
 
         private int disposed;
@@ -55,19 +100,44 @@ namespace CCEnvs.Services
                 return;
 
             if (isCreated)
-                createdValue.Maybe().Cast<IDisposable>().IfSome(x => x.Dispose());
+            {
+                if (createdValue is IUtilizable createdValueUtilizable)
+                    createdValueUtilizable.Utilize();
+                else if (createdValue is IDisposable createdValueDisposable)
+                    createdValueDisposable.Dispose();
+            }
 
             if (factored.IsValueCreated)
-                factored.Value.OfType<IDisposable>().DisposeEach(bufferized: false);
+            {
+                if (isValueUtilizable.HasValue && isValueUtilizable.Value)
+                {
+                    foreach (var utilizable in factored.Value.OfType<IUtilizable>())
+                    {
+                        try
+                        {
+                            utilizable.Utilize();
+                        }
+                        catch (Exception ex)
+                        {
+                            this.PrintException(ex);
+                        }
+                    }
+                }
+                else if (isValueDisposable.HasValue && isValueDisposable.Value)
+                    factored.Value.OfType<IDisposable>().DisposeEach(bufferized: false);
+            }
 
-            factory.Maybe().Cast<IDisposable>().IfSome(x => x.Dispose());
+            if (factory is IUtilizable factoryUtilizable)
+                factoryUtilizable.Utilize();
+            else if (factory is IDisposable factoryDisposable)
+                factoryDisposable.Dispose();
         }
 
         private object CreateInstance()
         {
             var method = ServiceBinderHelper.ResolveMethod(factory.GetType(), nameof(IFactory<object>.Create), cached: bindingType == BindingType.Transient);
-            var arguments = ServiceBinderHelper.ResolveServices(method);
-            return method.Invoke(factory, arguments.ToArray());
+            var arguments = ServiceBinderHelper.ResolveServices(method, bindingType == BindingType.Transient);
+            return method.Invoke(factory, arguments.Is<object[]>(out var argumentArray) ? argumentArray : arguments.ToArray());
         }
     }
 

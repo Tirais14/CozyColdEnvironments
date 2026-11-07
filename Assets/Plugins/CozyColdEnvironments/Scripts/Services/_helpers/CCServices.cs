@@ -18,6 +18,10 @@ namespace CCEnvs.Services
     {
         private static readonly Dictionary<BindingKey, IBindingNode> bindings = new();
 
+#if CC_DEBUG_ENABLED
+        private static readonly HashSet<BindingKey> nowResolving = new();
+#endif
+
         public static IDisposable Bind(IServiceBinder binder, BindingType bindingType)
         {
             CC.Guard.IsNotNull(binder, nameof(binder));
@@ -49,14 +53,13 @@ namespace CCEnvs.Services
             if (binder is IServiceBindingFactoryProvider factoryProvider)
             {
                 var node = new FactoryBindingNode(factoryProvider.Factory, bindingType);
+                bindings.Add(bindingKey, node);
 
                 if (bindingType == BindingType.Single &&
                     binder is IServiceBindingLazyStateProvider lazyStateProvider &&
                     !lazyStateProvider.IsLazy
                     )
-                    node.GetInstance();
-
-                bindings.Add(bindingKey, node);
+                    Resolve(binder.Contract, id);
 
             }
             else if (binder is IServiceBindingInstanceProvider instanceProvider)
@@ -120,9 +123,23 @@ namespace CCEnvs.Services
 
             var bindingKey = new BindingKey(contract, id);
 
+#if CC_DEBUG_ENABLED
+            if (!nowResolving.Add(bindingKey))
+            {
+                nowResolving.Clear();
+                throw new InvalidOperationException(DebugMessageBuilder.CreatePooled()
+                    .AddMessage("Cannot resolve circular dependecy")
+                    .AddProperty("Contract", contract)
+                    .AddPredicatedProperty(id is not null, "ID", id)
+                    .ToStringAndDispose()
+                    );
+            }
+#endif
+
             if (!bindings.TryGetValue(bindingKey, out var result))
             {
-                throw new ArgumentException(DebugMessageBuilder.CreatePooled()
+                nowResolving.Clear();
+                throw new ServiceResolveException(DebugMessageBuilder.CreatePooled()
                     .AddMessage("Not found binding")
                     .AddProperty(nameof(contract), contract)
                     .AddProperty(nameof(id), id)
@@ -130,7 +147,9 @@ namespace CCEnvs.Services
                     );
             }
 
-            return result.GetInstance();
+            var resolved = result.GetInstance();
+            nowResolving.Remove(bindingKey);
+            return resolved;
         }
         public static T Resolve<T>(object? id = null)
         {

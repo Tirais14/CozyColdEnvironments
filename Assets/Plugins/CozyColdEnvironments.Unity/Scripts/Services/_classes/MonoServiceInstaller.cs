@@ -2,6 +2,7 @@ using CCEnvs.Disposables;
 using CCEnvs.Services;
 using CCEnvs.UnityX.Components;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 #nullable enable
@@ -39,19 +40,7 @@ namespace CCEnvs.UnityX.Services
             InstallBindings();
             isInstalled = true;
 
-            try
-            {
-                onInstalled?.Invoke(this);
-            }
-            catch (Exception ex)
-            {
-                this.PrintException(ex);
-            }
-            finally
-            {
-                onInstalled = null;
-            }
-
+            onInstalled?.Invoke(this);
             OnInstalledInternal();
         }
 
