@@ -30,6 +30,7 @@ namespace CCEnvs.Services
                 valueRef.SetTarget(value);
                 IsResolved = value.IsNotNull();
                 resolvedID = id;
+                CCServices.UnregisterOnUnbindCallback(typeof(T), ResetValue, id);
                 CCServices.RegisterOnUnbindCallback(typeof(T), ResetValue, id);
             }
 
@@ -48,6 +49,7 @@ namespace CCEnvs.Services
                     valueRef.SetTarget(value);
                     IsResolved = value.IsNotNull();
                     resolvedID = id;
+                    CCServices.RegisterOnUnbindCallback(typeof(T), ResetValue, id); 
                 }
             }
 

@@ -1,5 +1,4 @@
 using System;
-using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.Services
@@ -62,6 +61,27 @@ namespace CCEnvs.Services
         {
             CC.Guard.IsNotNull(binder, nameof(binder));
             return CCServices.Bind(binder, BindingType.Transient);
+        }
+
+        public static TBinder Lazy<TBinder>(this TBinder binder)
+            where TBinder : IServiceBindingLazyStateAccessor
+        {
+            binder.IsLazy = true;
+            return binder;
+        }
+
+        public static TBinder NonLazy<TBinder>(this TBinder binder)
+            where TBinder : IServiceBinder, IServiceBindingLazyStateAccessor
+        {
+            binder.IsLazy = false;
+            return binder;
+        }
+
+        public static TBinder IfNotBound<TBinder>(this TBinder binder)
+            where TBinder : IServiceBinder, IServiceBindingNotBoundStateAccessor
+        {
+            binder.IgnoreIfBound = true;
+            return binder;
         }
     }
 }

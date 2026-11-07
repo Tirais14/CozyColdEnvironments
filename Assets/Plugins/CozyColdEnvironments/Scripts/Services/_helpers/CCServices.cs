@@ -39,7 +39,26 @@ namespace CCEnvs.Services
                     );
             }
 
-            unregisterGlobalServiceActions.Add(new BindingKey(contract, id), action);
+            unregisterGlobalServiceActions[new BindingKey(contract, id)] += action;
+        }
+
+        public static bool UnregisterOnUnbindCallback(Type contract, Action action, object? id = null)
+        {
+            Guard.IsNotNull(contract, nameof(contract));
+            Guard.IsNotNull(action, nameof(action));
+
+            var key = new BindingKey(contract, id);
+            if (!unregisterGlobalServiceActions.TryGetValue(key, out var callback))
+                return false;
+
+            callback -= action;
+
+            if (callback is null)
+                unregisterGlobalServiceActions.Remove(key);
+            else
+                unregisterGlobalServiceActions[key] = callback;
+
+            return true;
         }
 
         public static IDisposable Bind(IServiceBinder binder, BindingType bindingType)

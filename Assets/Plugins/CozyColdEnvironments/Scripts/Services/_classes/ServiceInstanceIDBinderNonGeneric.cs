@@ -10,7 +10,7 @@ namespace CCEnvs.Services
         :
         IServiceBinder,
         IServiceBindingIDProvider,
-        IServiceBindingNotBoundStateProvider,
+        IServiceBindingNotBoundStateAccessor,
         IServiceBindingInstanceProvider,
         ISingleBindable
     {
@@ -20,7 +20,7 @@ namespace CCEnvs.Services
 
         public object ID { get; }
 
-        public bool IgnoreIfBound { get; private set; }
+        public bool IgnoreIfBound { get; set; }
 
         public ServiceInstanceIDBinderNonGeneric(Type contract, object instance, object id)
         {
@@ -31,17 +31,6 @@ namespace CCEnvs.Services
             Contract = contract;
             Instance = instance;
             ID = id;
-        }
-
-        public ServiceInstanceIDBinderNonGeneric IfNotBound()
-        {
-            IgnoreIfBound = true;
-            return this;
-        }
-
-        public IDisposable AsSingle()
-        {
-            return CCServices.Bind(this, BindingType.Single);
         }
     }
 }

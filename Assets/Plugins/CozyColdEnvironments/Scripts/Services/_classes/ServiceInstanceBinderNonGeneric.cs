@@ -7,7 +7,7 @@ namespace CCEnvs.Services
     public class ServiceInstanceBinderNonGeneric
         :
         IServiceBinder,
-        IServiceBindingNotBoundStateProvider,
+        IServiceBindingNotBoundStateAccessor,
         IServiceBindingInstanceProvider,
         ISingleBindable
     {
@@ -15,7 +15,7 @@ namespace CCEnvs.Services
 
         public object Instance { get; }
 
-        public bool IgnoreIfBound { get; private set; }
+        public bool IgnoreIfBound { get; set; }
 
         public ServiceInstanceBinderNonGeneric(Type contract, object instance)
         {
@@ -24,17 +24,6 @@ namespace CCEnvs.Services
 
             Contract = contract;
             Instance = instance;
-        }
-
-        public ServiceInstanceBinderNonGeneric IfNotBound()
-        {
-            IgnoreIfBound = true;
-            return this;
-        }
-
-        public IDisposable AsSingle()
-        {
-            return CCServices.Bind(this, BindingType.Single);
         }
 
         public ServiceInstanceIDBinderNonGeneric WithID(object id)

@@ -1,5 +1,4 @@
 using CCEnvs.Patterns.Factories;
-using System;
 
 #nullable enable
 namespace CCEnvs.Services
@@ -8,9 +7,9 @@ namespace CCEnvs.Services
         :
         IServiceBinder<T>,
         IServiceBindingIDProvider,
-        IServiceBindingNotBoundStateProvider,
+        IServiceBindingNotBoundStateAccessor,
         IServiceBindingFactoryProvider<T>,
-        IServiceBindingLazyStateProvider,
+        IServiceBindingLazyStateAccessor,
         ISingleBindable,
         ITransientBindable
     {
@@ -28,34 +27,6 @@ namespace CCEnvs.Services
 
             Factory = factory;
             ID = id;
-        }
-
-        public IDisposable AsSingle()
-        {
-            return CCServices.Bind(this, BindingType.Single);
-        }
-
-        public IDisposable AsTransient()
-        {
-            return CCServices.Bind(this, BindingType.Transient);
-        }
-
-        public ServiceFactoryIDBinderGeneric<T> IfNotBound()
-        {
-            IgnoreIfBound = true;
-            return this;
-        }
-
-        public ServiceFactoryIDBinderGeneric<T> Lazy()
-        {
-            IsLazy = true;
-            return this;
-        }
-
-        public ServiceFactoryIDBinderGeneric<T> NonLazy()
-        {
-            IsLazy = false;
-            return this;
         }
     }
 }

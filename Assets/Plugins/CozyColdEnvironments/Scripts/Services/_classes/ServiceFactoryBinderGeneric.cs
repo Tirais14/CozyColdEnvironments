@@ -7,9 +7,9 @@ namespace CCEnvs.Services
     public class ServiceFactoryBinderGeneric<T>
         :
         IServiceBinder<T>, 
-        IServiceBindingNotBoundStateProvider, 
+        IServiceBindingNotBoundStateAccessor, 
         IServiceBindingFactoryProvider<T>, 
-        IServiceBindingLazyStateProvider,
+        IServiceBindingLazyStateAccessor,
         ITransientBindable,
         ISingleBindable
     {
@@ -23,34 +23,6 @@ namespace CCEnvs.Services
             CC.Guard.IsNotNull(factory, nameof(factory));
 
             Factory = factory;
-        }
-
-        public IDisposable AsSingle()
-        {
-            return CCServices.Bind(this, BindingType.Single);
-        }
-
-        public IDisposable AsTransient()
-        {
-            return CCServices.Bind(this, BindingType.Transient);
-        }
-
-        public ServiceFactoryBinderGeneric<T> IfNotBound()
-        {
-            IgnoreIfBound = true;
-            return this;
-        }
-
-        public ServiceFactoryBinderGeneric<T> Lazy()
-        {
-            IsLazy = true;
-            return this;
-        }
-
-        public ServiceFactoryBinderGeneric<T> NonLazy()
-        {
-            IsLazy = false;
-            return this;
         }
 
         public ServiceFactoryIDBinderGeneric<T> WithID(object id)

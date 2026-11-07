@@ -7,10 +7,10 @@ namespace CCEnvs.Services
 {
     public class ServiceFactoryBinderNonGeneric 
         :
-        IServiceBinder, 
-        IServiceBindingNotBoundStateProvider,
+        IServiceBinder,
+        IServiceBindingNotBoundStateAccessor,
         IServiceBindingFactoryProvider,
-        IServiceBindingLazyStateProvider,
+        IServiceBindingLazyStateAccessor,
         ITransientBindable,
         ISingleBindable
     {
@@ -28,34 +28,6 @@ namespace CCEnvs.Services
 
             Contract = contract;
             Factory = factory;
-        }
-
-        public ServiceFactoryBinderNonGeneric IfNotBound()
-        {
-            IgnoreIfBound = true;
-            return this;
-        }
-
-        public ServiceFactoryBinderNonGeneric Lazy()
-        {
-            IsLazy = true;
-            return this;
-        }
-
-        public ServiceFactoryBinderNonGeneric NonLazy()
-        {
-            IsLazy = false;
-            return this;
-        }
-
-        public IDisposable AsSingle()
-        {
-            return CCServices.Bind(this, BindingType.Single);
-        }
-
-        public IDisposable AsTransient()
-        {
-            return CCServices.Bind(this, BindingType.Transient);
         }
 
         public ServiceFactoryIDBinderNonGeneric WithID(object id)
