@@ -126,11 +126,11 @@ namespace CCEnvs.Services
 #if CC_DEBUG_ENABLED
             if (!nowResolving.Add(bindingKey))
             {
-                nowResolving.Clear();
                 throw new InvalidOperationException(DebugMessageBuilder.CreatePooled()
                     .AddMessage("Cannot resolve circular dependecy")
                     .AddProperty("Contract", contract)
                     .AddPredicatedProperty(id is not null, "ID", id)
+                    .AddProperty("NowResolving", nowResolving.SequenceToString())
                     .ToStringAndDispose()
                     );
             }
@@ -138,7 +138,9 @@ namespace CCEnvs.Services
 
             if (!bindings.TryGetValue(bindingKey, out var result))
             {
+#if CC_DEBUG_ENABLED
                 nowResolving.Clear();
+#endif
                 throw new BindingNotFoundException(DebugMessageBuilder.CreatePooled()
                     .AddMessage("Not found binding")
                     .AddProperty(nameof(contract), contract)
@@ -147,9 +149,18 @@ namespace CCEnvs.Services
                     );
             }
 
-            var resolved = result.GetInstance();
-            nowResolving.Remove(bindingKey);
-            return resolved;
+#if CC_DEBUG_ENABLED
+            try
+            {
+                return result.GetInstance();
+            }
+            finally
+            {
+                nowResolving.Remove(bindingKey);
+            }
+#else
+            return result.GetInstance();
+#endif
         }
         public static T Resolve<T>(object? id = null)
         {
