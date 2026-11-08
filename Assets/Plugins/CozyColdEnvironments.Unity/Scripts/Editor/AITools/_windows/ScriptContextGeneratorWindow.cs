@@ -20,6 +20,7 @@ using System.Runtime.Serialization;
 using System.Threading;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Localization.SmartFormat.Utilities;
 using UnityEngine.UIElements;
 
 #nullable enable
@@ -49,6 +50,9 @@ namespace CCEnvs.UnityX.Editr.AITools
             [DataMember(Name = "aiInput")]
             public string? AIInput { get; set; }
 
+            [DataMember(Name = "isQueryDisable")]
+            public bool? IsQueryDisabled { get; set; }
+
             public Snapshot(Snapshot<ScriptContextGeneratorWindow> original) : base(original) { }
             public Snapshot() { }
             public Snapshot(ScriptContextGeneratorWindow target) : base(target) { }
@@ -61,6 +65,7 @@ namespace CCEnvs.UnityX.Editr.AITools
                 if (DefaultMatchSettings.HasValue) target.defaultMatchSettingsField.value = (int)DefaultMatchSettings.Value;
                 if (AIOutput is not null) target.aiOutputField.value = AIOutput;
                 if (AIInput is not null) target.aiInputField.value = AIInput;
+                if (IsQueryDisabled is not null) target.disableQueryToggle.value = IsQueryDisabled.Value;
             }
 
             protected override void OnCapture(ScriptContextGeneratorWindow target)
@@ -72,6 +77,7 @@ namespace CCEnvs.UnityX.Editr.AITools
                 DefaultMatchSettings = target.defaultMatchSettingsField is null ? null : (StringMatchSettings)Enum.ToObject(typeof(StringMatchSettings), target.defaultMatchSettingsField.value);
                 AIOutput = target.aiOutputField?.value;
                 AIInput = target.aiInputField?.value;
+                IsQueryDisabled = target.disableQueryToggle.value;
             }
 
             protected override void OnReset()
@@ -640,7 +646,7 @@ namespace CCEnvs.UnityX.Editr.AITools
                 if (disableQueryToggle.value)
                     additionalQuery = null;
 
-                await File.WriteAllTextAsync(contextFilePath, context.ToString(additionalQuery), cancellationToken).SuppressCancellationThrow();
+                await File.WriteAllTextAsync(contextFilePath, context.ToString(additionalQuery, !disableQueryToggle.value), cancellationToken).SuppressCancellationThrow();
             }
             catch (Exception ex)
             {

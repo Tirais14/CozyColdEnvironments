@@ -38,10 +38,10 @@ namespace CCEnvs.UnityX.Editr.AITools
 
         public override string ToString()
         {
-            return ToString(null);
+            return ToString(null, false);
         }
 
-        public string ToString(string? additional)
+        public string ToString(string? additional, bool includeQuery)
         {
             var sb = new StringBuilder();
             int i = 0;
@@ -50,8 +50,12 @@ namespace CCEnvs.UnityX.Editr.AITools
                 if (i++ == 0)
                 {
                     sb.AppendLine("//----Query Start----");
-                    sb.Append("//");
-                    sb.AppendLine("The result of the edits should be a single file that contains metadata about where each script file begins. Also, only those script files that have been modified in any way should be added to the resulting file, and in full — both modified and unmodified lines. Each script file should begin with //----File Start----, followed on the next line by //----FilePath: \"Absolute Path\"----. For scripts that are no longer needed for any purpose, after FilePath a marker //----Deleted---- should be placed; the contents of the deleted file itself need not be included. At the end of the script file, a marker //----File End---- should be placed.");
+                   
+                    if (includeQuery)
+                    {
+                        sb.Append("//");
+                        sb.AppendLine("The result of the edits should be a single file that contains metadata about where each script file begins. Also, only those script files that have been modified in any way should be added to the resulting file, and in full — both modified and unmodified lines. Each script file should begin with //----File Start----, followed on the next line by //----FilePath: \"Absolute Path\"----. For scripts that are no longer needed for any purpose, after FilePath a marker //----Deleted---- should be placed; the contents of the deleted file itself need not be included. At the end of the script file, a marker //----File End---- should be placed.");
+                    }
 
                     if (additional.IsNotNullOrWhiteSpace())
                         sb.AppendLine(additional);
