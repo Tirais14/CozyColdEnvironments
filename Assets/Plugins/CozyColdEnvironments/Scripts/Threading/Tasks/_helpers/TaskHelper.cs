@@ -1,4 +1,5 @@
 #nullable enable
+using CCEnvs.Diagnostics;
 using CommunityToolkit.Diagnostics;
 using System;
 using System.Threading;
@@ -184,6 +185,40 @@ namespace CCEnvs.Threading.Tasks
             finally
             {
                 action(state);
+            }
+        }
+
+        public static async Task SuppressCancellationThrow(this Task task)
+        {
+            Guard.IsNotNull(task, nameof(task));
+
+            try
+            {
+                await task;
+            }
+            catch (Exception ex)
+            {
+                if (ex.IsCancellationException())
+                    return;
+
+                throw;
+            }
+        }
+
+        public static async Task<T?> SuppressCancellationThrow<T>(this Task<T> task)
+        {
+            Guard.IsNotNull(task, nameof(task));
+
+            try
+            {
+                return await task;
+            }
+            catch (Exception ex)
+            {
+                if (ex.IsCancellationException())
+                    return default!;
+
+                throw;
             }
         }
     }

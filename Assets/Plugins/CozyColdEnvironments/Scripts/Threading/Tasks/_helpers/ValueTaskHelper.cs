@@ -180,5 +180,34 @@ namespace CCEnvs.Threading.Tasks
         {
             task.Forget(ex => context.PrintException(ex), suppresCancellationThrow);
         }
+
+        public static async ValueTask SuppressCancellationThrow(this ValueTask task)
+        {
+            try
+            {
+                await task;
+            }
+            catch (Exception ex)
+            {
+                if (ex.IsCancellationException())
+                    return;
+
+                throw;
+            }
+        }
+        public static async ValueTask<T?> SuppressCancellationThrow<T>(this ValueTask<T> task)
+        {
+            try
+            {
+                return await task;
+            }
+            catch (Exception ex)
+            {
+                if (ex.IsCancellationException())
+                    return default;
+
+                throw;
+            }
+        }
     }
 }

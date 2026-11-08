@@ -120,6 +120,7 @@ namespace CCEnvs.UnityX.Editr.AITools
         private MaskField defaultMatchSettingsField = null!;
         private TextField aiOutputField = null!;
         private TextField aiInputField = null!;
+        private Toggle disableQueryToggle = null!;
 
         private bool isGenerating;
         private bool isApllyingAIOutput;
@@ -213,6 +214,7 @@ namespace CCEnvs.UnityX.Editr.AITools
             aiInputField = root.QStrict<TextField>("script-context-generator__ai-input-text-field");
             applyAIOutputButton = root.QStrict<Button>("script-context-generator__apply-ai-output-button");
             cancelApplyingAIOutputButton = root.QStrict<Button>("script-context-generator__cancel-applying-ai-output-button");
+            disableQueryToggle = root.QStrict<Toggle>("script-context-generator__disable-query-toggle");
         }
 
         private void InitStringMatchSettingsField(MaskField maskField)
@@ -635,7 +637,10 @@ namespace CCEnvs.UnityX.Editr.AITools
                     this.PrintException(ex);
                 }
 
-                await File.WriteAllTextAsync(contextFilePath, context.ToString(additionalQuery), cancellationToken);
+                if (disableQueryToggle.value)
+                    additionalQuery = null;
+
+                await File.WriteAllTextAsync(contextFilePath, context.ToString(additionalQuery), cancellationToken).SuppressCancellationThrow();
             }
             catch (Exception ex)
             {

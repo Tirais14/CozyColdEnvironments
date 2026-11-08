@@ -2,6 +2,7 @@
     <ui:VisualElement name="script-context-generator__root" style="flex-grow: 0;">
         <ui:Foldout text="Settings" name="script-context-generator__settings-foldout" value="false">
             <ui:MaskField label="Default Namespace Match Settings" choices="" name="script-context-generator__script-name-match-settings"/>
+            <ui:Toggle label="Toggle" name="script-context-generator__disable-query-toggle"/>
         </ui:Foldout>
         <ui:Foldout text="Scripts" name="script-context-generator__script-names-foldout" value="false">
             <ui:ListView name="script-context-generator__script-names-list-view" item-template="project://database/Assets/Plugins/CozyColdEnvironments.Unity/Scripts/Editor/AITools/_windows/ScriptContextGeneratorWindowScriptInfoView.uxml?fileID=9197481963319205126&amp;guid=aa48a4c90ab7ea94c87a5f5e42aae734&amp;type=3#ScriptContextGeneratorWindowScriptInfoView" show-add-remove-footer="true" virtualization-method="DynamicHeight"/>
