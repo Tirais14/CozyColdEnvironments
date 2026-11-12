@@ -36,4 +36,9 @@ namespace CCEnvs.UnityX.Items
 
         ReadOnlyItemContainer IItemContainer.ToReadOnly() => ToReadOnly();
     }
+
+    //public static class IItemContainerExtensions
+    //{
+    //    public static ReadOnlyItemContainer<IItem> TakeItemOrFromParentInventory()
+    //}
 }

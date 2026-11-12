@@ -104,6 +104,8 @@ namespace CCEnvs.UnityX.Items
         void RemoveCount(int count);
         void RemoveCount(int count, out IList<IItemContainer> removed);
 
+        bool TryFindContainer(IItem item, [NotNullWhen(true)] out IItemContainer? result);
+
         Observable<InventoryContainerAddEvent> ObserveContainerAdd();
 
         Observable<InventoryContainerRemoveEvent> ObserveContainerRemove();
@@ -210,6 +212,8 @@ namespace CCEnvs.UnityX.Items
         new IList<LargeReadOnlyItemContainer<TItem>> GetCompactedContainers();
 
         new IList<TItemContainer> GetOccupiedContainers();
+
+        new bool TryFindContainer(TItem item, [NotNullWhen(true)] out TItemContainer? result);
 
         new Observable<InventoryContainerAddEvent<TItemContainer>> ObserveContainerAdd();
 
@@ -409,6 +413,21 @@ namespace CCEnvs.UnityX.Items
         IList<IItemContainer> IInventory.GetOccupiedContainers()
         {
             return GetOccupiedContainers().Cast<IItemContainer>().ToArray();
+        }
+
+        bool IInventory.TryFindContainer(IItem item, [NotNullWhen(true)] out IItemContainer? result)
+        {
+            CC.Guard.IsNotNull(item, nameof(item));
+
+            if (item.IsNot<TItem>(out var typedItem)
+                || !TryFindContainer(typedItem, out var container))
+            {
+                result = null;
+                return false;
+            }
+
+            result = container;
+            return true;
         }
 
         Observable<InventoryContainerAddEvent> IInventory.ObserveContainerAdd()

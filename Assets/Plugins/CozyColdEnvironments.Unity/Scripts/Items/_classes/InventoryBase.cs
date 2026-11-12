@@ -823,6 +823,20 @@ namespace CCEnvs.UnityX.Items
             PutItem((TItem)itemContainer.Item!, itemContainer.ItemCount);
         }
 
+        public bool TryFindContainer(TItem item, [NotNullWhen(true)] out TContainer? result)
+        {
+            CC.Guard.IsNotNull(item, nameof(item));
+            
+            if (!occupiedContainers.TryGetValue(item, out var containers))
+            {
+                result = default;
+                return false;
+            }
+
+            result = containers[0];
+            return true;
+        }
+
         public override string ToString()
         {
             return ToStringBuilder.CreatePooled()

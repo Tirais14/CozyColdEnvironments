@@ -106,6 +106,14 @@ namespace CCEnvs.UnityX.ECS
         {
             return (int)math.hash(new int2(HasValue.GetHashCode(), Value.GetHashCode()));
         }
+
+        public override string ToString()
+        {
+            if (!HasValue)
+                return "null";
+            else
+                return Value.ToString();
+        }
     }
 
     public static class NullableUnmanagedExtensions
