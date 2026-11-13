@@ -129,11 +129,11 @@ namespace CCEnvs.Events
             {
                 CCProjectHelper.SubscribeOnInstallIfNot(typeof(Events<TEvent>), () =>
                 {
-                    if (Emitter.IsValueCreated)
-                    {
-                        Emitter.Value.Dispose();
-                        Emitter = new Lazy<ReactiveCommand<TEvent>>(() => new());
-                    }
+                    //if (Emitter.IsValueCreated)
+                    //{
+                    //    Emitter.Value.Dispose();
+                    //    Emitter = new Lazy<ReactiveCommand<TEvent>>(() => new());
+                    //}
 
                     if (Actions.IsValueCreated)
                         Actions.Value.Clear();

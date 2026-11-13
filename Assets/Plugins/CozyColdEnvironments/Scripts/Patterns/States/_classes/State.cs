@@ -15,12 +15,18 @@ namespace CCEnvs.Patterns.States
 
             var composite = new CompositeState(id);
 
-        composite.Add(state)
+            composite.Add(state)
                 .Add(state1);
 
             return composite;
         }
-
+        public static IState Combine(IState state, IState state1)
+        {
+            CC.Guard.IsNotNull(state, nameof(state));
+            CC.Guard.IsNotNull(state1, nameof(state1));
+            var id = CombineID(state, state1);
+            return Combine(id, state, state1);
+        }
         public static IState Combine(string id, IState state, params IState[] states)
         {
             Guard.IsNotNull(id, nameof(id));
@@ -33,6 +39,13 @@ namespace CCEnvs.Patterns.States
                 .AddRange(states);
 
             return composite;
+        }
+        public static IState Combine(IState state, params IState[] states)
+        {
+            CC.Guard.IsNotNull(state, nameof(state));
+            Guard.IsNotNull(states, nameof(states));
+            var id = CombineID(state, state);
+            return Combine(state, states);
         }
 
         public static string CombineID(params IState[] states)

@@ -5,6 +5,7 @@ using CommunityToolkit.Diagnostics;
 using R3;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
 #nullable enable
@@ -13,6 +14,7 @@ namespace CCEnvs.UnityX.States
     public class StateMachine : IStateMachine, IDisposable
     {
         private readonly Dictionary<string, IStateNode> nodes = new();
+        private readonly Dictionary<Type, IStateNode> typedNodes = new();
         private readonly List<IStateTransition> anyTransitions = new();
 
         private readonly ReactiveProperty<IStateNode?> _currentNode = new();
@@ -32,7 +34,7 @@ namespace CCEnvs.UnityX.States
 
         public void Tick()
         {
-            if (ResolveTransition().IsNotNull(out var transition))
+            if (ResolveTransition() is IStateTransition transition)
                 SetState(transition.NextState);
 
             currentNode?.State.Tick();
@@ -59,6 +61,22 @@ namespace CCEnvs.UnityX.States
                     return currentNode.Transitions[i];
 
             return null;
+        }
+
+        public IStateNode GetNode(Type stateType)
+        {
+            Guard.IsNotNull(stateType, nameof(stateType));
+
+            if (TryFindNode(stateType, out var node))
+                return node;
+
+            return GetNode(stateType.GetName(TypeNameConvertingAttributes.None));
+        }
+        public IStateNode GetNode<T>() => GetNode(typeof(T));
+        public IStateNode GetNode(string id)
+        {
+            Guard.IsNotNull(id, nameof(id));
+            return nodes[id];
         }
 
         public void SetState(string? id)
@@ -102,6 +120,12 @@ namespace CCEnvs.UnityX.States
         }
         public void SetState(Type? stateType)
         {
+            if (TryFindNode(stateType, out var node))
+            {
+                SetState(node.State);
+                return;
+            }    
+
             SetState(stateType.GetName(TypeNameConvertingAttributes.None));
         }
         public void SetState<T>() => SetState(typeof(T));
@@ -115,7 +139,8 @@ namespace CCEnvs.UnityX.States
         {
             CC.Guard.IsNotNull(node, nameof(node));
 
-            nodes[node.State.ID] = node;
+            nodes.Add(node.State.ID, node);
+            typedNodes[node.State.GetType()] = node;
             return this;
         }
 
@@ -145,15 +170,21 @@ namespace CCEnvs.UnityX.States
         {
             Guard.IsNotNull(id, nameof(id));
 
-            if (id is null)
+            if (id is null
+                || !nodes.Remove(id, out var node)
+                )
                 return false;
 
-            return nodes.Remove(id);
+            typedNodes.Remove(node.State.GetType());
+            return true;
         }
         public bool RemoveNode(Type? stateType)
         {
             if (stateType is null)
                 return false;
+
+            if (TryFindNode(stateType, out var node))
+                return RemoveNode(node.State.ID);
 
             return RemoveNode(stateType.GetName(TypeNameConvertingAttributes.None));
         }
@@ -174,7 +205,7 @@ namespace CCEnvs.UnityX.States
             if (stateType is null)
                 return false;
 
-            return ContainsNode(stateType.GetName(TypeNameConvertingAttributes.None));
+            return TryFindNode(stateType, out _) || ContainsNode(stateType.GetName(TypeNameConvertingAttributes.None));
         }
         public bool ContainsNode<T>() => ContainsNode(typeof(T));
 
@@ -219,6 +250,20 @@ namespace CCEnvs.UnityX.States
 
             if (disposing)
                 _currentNode.Dispose();
+        }
+
+        private bool TryFindNode(Type? stateType, [NotNullWhen(true)] out IStateNode? result)
+        {
+            if (stateType is null
+                || (!typedNodes.TryGetValue(stateType, out var node) 
+                && !nodes.TryGetValue(stateType.GetName(TypeNameConvertingAttributes.None), out node)))
+            {
+                result = null;
+                return false;
+            }
+
+            result = node;
+            return true;
         }
     }
 }

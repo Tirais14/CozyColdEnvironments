@@ -22,6 +22,10 @@ namespace CCEnvs.Patterns.States
 
         IStateMachine AddNode(IStateNode node);
 
+        IStateNode GetNode(Type stateType);
+        IStateNode GetNode<T>();
+        IStateNode GetNode(string id);
+
         bool RemoveNode(Type? stateType);
         bool RemoveNode<T>();
         bool RemoveNode(string? id);

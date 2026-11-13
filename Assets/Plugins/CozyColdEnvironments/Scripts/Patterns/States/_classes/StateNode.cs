@@ -12,7 +12,7 @@ namespace CCEnvs.Patterns.States
 
         public IReadOnlyList<IStateTransition> Transitions => transitions;
 
-        public StateNode(IState? state)
+        public StateNode(IState state)
         {
             State = state;
         }
