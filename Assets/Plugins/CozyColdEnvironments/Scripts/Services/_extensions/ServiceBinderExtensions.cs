@@ -1,6 +1,5 @@
 using CCEnvs.Patterns.Factories;
 using CommunityToolkit.Diagnostics;
-using Humanizer;
 using System;
 
 #nullable enable
@@ -120,6 +119,21 @@ namespace CCEnvs.Services
             return new ServiceFactoryBinderGeneric<TTo>(
                 Factory.Create(id, id => (TTo)CCServices.Resolve<TFrom>(id))
                 );
+        }
+
+        public static TBinder OnFirstResolved<TBinder>(this TBinder binder, Action<object> action)
+            where TBinder : IServiceBinder, IServiceBindingOnFirstResolvedActionAccessor
+        {
+            Guard.IsNotNull(action, nameof(action));
+            binder.EvOnFirstResolved = new OnResolvedAction(action);
+            return binder;
+        }
+        public static TBinder OnFirstResolvedGeneric<TBinder, TContract>(this TBinder binder, Action<TContract> action)
+            where TBinder : IServiceBinder<TContract>, IServiceBindingOnFirstResolvedActionAccessor<TContract>
+        {
+            Guard.IsNotNull(action, nameof(action));
+            binder.EvOnFirstResolved = new OnResolvedAction<TContract>(action);
+            return binder;
         }
     }
 }

@@ -15,8 +15,11 @@ namespace CCEnvs.Services
         IServiceBindingFactoryProvider,
         IServiceBindingLazyStateAccessor,
         ISingleBindable,
-        ITransientBindable
+        ITransientBindable,
+        IServiceBindingOnFirstResolvedActionAccessor
     {
+        public OnResolvedAction? EvOnFirstResolved { get; set; }
+
         public Type Contract { get; }
 
         public bool IgnoreIfBound { get; set; }
