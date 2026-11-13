@@ -121,19 +121,19 @@ namespace CCEnvs.Services
                 );
         }
 
-        public static TBinder OnFirstResolved<TBinder>(this TBinder binder, Action<object> action)
-            where TBinder : IServiceBinder, IServiceBindingOnFirstResolvedActionAccessor
-        {
-            Guard.IsNotNull(action, nameof(action));
-            binder.EvOnFirstResolved = new OnResolvedAction(action);
-            return binder;
-        }
-        public static TBinder OnFirstResolvedGeneric<TBinder, TContract>(this TBinder binder, Action<TContract> action)
-            where TBinder : IServiceBinder<TContract>, IServiceBindingOnFirstResolvedActionAccessor<TContract>
-        {
-            Guard.IsNotNull(action, nameof(action));
-            binder.EvOnFirstResolved = new OnResolvedAction<TContract>(action);
-            return binder;
-        }
+        //public static TBinder OnFirstResolved<TBinder>(this TBinder binder, Action<object> action)
+        //    where TBinder : IServiceBinder, IServiceBindingOnFirstResolvedActionAccessor
+        //{
+        //    Guard.IsNotNull(action, nameof(action));
+        //    binder.EvOnFirstResolved = new OnResolvedAction(action);
+        //    return binder;
+        //}
+        //public static TBinder OnFirstResolved<TBinder, TContract>(this TBinder binder, Action<TContract> action)
+        //    where TBinder : IServiceBinder<TContract>, IServiceBindingOnFirstResolvedActionAccessor<TContract>
+        //{
+        //    Guard.IsNotNull(action, nameof(action));
+        //    binder.EvOnFirstResolved = new OnResolvedAction<TContract>(action);
+        //    return binder;
+        //}
     }
 }
