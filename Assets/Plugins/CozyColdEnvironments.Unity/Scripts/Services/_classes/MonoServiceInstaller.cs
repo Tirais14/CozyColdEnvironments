@@ -13,6 +13,8 @@ namespace CCEnvs.UnityX.Services
     {
         private readonly CCCompositeDisposable disposables = new();
 
+        private List<ResolvedBinder>? binders = new();
+
         private bool isInstalled;
 
         private Action<IServiceInstaller>? onInstalled;
@@ -21,24 +23,28 @@ namespace CCEnvs.UnityX.Services
             add
             {
                 if (isInstalled)
-                    return;
-
-                onInstalled += value;
+                    value.Invoke(this);
+                else
+                    onInstalled += value;
             }
-            remove
-            {
-                if (onInstalled is null)
-                    return;
-
-                onInstalled -= value;
-            }
+            remove => onInstalled -= value;
         }
+
+        public bool IsInstalled => isInstalled;
 
         protected sealed override void Awake()
         {
             base.Awake();
-            InstallBindings();
-            isInstalled = true;
+
+            try
+            {
+                InstallBindings();
+                InstallBinders();
+            }
+            finally
+            {
+                isInstalled = true;
+            }
 
             onInstalled?.Invoke(this);
             OnInstalledInternal();
@@ -56,8 +62,33 @@ namespace CCEnvs.UnityX.Services
             disposables.Add(disposable);
         }
 
+        public void AddBinder(IServiceBinder binder, BindingType bindingType)
+        {
+            CC.Guard.IsNotNull(binder, nameof(binder));
+
+            if (IsInstalled)
+                return;
+
+            binders?.Add(new ResolvedBinder(binder, bindingType));
+        }
+
         protected abstract void InstallBindings();
 
         protected virtual void OnInstalledInternal() { }
+
+        private void InstallBinders()
+        {
+            if (binders is null)
+                return;
+
+            for (int i = 0; i < binders.Count; i++)
+            {
+                var binder = binders[i];
+                CCServices.Bind(binder.Value, binder.Type)
+                    .AddTo(this);
+            }
+
+            binders = null;
+        }
     }
 }

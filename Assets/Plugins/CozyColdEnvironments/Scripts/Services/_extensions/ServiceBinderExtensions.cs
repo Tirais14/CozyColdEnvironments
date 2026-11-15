@@ -59,10 +59,28 @@ namespace CCEnvs.Services
             return CCServices.Bind(binder, BindingType.Single);
         }
 
+        public static void AsSingleTo<TBinder>(this TBinder binder, IServiceInstaller installer)
+            where TBinder : IServiceBinder, ISingleBindable
+        {
+            CC.Guard.IsNotNull(binder, nameof(binder));
+            CC.Guard.IsNotNull(installer, nameof(installer));
+
+            installer.AddBinder(binder, BindingType.Single);
+        }
+
         public static IDisposable AsTransient(this IServiceBinder binder)
         {
             CC.Guard.IsNotNull(binder, nameof(binder));
             return CCServices.Bind(binder, BindingType.Transient);
+        }
+
+        public static void AsTransientTo<TBinder>(this TBinder binder, IServiceInstaller installer)
+            where TBinder : IServiceBinder, ITransientBindable
+        {
+            CC.Guard.IsNotNull(binder, nameof(binder));
+            CC.Guard.IsNotNull(installer, nameof(installer));
+
+            installer.AddBinder(binder, BindingType.Transient);
         }
 
         public static TBinder Lazy<TBinder>(this TBinder binder)
