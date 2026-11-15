@@ -125,7 +125,23 @@ namespace CCEnvs.Services
         {
             var method = ServiceBinderHelper.ResolveMethod(factory.GetType(), nameof(IFactory<object>.Create), cached: bindingType == BindingType.Transient);
             var arguments = ServiceBinderHelper.ResolveServices(method, bindingType == BindingType.Transient);
-            return method.Invoke(factory, arguments.Is<object[]>(out var argumentArray) ? argumentArray : arguments.ToArray());
+            var instance = method.Invoke(factory, arguments.Is<object[]>(out var argumentArray) ? argumentArray : arguments.ToArray());
+
+            CCServices.Inject(instance, bindingType == BindingType.Transient);
+
+            if (instance is IOnResolved onResolved)
+            {
+                try
+                {
+                    onResolved.OnResolved();
+                }
+                catch (Exception ex)
+                {
+                    this.PrintException(ex);
+                }
+            }
+
+            return instance;
         }
     }
 }

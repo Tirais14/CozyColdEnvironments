@@ -1,5 +1,4 @@
 #nullable enable
-using CCEnvs.FuncLanguage;
 using System;
 using System.Threading;
 
@@ -14,6 +13,20 @@ namespace CCEnvs.Services
             CC.Guard.IsNotNull(instance, nameof(instance));
 
             this.instance = instance;
+
+            CCServices.Inject(instance);
+
+            if (instance is IOnResolved onResolved)
+            {
+                try
+                {
+                    onResolved.OnResolved();
+                }
+                catch (Exception ex)
+                {
+                    this.PrintException(ex);
+                }
+            }
         }
 
         public object GetInstance() => instance;

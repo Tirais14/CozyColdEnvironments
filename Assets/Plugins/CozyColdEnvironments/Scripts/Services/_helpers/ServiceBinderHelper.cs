@@ -1,4 +1,5 @@
 #nullable enable
+using CCEnvs.Collections;
 using CCEnvs.Diagnostics;
 using CCEnvs.Disposables;
 using CCEnvs.Reflection;
@@ -7,6 +8,8 @@ using Humanizer;
 using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 
@@ -18,12 +21,26 @@ namespace CCEnvs.Services
         private const string EMPTY_CONSTRUCTOR_CACHE_ID = "Empty Constructor";
         private const string METHOD_CACHE_ID = "Method";
         private const string METHOD_PARAMETERS_CACHE_ID = "Method Parameters";
+        private const string METHODS_CACHE_ID = "Methods";
 
         private static readonly MemoryCache cache = new(
             new MemoryCacheOptions
             {
             ExpirationScanFrequency = 2.Minutes()
             });
+
+        private static TimeSpan cacheExpirationTime = 6.Minutes();
+
+        public static TimeSpan CacheExpirationTime {
+            get => cacheExpirationTime;
+            set
+            {
+                if (cacheExpirationTime <= 15.Seconds())
+                    cacheExpirationTime = 6.Minutes();
+                else
+                    cacheExpirationTime = value;
+            }
+        }
 
         public static IEnumerable<Type> FindInterfaces(
             Type contract,
@@ -102,42 +119,113 @@ namespace CCEnvs.Services
 
         public static MethodInfo ResolveMethod(
             Type type,
-            string name,
+            string? name = null,
             BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Public,
             StringMatchSettings nameMatchSettings = StringMatchSettings.Ordinal,
-            bool cached = false
+            bool cached = false,
+            bool throwIfNotFound = true
             )
         {
             Guard.IsNotNull(type);
-            Guard.IsNotNullOrWhiteSpace(name, nameof(name));
+
+            [DoesNotReturn]
+            void throwNotFoundMethodException()
+            {
+                throw new InvalidOperationException(DebugMessageBuilder.CreatePooled()
+                    .AddMessage("Not found any resolve method")
+                    .AddProperty("Type", type)
+                    .AddProperty("Name", name)
+                    .AddProperty("NameMatchSettings", nameMatchSettings)
+                    .ToStringAndDispose()
+                    );
+            }
 
             object cacheID = (METHOD_CACHE_ID, type, name, bindingFlags, nameMatchSettings);
-            if (cache.TryGetValue<MethodInfo>(cacheID, out var cachedMethod) &&
-                cachedMethod is not null)
-                return cachedMethod;
+            if (cache.TryGetValue<MethodInfo>(cacheID, out var cachedMethod))
+            {
+                if (cachedMethod is null)
+                {
+                    if (throwIfNotFound)
+                        throwNotFoundMethodException();
+                    else
+                        return null!;
+                }
+                else
+                    return cachedMethod; ;
+            }
+
+            bool hasName = name.IsNotNullOrWhiteSpace();
 
             foreach (var method in type.GetMethods(bindingFlags).OrderByDescending(x => x.IsDefined<ResolveAttribute>()))
             {
-                if (!method.Name.Match(name, nameMatchSettings))
+                if (hasName)
+                {
+                    if (!method.Name.Match(name, nameMatchSettings))
+                        continue;
+                }
+                else if (!method.IsDefined<ResolveAttribute>(inherit: true))
                     continue;
+
 
                 if (cached)
                 {
                     using var cacheEntry = cache.CreateEntry(cacheID);
                     cacheEntry.Value = method;
-                    cacheEntry.SlidingExpiration = 6.Minutes();
+                    cacheEntry.SlidingExpiration = CacheExpirationTime;
                 }
 
                 return method;
             }
 
-            throw new InvalidOperationException(DebugMessageBuilder.CreatePooled()
-                .AddMessage("Not found any resolve method")
-                .AddProperty("Type", type)
-                .AddProperty("Name", name)
-                .AddProperty("NameMatchSettings", nameMatchSettings)
-                .ToStringAndDispose()
-                );
+            if (throwIfNotFound)
+                throwNotFoundMethodException();
+
+            if (cached)
+            {
+                using var cacheEntry = cache.CreateEntry(cacheID);
+                cacheEntry.Value = null;
+                cacheEntry.SlidingExpiration = CacheExpirationTime;
+            }
+            return null!;
+        }
+
+        public static ImmutableArray<MethodInfo> ResolveMethods(
+            Type type,
+            BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Public,
+            bool cached = false
+            )
+        {
+            Guard.IsNotNull(type, nameof(type));
+
+            object cacheID = (METHODS_CACHE_ID, type, bindingFlags);
+
+            if (!cache.TryGetValue<ImmutableArray<MethodInfo>>(cacheID, out var cachedMethods))
+                return cachedMethods;
+
+            var results = ImmutableArray.CreateBuilder<MethodInfo>();
+            var methods = new HashSet<MethodInfo>(256);
+
+            foreach (var t in Loops.BreadthFirstSearch(type, type => type.BaseType))
+                methods.AddRange(t.GetMethods(bindingFlags));
+
+            foreach (var method in methods)
+            {
+                if (!method.IsDefined<ResolveAttribute>(inherit: true))
+                    continue;
+
+                results.Add(method);
+            }
+
+            var result = results.ToImmutableArray();
+
+            if (cached)
+            {
+                using var cacheEntry = cache.CreateEntry(cacheID);
+                cacheEntry.Value = result;
+                cacheEntry.SlidingExpiration = CacheExpirationTime;
+            }
+
+            return result;
         }
 
         public static ConstructorInfo ResolveConstructor(
@@ -159,7 +247,7 @@ namespace CCEnvs.Services
             {
                 using var cacheEntry = cache.CreateEntry(cacheID);
                 cacheEntry.Value = ctor;
-                cacheEntry.SlidingExpiration = 6.Minutes();
+                cacheEntry.SlidingExpiration = CacheExpirationTime;
             }
 
             ConstructorInfo? ctor;
@@ -241,7 +329,7 @@ namespace CCEnvs.Services
                 {
                     using var cacheEntry = cache.CreateEntry(cacheID);
                     cacheEntry.Value = parameters;
-                    cacheEntry.SlidingExpiration = 6.Minutes();
+                    cacheEntry.SlidingExpiration = CacheExpirationTime;
                 }
             }
 

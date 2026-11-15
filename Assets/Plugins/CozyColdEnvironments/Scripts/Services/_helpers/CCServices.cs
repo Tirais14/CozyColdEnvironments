@@ -25,6 +25,28 @@ namespace CCEnvs.Services
 
         private static readonly Dictionary<BindingKey, Action> unregisterGlobalServiceActions = new();
 
+        public static void Inject(object instance, bool cached = false)
+        {
+            CC.Guard.IsNotNull(instance, nameof(instance));
+
+            var methods = ServiceBinderHelper.ResolveMethods(instance.GetType());
+
+            for (int i = 0; i < methods.Length; i++)
+            {
+                var method = methods[i];
+                var services = ServiceBinderHelper.ResolveServices(method, cached) ?? Array.Empty<object?>();
+
+                try
+                {
+                    method.Invoke(instance, services is object[] arr ? arr : services.ToArray());
+                }
+                catch (Exception ex)
+                {
+                    typeof(CCServices).PrintException(ex);
+                }
+            }
+        }
+
         public static void RegisterOnUnbindCallback(Type contract, Action action, object? id = null)
         {
             Guard.IsNotNull(contract, nameof(contract));
