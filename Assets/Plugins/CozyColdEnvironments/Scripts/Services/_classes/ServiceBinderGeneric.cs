@@ -1,5 +1,7 @@
 #nullable enable
+using CCEnvs.Diagnostics;
 using CCEnvs.Patterns.Factories;
+using CCEnvs.Reflection;
 using System;
 
 namespace CCEnvs.Services
@@ -10,6 +12,16 @@ namespace CCEnvs.Services
 
         public ServiceBinderGeneric<T, TTo> To<TTo>()
         {
+            if (typeof(T).IsNotType<TTo>())
+            {
+                throw new ArgumentException(DebugMessageBuilder.CreatePooled()
+                    .AddMessage("Invalid binding type")
+                    .AddProperty("From", typeof(T))
+                    .AddProperty("To", typeof(TTo))
+                    .ToStringAndDispose()
+                    );
+            }    
+
             return new ServiceBinderGeneric<T, TTo>();
         }
 

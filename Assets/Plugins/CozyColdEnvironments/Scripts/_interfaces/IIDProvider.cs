@@ -1,14 +1,14 @@
 #nullable enable
 namespace CCEnvs
 {
-    public interface IIDMarked
+    public interface IIDProvider
     {
         object? ID { get; }
     }
-    public interface IIDProvider<out T> : IIDMarked
+    public interface IIDProvider<out T> : IIDProvider
     {
         new T ID { get; }
 
-        object IIDMarked.ID => ID!;
+        object IIDProvider.ID => ID!;
     }
 }

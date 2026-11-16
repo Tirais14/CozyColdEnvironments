@@ -29,7 +29,7 @@ namespace CCEnvs.Services
         {
             CC.Guard.IsNotNull(instance, nameof(instance));
 
-            var methods = ServiceBinderHelper.ResolveMethods(instance.GetType());
+            var methods = ServiceBinderHelper.ResolveMethods(instance.GetType(), BindingFlagsDefault.InstanceAll);
 
             for (int i = 0; i < methods.Length; i++)
             {
