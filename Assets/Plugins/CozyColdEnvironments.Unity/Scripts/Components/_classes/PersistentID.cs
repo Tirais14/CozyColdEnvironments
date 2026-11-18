@@ -1,4 +1,6 @@
 using CCEnvs.Diagnostics;
+using CCEnvs.FuncLanguage;
+using CCEnvs.UnityX.EditorSerialization;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -11,13 +13,20 @@ namespace CCEnvs.UnityX.Components
     {
         private static readonly HashSet<int> used = new();
 
-        [field: SerializeField]
-        public int Value { get; private set; }
+        [SerializeField]
+        private SerializedNullable<int> value;
+
+        public int Value {
+            get => value.Data ?? 0;
+            private set => this.value = value;
+        }
 
         protected override void Awake()
         {
             base.Awake();
-            Value = GetNextID();
+
+            if (value.Data is null)
+                value = GetNextID();
         }
 
         protected override void OnDestroy()

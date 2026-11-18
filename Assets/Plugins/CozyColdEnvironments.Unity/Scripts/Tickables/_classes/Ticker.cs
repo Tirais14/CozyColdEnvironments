@@ -18,6 +18,13 @@ namespace CCEnvs.UnityX.Tickables
         {
             for (int i = 0; i < tickables.Count; i++)
             {
+                var tickable = tickables[i];
+
+                if (tickable is ITickableToggleable toggleable
+                    && !toggleable.CanTick
+                    )
+                    continue;
+
                 try
                 {
                     tickables[i].Tick();
@@ -33,6 +40,13 @@ namespace CCEnvs.UnityX.Tickables
         {
             for (int i = 0; i < fixedTickables.Count; i++)
             {
+                var tickable = fixedTickables[i];
+
+                if (tickable is ITickableToggleable toggleable
+                    && !toggleable.CanTick
+                    )
+                    continue;
+
                 try
                 {
                     fixedTickables[i].FixedTick();
@@ -48,6 +62,13 @@ namespace CCEnvs.UnityX.Tickables
         {
             for (int i = 0; i < lateTickables.Count; i++)
             {
+                var tickable = lateTickables[i];
+
+                if (tickable is ITickableToggleable toggleable
+                    && !toggleable.CanTick
+                    )
+                    continue;
+
                 try
                 {
                     lateTickables[i].LateTick();

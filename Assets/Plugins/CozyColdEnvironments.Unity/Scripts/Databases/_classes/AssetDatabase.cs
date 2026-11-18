@@ -14,7 +14,7 @@ namespace CCEnvs.UnityX.Databases
     {
         public static Func<object, Identifier> DefaultAssetIdFactory { get; } = asset =>
         {
-            if (asset is IIDMarked idMarked)
+            if (asset is IIDProvider idMarked)
             {
                 switch (idMarked.ID)
                 {
