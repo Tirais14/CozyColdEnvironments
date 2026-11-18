@@ -6,7 +6,7 @@ using UnityEngine;
 namespace CCEnvs.Unity.D3.Controllers
 {
     [DisallowMultipleComponent]
-    public class ThridPersonController : CCBehaviour
+    public class ThirdPersonController : BasePersonController
     {
     }
 }
