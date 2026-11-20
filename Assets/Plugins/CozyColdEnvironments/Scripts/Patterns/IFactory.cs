@@ -52,6 +52,86 @@ namespace CCEnvs.Patterns.Factories
         //}
     }
 
+    public interface IFactory<in T, in T1, in T2, in T3, out TOut> : IFactory
+    {
+        TOut Create(T arg, T1 arg1, T2 arg2, T3 arg3);
+
+        //object IFactory.Create(object[] args)
+        //{
+        //    return Create(args[0].CastTo<T>(), args[1].CastTo<T1>(), args[2].CastTo<T2>(), args[3].CastTo<T3>())!;
+        //}
+    }
+
+    public interface IFactory<in T, in T1, in T2, in T3, in T4, out TOut> : IFactory
+    {
+        TOut Create(T arg, T1 arg1, T2 arg2, T3 arg3, T4 arg4);
+
+        //object IFactory.Create(object[] args)
+        //{
+        //    return Create(args[0].CastTo<T>(), args[1].CastTo<T1>(), args[2].CastTo<T2>(), args[3].CastTo<T3>(), args[4].CastTo<T4>())!;
+        //}
+    }
+
+    public interface IFactory<in T, in T1, in T2, in T3, in T4, in T5, out TOut> : IFactory
+    {
+        TOut Create(T arg, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5);
+
+        //object IFactory.Create(object[] args)
+        //{
+        //    return Create(args[0].CastTo<T>(), args[1].CastTo<T1>(), args[2].CastTo<T2>(), args[3].CastTo<T3>(), args[4].CastTo<T4>(), args[5].CastTo<T5>())!;
+        //}
+    }
+
+    public interface IFactory<in T, in T1, in T2, in T3, in T4, in T5, in T6, out TOut> : IFactory
+    {
+        TOut Create(T arg, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6);
+
+        //object IFactory.Create(object[] args)
+        //{
+        //    return Create(args[0].CastTo<T>(), args[1].CastTo<T1>(), args[2].CastTo<T2>(), args[3].CastTo<T3>(), args[4].CastTo<T4>(), args[5].CastTo<T5>(), args[6].CastTo<T6>())!;
+        //}
+    }
+
+    public interface IFactory<in T, in T1, in T2, in T3, in T4, in T5, in T6, in T7, out TOut> : IFactory
+    {
+        TOut Create(T arg, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7);
+
+        //object IFactory.Create(object[] args)
+        //{
+        //    return Create(args[0].CastTo<T>(), args[1].CastTo<T1>(), args[2].CastTo<T2>(), args[3].CastTo<T3>(), args[4].CastTo<T4>(), args[5].CastTo<T5>(), args[6].CastTo<T6>(), args[7].CastTo<T7>())!;
+        //}
+    }
+
+    public interface IFactory<in T, in T1, in T2, in T3, in T4, in T5, in T6, in T7, in T8, out TOut> : IFactory
+    {
+        TOut Create(T arg, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8);
+
+        //object IFactory.Create(object[] args)
+        //{
+        //    return Create(args[0].CastTo<T>(), args[1].CastTo<T1>(), args[2].CastTo<T2>(), args[3].CastTo<T3>(), args[4].CastTo<T4>(), args[5].CastTo<T5>(), args[6].CastTo<T6>(), args[7].CastTo<T7>(), args[8].CastTo<T8>())!;
+        //}
+    }
+
+    public interface IFactory<in T, in T1, in T2, in T3, in T4, in T5, in T6, in T7, in T8, in T9, out TOut> : IFactory
+    {
+        TOut Create(T arg, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9);
+
+        //object IFactory.Create(object[] args)
+        //{
+        //    return Create(args[0].CastTo<T>(), args[1].CastTo<T1>(), args[2].CastTo<T2>(), args[3].CastTo<T3>(), args[4].CastTo<T4>(), args[5].CastTo<T5>(), args[6].CastTo<T6>(), args[7].CastTo<T7>(), args[8].CastTo<T8>(), args[9].CastTo<T9>())!;
+        //}
+    }
+
+    public interface IFactory<in T, in T1, in T2, in T3, in T4, in T5, in T6, in T7, in T8, in T9, in T10, out TOut> : IFactory
+    {
+        TOut Create(T arg, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10);
+
+        //object IFactory.Create(object[] args)
+        //{
+        //    return Create(args[0].CastTo<T>(), args[1].CastTo<T1>(), args[2].CastTo<T2>(), args[3].CastTo<T3>(), args[4].CastTo<T4>(), args[5].CastTo<T5>(), args[6].CastTo<T6>(), args[7].CastTo<T7>(), args[8].CastTo<T8>(), args[9].CastTo<T9>(), args[10].CastTo<T10>())!;
+        //}
+    }
+
     public static class IFactoryExtensions
     {
         private static readonly MemoryCache methodCache = new(
