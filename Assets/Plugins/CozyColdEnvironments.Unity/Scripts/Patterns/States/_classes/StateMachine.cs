@@ -1,4 +1,5 @@
 using CCEnvs.Diagnostics;
+using CCEnvs.Linq;
 using CCEnvs.Patterns.States;
 using CCEnvs.Reflection;
 using CommunityToolkit.Diagnostics;
@@ -6,6 +7,7 @@ using R3;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading;
 
 #nullable enable
@@ -249,7 +251,11 @@ namespace CCEnvs.UnityX.States
                 return;
 
             if (disposing)
+            {
                 _currentNode.Dispose();
+                Utilizable.UtilizeOrDisposeEach(nodes.SelectValue(x => x.State), bufferized: false);
+                Utilizable.UtilizeOrDisposeEach(nodes.SelectValue(), bufferized: false);
+            }    
         }
 
         private bool TryFindNode(Type? stateType, [NotNullWhen(true)] out IStateNode? result)

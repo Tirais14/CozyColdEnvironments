@@ -19,8 +19,6 @@ namespace CCEnvs.UnityX.Items
 
         IInventory? ParentInventory { get; }
 
-        ReadOnlyItemContainer ToReadOnly();
-
         void SetParentInventory(IInventory? inventory);
     }
 
@@ -32,9 +30,22 @@ namespace CCEnvs.UnityX.Items
 
         where TItem : IItem
     {
-        new ReadOnlyItemContainer<TItem> ToReadOnly();
+    }
 
-        ReadOnlyItemContainer IItemContainer.ToReadOnly() => ToReadOnly();
+    public static class IItemContainerExtensions
+    {
+        public static ReadOnlyItemContainer ToReadOnly(this IItemContainer container)
+        {
+            CC.Guard.IsNotNull(container, nameof(container));
+            return new ReadOnlyItemContainer(container.Item, container.ItemCount);
+        }
+
+        public static ReadOnlyItemContainer<TItem> ToReadOnly<TItem>(this IItemContainer<TItem> container)
+            where TItem : IItem
+        {
+            CC.Guard.IsNotNull(container, nameof(container));
+            return new ReadOnlyItemContainer<TItem>(container.Item, container.ItemCount);
+        }
     }
 
     //public static class IItemContainerExtensions

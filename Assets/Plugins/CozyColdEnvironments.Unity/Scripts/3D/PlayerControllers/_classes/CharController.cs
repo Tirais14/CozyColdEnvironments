@@ -24,70 +24,30 @@ namespace CCEnvs.UnityX.D3
 
         [SerializeField, Min(MOVE_SPEED_MIN)]
         private float moveSpeed = 6f;
-        public float MoveSpeed
-        {
-            get => moveSpeed;
-            private set => moveSpeed = Mathf.Max(MOVE_SPEED_MIN, value);
-        }
 
         [SerializeField, Min(FLY_MOVE_SPEED_MIN)]
         private float airSpeedModifier = 0.5f;
-        public float AirSpeedModifier
-        {
-            get => airSpeedModifier;
-            private set => airSpeedModifier = Mathf.Max(AIR_MOVE_SPEED_MIN, value);
-        }
 
         [SerializeField, Min(JUMP_HEIGHT_MIN)]
         private float jumpHeight = 1.6f;
-        public float JumpHeight
-        {
-            get => jumpHeight;
-            private set => jumpHeight = Mathf.Max(JUMP_HEIGHT_MIN, value);
-        }
 
         [SerializeField, Min(RUN_SPEED_MODIFIER_MIN)]
         private float runSpeedModifier = 1.45f;
-        public float RunSpeedModifier
-        {
-            get => runSpeedModifier;
-            private set => runSpeedModifier = Mathf.Max(RUN_SPEED_MODIFIER_MIN, value);
-        }
 
         [Header("Physics")]
         [Space(6f)]
 
         [SerializeField]
         private Transform surfaceCastPoint;
-        public Transform SurfaceCastPoint
-        {
-            get => surfaceCastPoint;
-            private set => surfaceCastPoint = value;
-        }
 
         [SerializeField]
         private SerializedNullable<LayerMask> surfaceLayers;
-        public LayerMask? SurfaceLayers
-        {
-            get => surfaceLayers;
-            private set => surfaceLayers = value;
-        }
 
         [SerializeField, Min(SURFACE_CAST_DISTANCE_MIN)]
         private float surfaceCastDistance = SURFACE_CAST_DISTANCE_DEFAULT;
-        public float SurfaceCastDistance
-        {
-            get => surfaceCastDistance;
-            private set => surfaceCastDistance = Mathf.Max(SURFACE_CAST_DISTANCE_MIN, value);
-        }
 
         [SerializeField]
         private float gravity = GRAVITY_DEFAULT;
-        public float Gravity
-        {
-            get => gravity;
-            private set => gravity = value;
-        }
 
         private readonly ReactiveProperty<Vector3> lastTravelDistance = new();
 
@@ -102,9 +62,42 @@ namespace CCEnvs.UnityX.D3
         public bool IsGrounded { get; private set; }
         public bool IsRunning { get; private set; }
 
+        public float RunSpeedModifier {
+            get => runSpeedModifier;
+            private set => runSpeedModifier = Mathf.Max(RUN_SPEED_MODIFIER_MIN, value);
+        }
+        public float MoveSpeed {
+            get => moveSpeed;
+            private set => moveSpeed = Mathf.Max(MOVE_SPEED_MIN, value);
+        }
+        public float AirSpeedModifier {
+            get => airSpeedModifier;
+            private set => airSpeedModifier = Mathf.Max(AIR_MOVE_SPEED_MIN, value);
+        }
+        public float JumpHeight {
+            get => jumpHeight;
+            private set => jumpHeight = Mathf.Max(JUMP_HEIGHT_MIN, value);
+        }
+        public Transform SurfaceCastPoint {
+            get => surfaceCastPoint;
+            private set => surfaceCastPoint = value;
+        }
+        public float Gravity {
+            get => gravity;
+            private set => gravity = value;
+        }
+        public float SurfaceCastDistance {
+            get => surfaceCastDistance;
+            private set => surfaceCastDistance = Mathf.Max(SURFACE_CAST_DISTANCE_MIN, value);
+        }
+
+        public LayerMask? SurfaceLayers {
+            get => surfaceLayers;
+            private set => surfaceLayers = value;
+        }
+
         protected virtual void Update()
         {
-            // Movement is now handled by CharacterControllerInputBinder via MoveByInput
         }
 
         protected virtual void LateUpdate()
