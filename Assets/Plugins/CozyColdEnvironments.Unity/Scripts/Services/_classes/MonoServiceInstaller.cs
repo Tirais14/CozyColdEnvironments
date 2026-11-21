@@ -1,3 +1,4 @@
+using CCEnvs.Diagnostics;
 using CCEnvs.Disposables;
 using CCEnvs.Services;
 using CCEnvs.UnityX.Components;
@@ -14,6 +15,7 @@ namespace CCEnvs.UnityX.Services
         private readonly CCCompositeDisposable disposables = new();
 
         private List<ResolvedBinder>? binders = new();
+        private List<ResolvedBinder>? nonLazyBinders = new();
 
         private bool isInstalled;
 
@@ -40,6 +42,9 @@ namespace CCEnvs.UnityX.Services
             {
                 InstallBindings();
                 InstallBinders();
+
+                if (CCDebug<MonoServiceInstaller>.IsEnabled)
+                    this.PrintLog("Is Installed");
             }
             finally
             {

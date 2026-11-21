@@ -1,71 +1,39 @@
 #if VCONTAINER_PLUGIN
-using CCEnvs.Unity.InputSystem.Rx;
+using CCEnvs.UnityX;
 using CommunityToolkit.Diagnostics;
 using System;
-using UnityEngine.InputSystem;
 using VContainer;
+using VContainer.Unity;
 
 #nullable enable
 namespace CCEnvs.Unity.VContainer
 {
     public static class IContainerBuilderExtensions
     {
-        public static void RegisterInputHandlers(
-            this IContainerBuilder source,
-            InputActionAsset inputActionAsset,
-            params (string ActionMapName, Type InputHandlerType)[] inputHandlerInfos
-            )
+        public static RegistrationBuilder RegisterComponentInHierarchyCustom(this IContainerBuilder builder, Type componentType, bool includeInactive = false)
         {
-            Guard.IsNotNull(source, nameof(source));
-
-            var handlers = InputHandlerRxFactory.CreateInputHandlers(
-                inputActionAsset,
-                inputHandlerInfos
-                );
-
-            IInputHandlerRx handler;
-
-            for (int i = 0; i < handlers.Count; i++)
+            CC.Guard.IsNotNull(builder, nameof(builder));
+            Guard.IsNotNull(componentType, nameof(componentType));
+            var component = GameObjectQuery.Scene.IncludeInactive(includeInactive).Component(componentType).Strict();
+            builder.RegisterBuildCallback(container =>
             {
-                handler = handlers[i];
-
-                source.RegisterInstance(handler, handler.GetType());
-            }
-        }
-
-        public static RegistrationBuilder RegisterInstanceAndQueueToInject(
-            this IContainerBuilder source, 
-            object instance,
-            Type implementationType
-            )
-        {
-            CC.Guard.IsNotNullSource(source);
-
-            var regBuilder = source.RegisterInstance(instance, implementationType);
-
-            source.RegisterBuildCallback((builder) =>
-            {
-                builder.Inject(instance);
+                container.Inject(component);
             });
 
-            return regBuilder;
+            return builder.RegisterInstance(component, componentType);
         }
 
-        public static RegistrationBuilder RegisterInstanceAndQueueToInject<TInstance>(
-            this IContainerBuilder source,
-            TInstance instance
-            )
+        public static RegistrationBuilder RegisterComponentInHierarchyCustom<T>(this IContainerBuilder builder, bool includeInactive = false)
         {
-            CC.Guard.IsNotNullSource(source);
-
-            var regBuilder = source.RegisterInstance(instance);
-
-            source.RegisterBuildCallback((builder) =>
+            CC.Guard.IsNotNull(builder, nameof(builder));
+            
+            var component = GameObjectQuery.Scene.IncludeInactive(includeInactive).Component<T>().Strict();
+            builder.RegisterBuildCallback(container =>
             {
-                builder.Inject(instance);
+                container.Inject(component);
             });
 
-            return regBuilder;
+            return builder.RegisterInstance(component);
         }
     }
 }

@@ -199,7 +199,7 @@ namespace CCEnvs.Services
 
             object cacheID = (METHODS_CACHE_ID, type, bindingFlags);
 
-            if (!cache.TryGetValue<ImmutableArray<MethodInfo>>(cacheID, out var cachedMethods))
+            if (cache.TryGetValue<ImmutableArray<MethodInfo>>(cacheID, out var cachedMethods))
                 return cachedMethods;
 
             var results = ImmutableArray.CreateBuilder<MethodInfo>();
