@@ -1,4 +1,5 @@
 using CCEnvs.Reflection;
+using CCEnvs.TypeMatching;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -123,6 +124,15 @@ namespace CCEnvs.Disposables
         {
             disposable.Dispose();
             disposable = default;
+        }
+
+        public static bool TryDispose(object instance)
+        {
+            if (instance.IsNot<IDisposable>(out var disposable))
+                return false;
+
+            disposable.Dispose();
+            return true;
         }
     }
 }
