@@ -1,7 +1,9 @@
 #if VCONTAINER_PLUGIN
 using CCEnvs.UnityX;
 using CommunityToolkit.Diagnostics;
+#if UNITASK_PLUGIN
 using Cysharp.Threading.Tasks;
+#endif
 using System;
 using System.Threading;
 using UnityEngine;

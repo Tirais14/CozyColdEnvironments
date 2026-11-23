@@ -5,7 +5,8 @@
         "CCEnvs",
         "CCEnvs.Unity",
         "VContainer",
-        "Unity.InputSystem"
+        "Unity.InputSystem",
+        "UniTask"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
