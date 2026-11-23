@@ -23,31 +23,31 @@ namespace CCEnvs.UnityX.D3
         [Space(6f)]
 
         [SerializeField, Min(MOVE_SPEED_MIN)]
-        private float moveSpeed = 6f;
+        protected float moveSpeed = 6f;
 
         [SerializeField, Min(FLY_MOVE_SPEED_MIN)]
-        private float airSpeedModifier = 0.5f;
+        protected float airSpeedModifier = 0.5f;
 
         [SerializeField, Min(JUMP_HEIGHT_MIN)]
-        private float jumpHeight = 1.6f;
+        protected float jumpHeight = 1.6f;
 
         [SerializeField, Min(RUN_SPEED_MODIFIER_MIN)]
-        private float runSpeedModifier = 1.45f;
+        protected float runSpeedModifier = 1.45f;
 
         [Header("Physics")]
         [Space(6f)]
 
         [SerializeField]
-        private Transform surfaceCastPoint;
+        protected Transform surfaceCastPoint;
 
         [SerializeField]
-        private SerializedNullable<LayerMask> surfaceLayers;
+        protected SerializedNullable<LayerMask> surfaceLayers;
 
         [SerializeField, Min(SURFACE_CAST_DISTANCE_MIN)]
-        private float surfaceCastDistance = SURFACE_CAST_DISTANCE_DEFAULT;
+        protected float surfaceCastDistance = SURFACE_CAST_DISTANCE_DEFAULT;
 
         [SerializeField]
-        private float gravity = GRAVITY_DEFAULT;
+        protected float gravity = GRAVITY_DEFAULT;
 
         private readonly ReactiveProperty<Vector3> lastTravelDistance = new();
 

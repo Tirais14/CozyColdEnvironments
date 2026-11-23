@@ -175,6 +175,50 @@ namespace CCEnvs.UnityX
 
             return source;
         }
+
+        public static bool Any(this in Vector2 source, Func<float, int, bool> condition)
+        {
+            Guard.IsNotNull(condition, nameof(condition));
+
+            for (int i = 0; i < 2; i++)
+                if (condition(source[i], i))
+                    return true;
+
+            return false;
+        }
+
+        public static bool Any<TState>(this in Vector2 source, TState state, Func<float, int, TState, bool> condition)
+        {
+            Guard.IsNotNull(condition, nameof(condition));
+
+            for (int i = 0; i < 2; i++)
+                if (condition(source[i], i, state))
+                    return true;
+
+            return false;
+        }
+
+        public static bool All(this in Vector2 source, Func<float, int, bool> condition)
+        {
+            Guard.IsNotNull(condition, nameof(condition));
+
+            for (int i = 0; i < 2; i++)
+                if (!condition(source[i], i))
+                    return false;
+
+            return true;
+        }
+
+        public static bool All<TState>(this in Vector2 source, TState state, Func<float, int, TState, bool> condition)
+        {
+            Guard.IsNotNull(condition, nameof(condition));
+
+            for (int i = 0; i < 2; i++)
+                if (!condition(source[i], i, state))
+                    return false;
+
+            return true;
+        }
     }
 
     public static class Vector2IntExtensions
@@ -270,6 +314,50 @@ namespace CCEnvs.UnityX
                 source[i] = action(source[i], i, state);
 
             return source;
+        }
+
+        public static bool Any(this in Vector2Int source, Func<int, int, bool> condition)
+        {
+            Guard.IsNotNull(condition, nameof(condition));
+
+            for (int i = 0; i < 2; i++)
+                if (condition(source[i], i))
+                    return true;
+
+            return false;
+        }
+
+        public static bool Any<TState>(this in Vector2Int source, TState state, Func<int, int, TState, bool> condition)
+        {
+            Guard.IsNotNull(condition, nameof(condition));
+
+            for (int i = 0; i < 2; i++)
+                if (condition(source[i], i, state))
+                    return true;
+
+            return false;
+        }
+
+        public static bool All(this in Vector2Int source, Func<int, int, bool> condition)
+        {
+            Guard.IsNotNull(condition, nameof(condition));
+
+            for (int i = 0; i < 2; i++)
+                if (!condition(source[i], i))
+                    return false;
+
+            return true;
+        }
+
+        public static bool All<TState>(this in Vector2Int source, TState state, Func<int, int, TState, bool> condition)
+        {
+            Guard.IsNotNull(condition, nameof(condition));
+
+            for (int i = 0; i < 2; i++)
+                if (!condition(source[i], i, state))
+                    return false;
+
+            return true;
         }
     }
 
@@ -422,6 +510,50 @@ namespace CCEnvs.UnityX
 
             return source;
         }
+
+        public static bool Any(this in Vector3 source, Func<float, int, bool> condition)
+        {
+            Guard.IsNotNull(condition, nameof(condition));
+
+            for (int i = 0; i < 3; i++)
+                if (condition(source[i], i))
+                    return true;
+
+            return false;
+        }
+
+        public static bool Any<TState>(this in Vector3 source, TState state, Func<float, int, TState, bool> condition)
+        {
+            Guard.IsNotNull(condition, nameof(condition));
+
+            for (int i = 0; i < 3; i++)
+                if (condition(source[i], i, state))
+                    return true;
+
+            return false;
+        }
+
+        public static bool All(this in Vector3 source, Func<float, int, bool> condition)
+        {
+            Guard.IsNotNull(condition, nameof(condition));
+
+            for (int i = 0; i < 3; i++)
+                if (!condition(source[i], i))
+                    return false;
+
+            return true;
+        }
+
+        public static bool All<TState>(this in Vector3 source, TState state, Func<float, int, TState, bool> condition)
+        {
+            Guard.IsNotNull(condition, nameof(condition));
+
+            for (int i = 0; i < 3; i++)
+                if (!condition(source[i], i, state))
+                    return false;
+
+            return true;
+        }
     }
 
     public static class Vector3IntExtensions
@@ -540,6 +672,50 @@ namespace CCEnvs.UnityX
                 source[i] = action(source[i], i, state);
 
             return source;
+        }
+
+        public static bool Any(this in Vector3Int source, Func<int, int, bool> condition)
+        {
+            Guard.IsNotNull(condition, nameof(condition));
+
+            for (int i = 0; i < 3; i++)
+                if (condition(source[i], i))
+                    return true;
+
+            return false;
+        }
+
+        public static bool Any<TState>(this in Vector3Int source, TState state, Func<int, int, TState, bool> condition)
+        {
+            Guard.IsNotNull(condition, nameof(condition));
+
+            for (int i = 0; i < 3; i++)
+                if (condition(source[i], i, state))
+                    return true;
+
+            return false;
+        }
+
+        public static bool All(this in Vector3Int source, Func<int, int, bool> condition)
+        {
+            Guard.IsNotNull(condition, nameof(condition));
+
+            for (int i = 0; i < 3; i++)
+                if (!condition(source[i], i))
+                    return false;
+
+            return true;
+        }
+
+        public static bool All<TState>(this in Vector3Int source, TState state, Func<int, int, TState, bool> condition)
+        {
+            Guard.IsNotNull(condition, nameof(condition));
+
+            for (int i = 0; i < 3; i++)
+                if (!condition(source[i], i, state))
+                    return false;
+
+            return true;
         }
     }
 }

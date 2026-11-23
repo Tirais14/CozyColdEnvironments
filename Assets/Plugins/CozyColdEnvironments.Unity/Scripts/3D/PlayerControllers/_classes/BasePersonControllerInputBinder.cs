@@ -12,10 +12,10 @@ namespace CCEnvs.Unity.D3.Controllers
     public abstract class BasePersonControllerInputBinder : CCBehaviour
     {
         [SerializeField]
-        private InputActionRxReference<Vector2> lookInputAction;
+        protected InputActionRxReference<Vector2> lookInputAction;
 
         [GetBySelf]
-        private FirstPersonController firstPersonController = null!;
+        protected FirstPersonController firstPersonController = null!;
 
         private IDisposable? lookIABinding;
 
