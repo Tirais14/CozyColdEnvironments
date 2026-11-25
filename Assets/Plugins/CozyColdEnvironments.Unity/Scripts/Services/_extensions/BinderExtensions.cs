@@ -18,7 +18,7 @@ namespace CCEnvs.UnityX.Services
                 binder.Contract,
                 Factory.Create((binder.Contract, includeInactive), (args) =>
                 {
-                    return GameObjectQuery.Scene.IncludeInactive(args.includeInactive).Component(args.Contract).Strict();
+                    return GameObjectQuery.World.IncludeInactive(args.includeInactive).Component(args.Contract).Strict();
                 }));
         }
         public static ServiceFactoryBinderGeneric<T> FromComponentInHierarchy<T>(
@@ -31,7 +31,7 @@ namespace CCEnvs.UnityX.Services
             return new ServiceFactoryBinderGeneric<T>(
                 Factory.Create(includeInactive, includeInactive =>
                 {
-                    return GameObjectQuery.Scene.IncludeInactive(includeInactive).Component<T>().Strict();
+                    return GameObjectQuery.World.IncludeInactive(includeInactive).Component<T>().Strict();
                 }));
         }
 
@@ -46,7 +46,7 @@ namespace CCEnvs.UnityX.Services
             return new ServiceFactoryBinderGeneric<TTo>(
                 Factory.Create(includeInactive, includeInactive =>
                 {
-                    return (TTo)GameObjectQuery.Scene.IncludeInactive(includeInactive).Component<TFrom>().Strict();
+                    return (TTo)GameObjectQuery.World.IncludeInactive(includeInactive).Component<TFrom>().Strict();
                 }));
         }
     }

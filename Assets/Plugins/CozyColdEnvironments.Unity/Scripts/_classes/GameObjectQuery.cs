@@ -33,7 +33,7 @@ namespace CCEnvs.UnityX
             Default = None
         }
 
-        public static GameObjectQuery Scene => new();
+        public static GameObjectQuery World => new();
 
         /// <summary>
         /// May be null
@@ -1399,12 +1399,33 @@ namespace CCEnvs.UnityX
         {
             return source.QueryTo();
         }
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static T Q<T>(this GameObject gameObject, bool throwIfNotFound = true)
+        {
+            CC.Guard.IsNotNull(gameObject, nameof(gameObject));
 
+            if (throwIfNotFound)
+                return gameObject.QueryTo().Component<T>().Strict();
+            else
+                return gameObject.QueryTo().Component<T>().Lax().GetValue()!;
+        }
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static GameObjectQuery Q(this Component source)
         {
             return source.QueryTo();
+        }
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static T Q<T>(this Component component, bool throwIfNotFound = true)
+        {
+            CC.Guard.IsNotNull(component, nameof(component));
+
+            if (throwIfNotFound)
+                return component.QueryTo().Component<T>().Strict();
+            else
+                return component.QueryTo().Component<T>().Lax().GetValue()!;
         }
     }
 }

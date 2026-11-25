@@ -28,7 +28,7 @@ namespace CCEnvs.Unity.VContainer
             if (parent != null)
                 return parent.Q().IncludeInactive(includeInactive).Component(componentType).Strict();
             else
-                return GameObjectQuery.Scene.IncludeInactive(includeInactive).Component(componentType).Strict();
+                return GameObjectQuery.World.IncludeInactive(includeInactive).Component(componentType).Strict();
         }
     }
 }

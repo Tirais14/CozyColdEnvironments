@@ -231,7 +231,7 @@ namespace CCEnvs.UnityX
         {
             Guard.IsNotNullOrWhiteSpace(guid);
 
-            foreach (var cmp in GameObjectQuery.Scene.IncludeInactive(includeInactive).Components<PersistentGuid>())
+            foreach (var cmp in GameObjectQuery.World.IncludeInactive(includeInactive).Components<PersistentGuid>())
             {
                 if (cmp.Guid.IsNullOrWhiteSpace())
                     continue;
@@ -322,7 +322,7 @@ namespace CCEnvs.UnityX
 
             var pathParts = path.Split();
 
-            foreach (var transform in GameObjectQuery.Scene.WithName(pathParts[0]).Transforms())
+            foreach (var transform in GameObjectQuery.World.WithName(pathParts[0]).Transforms())
             {
                 if (transform.MatchHierarchyPath(path))
                     return transform.gameObject;

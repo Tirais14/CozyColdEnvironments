@@ -91,7 +91,7 @@ namespace CCEnvs.UnityX.Components
 
         private HashSet<string> GetSceneGuids()
         {
-            var cmps = GameObjectQuery.Scene.Components<PersistentGuid>().ToArray();
+            var cmps = GameObjectQuery.World.Components<PersistentGuid>().ToArray();
             var results = new HashSet<string>(cmps.Length);
 
             foreach (var cmp in cmps)

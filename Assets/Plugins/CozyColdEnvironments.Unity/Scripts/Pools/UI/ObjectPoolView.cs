@@ -40,7 +40,7 @@ namespace CCEnvs.UnityX
         {
             var instanceParentName = TypeofCache<T>.Type.Name.Split('.')[^1] + 's';
 
-            if (!GameObjectQuery.Scene.WithName(instanceParentName, byFullName: true)
+            if (!GameObjectQuery.World.WithName(instanceParentName, byFullName: true)
                 .Transform()
                 .Lax()
                 .TryGetValue(out var instantiatedParent))

@@ -19,7 +19,7 @@ namespace CCEnvs.Unity.VContainer
         {
             CC.Guard.IsNotNull(builder, nameof(builder));
             Guard.IsNotNull(componentType, nameof(componentType));
-            var component = GameObjectQuery.Scene.IncludeInactive(includeInactive).Component(componentType).Strict();
+            var component = GameObjectQuery.World.IncludeInactive(includeInactive).Component(componentType).Strict();
             builder.RegisterBuildCallback(container =>
             {
                 container.Inject(component);
@@ -32,7 +32,7 @@ namespace CCEnvs.Unity.VContainer
         {
             CC.Guard.IsNotNull(builder, nameof(builder));
             
-            var component = GameObjectQuery.Scene.IncludeInactive(includeInactive).Component<T>().Strict();
+            var component = GameObjectQuery.World.IncludeInactive(includeInactive).Component<T>().Strict();
             builder.RegisterBuildCallback(container =>
             {
                 container.Inject(component);
