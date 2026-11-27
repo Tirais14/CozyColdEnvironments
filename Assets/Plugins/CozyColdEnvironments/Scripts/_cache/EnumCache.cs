@@ -25,7 +25,7 @@ namespace CCEnvs.Utils
                 values = Enum.GetValues(type).Cast<Enum>().ToArray();
 
                 if (cache.TryAdd(type, values, out var entry))
-                    entry.ExpirationTimeRelativeToNow = 10.Minutes();
+                    entry.SlidingExpiration = 10.Minutes();
             }
 
             return values;

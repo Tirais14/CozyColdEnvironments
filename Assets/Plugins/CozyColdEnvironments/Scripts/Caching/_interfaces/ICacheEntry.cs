@@ -7,7 +7,7 @@ namespace CCEnvs.Caching
     public interface ICacheEntry<T>
     {
         DateTime? LastAppealTime { get; }
-        TimeSpan? ExpirationTimeRelativeToNow { get; set; }
+        TimeSpan? SlidingExpiration { get; set; }
         TimeSpan IdleTime { get; }
 
         bool HasValue { get; }

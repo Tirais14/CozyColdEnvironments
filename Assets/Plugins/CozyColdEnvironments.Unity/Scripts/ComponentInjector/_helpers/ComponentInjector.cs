@@ -5,6 +5,7 @@ using CCEnvs.Pools;
 using CCEnvs.Reflection;
 using CCEnvs.UnityX.Components;
 using Humanizer;
+using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -24,10 +25,7 @@ namespace CCEnvs.UnityX.ComponentInjections
     {
         public class Debug { }
 
-        private readonly static Cache<Type, IReadOnlyList<InjectableFieldInfo>> cachedInjectableFields = new()
-        {
-            ExpirationScanFrequency = 1.Minutes()
-        };
+        private readonly static MemoryCache cachedInjectableFields = new(new MemoryCacheOptions { ExpirationScanFrequency = 1.Minutes() });
 
         public static void Inject(Component target)
         {
@@ -134,7 +132,8 @@ namespace CCEnvs.UnityX.ComponentInjections
         {
             var type = target.GetType();
 
-            if (cachedInjectableFields.TryGetValue(type, out IReadOnlyList<InjectableFieldInfo>? cachedFields))
+            if (cachedInjectableFields.TryGetValue<IReadOnlyList<InjectableFieldInfo>>(type, out var cachedFields)
+                && cachedFields is not null)
                 return cachedFields;
 
             var fields = new List<InjectableFieldInfo>(64);
@@ -179,8 +178,11 @@ namespace CCEnvs.UnityX.ComponentInjections
 
             fields.TrimExcess();
 
-            if (cachedInjectableFields.TryAdd(type, fields, out ICacheEntry<IReadOnlyList<InjectableFieldInfo>>? cacheEntry))
-                cacheEntry.ExpirationTimeRelativeToNow = 5.Minutes();
+            using (var cacheEntry = cachedInjectableFields.CreateEntry(type))
+            {
+                cacheEntry.Value = fields;
+                cacheEntry.SlidingExpiration = 5.Minutes();
+            }
 
             return fields;
         }
@@ -233,14 +235,16 @@ namespace CCEnvs.UnityX.ComponentInjections
             if (item.Attribute.IsOptional)
                 result = findResult.Lax().GetValue();
             else
+            {
                 result = findResult.Strict();
+            }
 
             return result.IsNotNull();
         }
 
         private static void PrintDebugInfo(Component target, List<string>? debugInfo)
         {
-            if (debugInfo is not null)
+            if (debugInfo is not null && debugInfo.Count >= 1)
             {
                 using var sb = StringBuilderPool.Shared.Get();
 

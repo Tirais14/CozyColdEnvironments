@@ -137,7 +137,7 @@ namespace CCEnvs
             declonizedAssetName = match.Value ?? assetName;
 
             if (decloniszedNameCache.TryAdd(assetName, declonizedAssetName, out var entry))
-                entry.ExpirationTimeRelativeToNow = 10.Minutes();
+                entry.SlidingExpiration = 10.Minutes();
 
             return declonizedAssetName;
         }

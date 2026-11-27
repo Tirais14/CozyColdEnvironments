@@ -138,6 +138,20 @@ namespace CCEnvs.Diagnostics
 
             return this;
         }
+        public DebugMessageBuilder AddPredicatedProperty<T>(
+            bool condition,
+            Func<string?> propNameFactory,
+            Func<T> valueFactory
+            )
+        {
+            Guard.IsNotNull(propNameFactory, nameof(propNameFactory));
+            Guard.IsNotNull(valueFactory, nameof(valueFactory));
+
+            if (condition)
+                return AddProperty(propNameFactory(), valueFactory());
+
+            return this;
+        }
         public DebugMessageBuilder AddPredicatedProperty<T, TState>(
             bool condition,
             string? propName,
@@ -149,6 +163,21 @@ namespace CCEnvs.Diagnostics
 
             if (condition)
                 return AddProperty(propName, valueFactory(state));
+
+            return this;
+        }
+        public DebugMessageBuilder AddPredicatedProperty<T, TState>(
+            bool condition,
+            TState state,
+            Func<TState, string?> propNameFactory,
+            Func<TState, T> valueFactory
+            )
+        {
+            Guard.IsNotNull(propNameFactory, nameof(propNameFactory));
+            Guard.IsNotNull(valueFactory, nameof(valueFactory));
+
+            if (condition)
+                return AddProperty(propNameFactory(state), valueFactory(state));
 
             return this;
         }

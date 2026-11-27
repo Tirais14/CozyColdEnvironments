@@ -10,7 +10,7 @@ namespace CCEnvs.Caching
         private T? value;
 
         public DateTime? LastAppealTime { get; private set; }
-        public TimeSpan? ExpirationTimeRelativeToNow { get; set; }
+        public TimeSpan? SlidingExpiration { get; set; }
 
         public TimeSpan IdleTime {
             get
@@ -57,10 +57,10 @@ namespace CCEnvs.Caching
 
         public bool IsExpired()
         {
-            if (ExpirationTimeRelativeToNow is null)
+            if (SlidingExpiration is null)
                 return false;
 
-            return IdleTime > ExpirationTimeRelativeToNow.Value;
+            return IdleTime > SlidingExpiration.Value;
         }
     }
 }

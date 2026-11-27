@@ -923,7 +923,7 @@ namespace CCEnvs.Reflection
                 baseTypes = type.CollectBaseTypes().ToArray();
 
                 if (cache.TryAdd(type, baseTypes, out var entry))
-                    entry.ExpirationTimeRelativeToNow = 10.Minutes();
+                    entry.SlidingExpiration = 10.Minutes();
             }
 
             return baseTypes;

@@ -76,7 +76,7 @@ namespace CCEnvs
             if (expirationTimeRelativeToNow.HasValue &&
                 names.TryAdd(nameKey, name, out var entry))
             {
-                entry.ExpirationTimeRelativeToNow = expirationTimeRelativeToNow;
+                entry.SlidingExpiration = expirationTimeRelativeToNow;
             }
 
             return name;

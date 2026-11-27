@@ -142,7 +142,7 @@ namespace CCEnvs.Reflection
         private readonly void CacheProperty(PropertyInfo prop)
         {
             if (cachedPropKeys.TryAdd(this, new PropertyKey(prop), out var entry))
-                entry.ExpirationTimeRelativeToNow = BaseReflectionHandle.GetCacheExpirationTimeRelativeToNowOrDefault();
+                entry.SlidingExpiration = BaseReflectionHandle.GetCacheExpirationTimeRelativeToNowOrDefault();
 
             CachedMembers.TryAddProperty(prop, out _);
         }

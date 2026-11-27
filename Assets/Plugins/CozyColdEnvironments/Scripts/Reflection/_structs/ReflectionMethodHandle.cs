@@ -234,7 +234,7 @@ namespace CCEnvs.Reflection
         private readonly void CacheMethod(MethodInfo method)
         {
             if (cachedMethodKeys.TryAdd(this, new MethodKey(method), out var entry))
-                entry.ExpirationTimeRelativeToNow = BaseReflectionHandle.GetCacheExpirationTimeRelativeToNowOrDefault();
+                entry.SlidingExpiration = BaseReflectionHandle.GetCacheExpirationTimeRelativeToNowOrDefault();
 
             CachedMembers.TryAddMethod(method, out _);
         }
@@ -242,7 +242,7 @@ namespace CCEnvs.Reflection
         private readonly void CacheConstructor(ConstructorInfo ctor)
         {
             if (cachedCtorKeys.TryAdd(this, new MethodKey(ctor), out var entry))
-                entry.ExpirationTimeRelativeToNow = BaseReflectionHandle.GetCacheExpirationTimeRelativeToNowOrDefault();
+                entry.SlidingExpiration = BaseReflectionHandle.GetCacheExpirationTimeRelativeToNowOrDefault();
 
             CachedMembers.TryAddConstructor(ctor, out _);
         }

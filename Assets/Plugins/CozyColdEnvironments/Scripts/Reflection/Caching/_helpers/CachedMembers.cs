@@ -259,7 +259,7 @@ namespace CCEnvs.Reflection.Caching
             if (!members.TryAdd(key, member, out var entry))
                 return false;
 
-            entry.ExpirationTimeRelativeToNow = expirationTimeRelativeToNow ?? DefaultExpirationTimeRelativeToNow;
+            entry.SlidingExpiration = expirationTimeRelativeToNow ?? DefaultExpirationTimeRelativeToNow;
             return true;
         }
 
@@ -276,7 +276,7 @@ namespace CCEnvs.Reflection.Caching
             if (!fields.TryAdd(key, field, out var entry))
                 return false;
 
-            entry.ExpirationTimeRelativeToNow = expirationTimeRelativeToNow ?? DefaultExpirationTimeRelativeToNow;
+            entry.SlidingExpiration = expirationTimeRelativeToNow ?? DefaultExpirationTimeRelativeToNow;
             return true;
         }
 
@@ -293,7 +293,7 @@ namespace CCEnvs.Reflection.Caching
             if (!props.TryAdd(key, prop, out var entry))
                 return false;
 
-            entry.ExpirationTimeRelativeToNow = expirationTimeRelativeToNow ?? DefaultExpirationTimeRelativeToNow;
+            entry.SlidingExpiration = expirationTimeRelativeToNow ?? DefaultExpirationTimeRelativeToNow;
             return true;
         }
 
@@ -310,7 +310,7 @@ namespace CCEnvs.Reflection.Caching
             if (!parameters.TryAdd(key, param, out var entry))
                 return false;
 
-            entry.ExpirationTimeRelativeToNow = expirationTimeRelativeToNow ?? DefaultExpirationTimeRelativeToNow;
+            entry.SlidingExpiration = expirationTimeRelativeToNow ?? DefaultExpirationTimeRelativeToNow;
             return true;
         }
 
@@ -327,7 +327,7 @@ namespace CCEnvs.Reflection.Caching
             if (!methods.TryAdd(key, method, out var entry))
                 return false;
 
-            entry.ExpirationTimeRelativeToNow = expirationTimeRelativeToNow ?? DefaultExpirationTimeRelativeToNow;
+            entry.SlidingExpiration = expirationTimeRelativeToNow ?? DefaultExpirationTimeRelativeToNow;
             return true;
         }
 
@@ -344,7 +344,7 @@ namespace CCEnvs.Reflection.Caching
             if (!methods.TryAdd(key, ctor, out var entry))
                 return false;
 
-            entry.ExpirationTimeRelativeToNow = expirationTimeRelativeToNow ?? DefaultExpirationTimeRelativeToNow;
+            entry.SlidingExpiration = expirationTimeRelativeToNow ?? DefaultExpirationTimeRelativeToNow;
             return true;
         }
 

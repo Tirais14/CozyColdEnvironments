@@ -19,7 +19,7 @@ namespace CCEnvs.UnityX.Components
         protected override void Awake()
         {
             base.Awake();
-            items.CreateEntry(string.Empty).ExpirationTimeRelativeToNow = null;
+            items.CreateEntry(string.Empty).SlidingExpiration = null;
         }
 
         /// <returns>registration which already binded to audio source and regsitry life time</returns>
@@ -32,7 +32,7 @@ namespace CCEnvs.UnityX.Components
                 entry.EntryTag,
                 factory: static (entry) =>
                 {
-                    entry.ExpirationTimeRelativeToNow = 10.Minutes();
+                    entry.SlidingExpiration = 10.Minutes();
                     return new Item();
                 });
 
@@ -92,7 +92,7 @@ namespace CCEnvs.UnityX.Components
                 tag,
                 factory: static entry =>
                 {
-                    entry.ExpirationTimeRelativeToNow = 10.Minutes();
+                    entry.SlidingExpiration = 10.Minutes();
                     return new Item();
                 });
 

@@ -143,7 +143,7 @@ namespace CCEnvs.Reflection
         private readonly void CacheField(FieldInfo field)
         {
             if (cachedFieldKeys.TryAdd(this, new FieldKey(field), out var entry))
-                entry.ExpirationTimeRelativeToNow = BaseReflectionHandle.GetCacheExpirationTimeRelativeToNowOrDefault();
+                entry.SlidingExpiration = BaseReflectionHandle.GetCacheExpirationTimeRelativeToNowOrDefault();
 
             CachedMembers.TryAddField(field, out _);
         }
