@@ -43,6 +43,11 @@ namespace CCEnvs.UnityX.D3
         public ButtonActionRx? JumpIA { get; private set; }
         public ButtonActionRx? RunIA { get; private set; }
 
+        public bool RunToggle {
+            get => runToggle;
+            set => runToggle = value;   
+        }
+
         protected override void Start()
         {
             base.Start();
@@ -83,24 +88,21 @@ namespace CCEnvs.UnityX.D3
             CCDisposable.Dispose(ref runIABinding);
         }
 
-        public CharControllerInputBinder SetMoveIA(InputActionRx<Vector2>? ia)
+        public void SetMoveIA(InputActionRx<Vector2>? ia)
         {
             MoveIA = ia;
-            return this;
         }
 
-        public CharControllerInputBinder SetJumpIA(ButtonActionRx? ia)
+        public void SetJumpIA(ButtonActionRx? ia)
         {
             JumpIA = ia;
             TryBindJumpIA();
-            return this;
         }
 
-        public CharControllerInputBinder SetRunIA(ButtonActionRx? value)
+        public void SetRunIA(ButtonActionRx? value)
         {
             RunIA = value;
             TryBindRunIA();
-            return this;
         }
 
         private void TryBindJumpIA()

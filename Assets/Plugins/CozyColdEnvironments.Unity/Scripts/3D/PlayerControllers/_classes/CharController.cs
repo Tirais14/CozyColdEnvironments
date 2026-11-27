@@ -7,6 +7,7 @@ using UnityEngine;
 #nullable enable
 namespace CCEnvs.UnityX.D3
 {
+    [DisallowMultipleComponent]
     public class CharController : CCBehaviour
     {
         public const float SURFACE_CAST_DISTANCE_MIN = 0.01f;

@@ -15,7 +15,7 @@ namespace CCEnvs.Unity.D3.Controllers
         protected InputActionRxReference<Vector2> lookInputAction;
 
         [GetBySelf]
-        protected FirstPersonController firstPersonController = null!;
+        protected BasePersonController firstPersonController = null!;
 
         private IDisposable? lookIABinding;
 
