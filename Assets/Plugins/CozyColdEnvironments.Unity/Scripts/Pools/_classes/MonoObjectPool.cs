@@ -58,16 +58,10 @@ namespace CCEnvs.UnityX.Pools
             }
         }
 
-        protected override void Awake()
-        {
-            base.Awake();
-            core = CreatePool();
-        }
-
         protected override void Start()
         {
             base.Start();
-
+            core = CreatePool();
             if (preheatCount > 0)
                 PreheatAsync().Forget();
         }

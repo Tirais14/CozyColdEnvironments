@@ -16,6 +16,8 @@ using System.Linq;
 using System.Threading;
 using UnityEngine;
 using Object = UnityEngine.Object;
+using System.Threading.Tasks;
+
 
 #if ZLINQ_PLUGIN
 using ZLinq;
@@ -35,6 +37,8 @@ namespace CCEnvs.UnityX.Items.UI
     {
         private readonly ObservableDictionary<IItemContainer, GameObject> containerViews = new(4, new ReferenceEqualityComparer<IItemContainer>());
 
+        private readonly IItemContainerViewFactory containerViewFactory;
+
         private IDisposable? addContainerBinding;
         private IDisposable? removeContainerBinding;
         private IDisposable? replaceContainerBinding;
@@ -53,13 +57,15 @@ namespace CCEnvs.UnityX.Items.UI
         public InventoryViewModel(
             TModel? model,
             GameObject containerPrefab,
-            Transform containersRoot
+            Transform containersRoot,
+            IItemContainerViewFactory? containerViewFactory = null
             )
         {
             CC.Guard.IsNotNull(containerPrefab, nameof(containerPrefab));
 
             ContainerPrefab = containerPrefab;
             ContainersRoot = containersRoot;
+            this.containerViewFactory = containerViewFactory ?? new ItemContainerViewFactory();
 
             SetModel(model);
         }
@@ -150,85 +156,56 @@ namespace CCEnvs.UnityX.Items.UI
                 parent = ContainersRoot
             };
 
-            var instances = await Object.InstantiateAsync(
-                ContainerPrefab,
-                count,
-                instParams,
-                cancellationToken: cancellationToken
-                );
-
+            var instances = await containerViewFactory.Create(count, ContainerPrefab, instParams, cancellationToken);
             var containerViewModels = new List<IItemContainerViewModel>(count);
 
-            try
+            foreach (var go in instances)
             {
-                foreach (var go in instances)
+                if (!go.Q()
+                    .IncludeInactive()
+                    .FromChildrens()
+                    .Component<IView>()
+                    .Lax()
+                    .TryGetValue(out var view))
                 {
-                    if (!go.Q()
-                        .IncludeInactive()
-                        .FromChildrens()
-                        .Component<IView>()
-                        .Lax()
-                        .TryGetValue(out var view))
-                    {
-                        this.PrintError(DebugMessageBuilder.CreatePooled()
-                            .AddMessage("Container game object view doesn't contains view component")
-                            .AddProperty("GameObject", go)
-                            .AddProperty("Archetype", go.GetComponents<Component>().Select(cmp => cmp.GetType().FullName).SequenceToString())
-                            .ToStringAndDispose()
-                            );
-                        Object.Destroy(go);
-                        continue;
-                    }
-
-                    if (!view.HasViewModel<IItemContainerViewModel>())
-                    {
-                        this.PrintError(DebugMessageBuilder.CreatePooled()
-                            .AddMessage("View doesn't contains view model")
-                            .AddProperty("GameObject", go)
-                            .ToStringAndDispose()
-                            );
-                        Object.Destroy(go);
-                        continue;
-                    }
-
-                    containerViewModels.Add(view.GetViewModel<IItemContainerViewModel>());
-
-                    if (!view.HasModel<IItemContainer>())
-                    {
-                        this.PrintError(DebugMessageBuilder.CreatePooled()
-                            .AddMessage("View doesn't contains model")
-                            .AddProperty("GameObject", go)
-                            .ToStringAndDispose()
-                            );
-                        Object.Destroy(go);
-                        continue;
-                    }
-
-                    containerViews.Add(view.GetModel<IItemContainer>(), go);
+                    this.PrintError(DebugMessageBuilder.CreatePooled()
+                        .AddMessage("Container game object view doesn't contains view component")
+                        .AddProperty("GameObject", go)
+                        .AddProperty("Archetype", go.GetComponents<Component>().Select(cmp => cmp.GetType().FullName).SequenceToString())
+                        .ToStringAndDispose()
+                        );
+                    Object.Destroy(go);
+                    continue;
                 }
 
-                return containerViewModels;
-            }
-            catch (Exception ex)
-            {
-                this.PrintException(ex);
-
-                foreach (var go in instances)
-                    UnityEngine.Object.Destroy(go);
-
-                foreach (var containerViewModel in containerViewModels
-#if ZLINQ_PLUGIN
-                    .AsValueEnumerable()
-#endif
-                    .Select(cntVM => cntVM.Model)
-                    .OfType<IItemContainer>()
-                    )
+                if (!view.HasViewModel<IItemContainerViewModel>())
                 {
-                    containerViews.Remove(containerViewModel);
+                    this.PrintError(DebugMessageBuilder.CreatePooled()
+                        .AddMessage("View doesn't contains view model")
+                        .AddProperty("GameObject", go)
+                        .ToStringAndDispose()
+                        );
+                    Object.Destroy(go);
+                    continue;
                 }
+
+                containerViewModels.Add(view.GetViewModel<IItemContainerViewModel>());
+
+                if (!view.HasModel<IItemContainer>())
+                {
+                    this.PrintError(DebugMessageBuilder.CreatePooled()
+                        .AddMessage("View doesn't contains model")
+                        .AddProperty("GameObject", go)
+                        .ToStringAndDispose()
+                        );
+                    Object.Destroy(go);
+                    continue;
+                }
+
+                containerViews.Add(view.GetModel<IItemContainer>(), go);
             }
 
-            return Array.Empty<IItemContainerViewModel>();
+            return containerViewModels;
         }
 
         private void BindContainerRemove(TModel model)
