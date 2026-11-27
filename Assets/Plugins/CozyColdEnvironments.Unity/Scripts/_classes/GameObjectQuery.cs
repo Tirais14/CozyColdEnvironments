@@ -1,4 +1,5 @@
 using CCEnvs.Collections;
+using CCEnvs.FuncLanguage;
 using CCEnvs.Linq;
 using CCEnvs.Pools;
 using CCEnvs.Reflection;
@@ -35,10 +36,29 @@ namespace CCEnvs.UnityX
 
         public static GameObjectQuery World => new();
 
+        private GameObject? targetGO;
+
+        private Component? targetComponent;
+
         /// <summary>
         /// May be null
         /// </summary>
-        public GameObject? Target { get; set; }
+        public GameObject? Target {
+            readonly get
+            {
+                if (targetGO != null)
+                    return targetGO;
+                else if (targetComponent != null)
+                    return targetComponent.gameObject;
+                else
+                    return null;
+            }
+            set
+            {
+                targetGO = value;
+                targetComponent = null;
+            }
+        }
 
         public Settings settings { get; set; }
         public StringMatchSettings nameFilterSettings { get; set; }
@@ -74,7 +94,7 @@ namespace CCEnvs.UnityX
                 return this;
             }
 
-            Target = gameObject;
+            targetGO = gameObject;
             return this;
         }
 
@@ -88,7 +108,7 @@ namespace CCEnvs.UnityX
                 return this;
             }
 
-            Target = component.gameObject;
+            targetComponent = component;
             return this;
         }
 
@@ -857,7 +877,7 @@ namespace CCEnvs.UnityX
             )
         {
             return new GameObjectQueryException(
-                Target,
+                targetComponent.CastTo<UnityEngine.Object?>().IfNull(targetGO),
                 settings,
                 nameFilterSettings,
                 findMode,

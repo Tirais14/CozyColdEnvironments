@@ -11,7 +11,7 @@ namespace CCEnvs.UnityX
     {
         public GameObjectQueryException(string message) : base(message) { }
 
-        public GameObjectQueryException(GameObject? target,
+        public GameObjectQueryException(UnityEngine.Object? target,
             GameObjectQuery.Settings settings = GameObjectQuery.Settings.None,
             StringMatchSettings nameFilterSettings = StringMatchSettings.None,
             FindMode findMode = FindMode.None,
@@ -34,10 +34,6 @@ namespace CCEnvs.UnityX
                 .AddProperty(nameof(tag), tag)
                 .AddProperty(nameof(layer), layer)
                 .AddProperty(nameof(componentFilter), componentFilter)
-                .AddPredicatedProperty(additionalParams != default && additionalParams.Length >= 1, () => additionalParams[0].Name, () => additionalParams[0].Value)
-                .AddPredicatedProperty(additionalParams != default && additionalParams.Length >= 2, () => additionalParams[1].Name, () => additionalParams[1].Value)
-                .AddPredicatedProperty(additionalParams != default && additionalParams.Length >= 3, () => additionalParams[2].Name, () => additionalParams[2].Value)
-                .AddPredicatedProperty(additionalParams != default && additionalParams.Length >= 4, () => additionalParams[3].Name, () => additionalParams[3].Value)
                 .ToStringAndDispose()
                 )
         {
