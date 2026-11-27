@@ -221,12 +221,18 @@ namespace CCEnvs.UnityX.ComponentInjections
             query.findMode = item.ResolveFindMode();
 
             if (item.Attribute.NameFilter.IsNotNull(out var goName))
-                query.WithName(goName);
+                query = query.WithName(goName);
 
             query.nameFilterSettings = item.Attribute.NameMatchSettings;
 
             if (item.Attribute.TagFilter.IsNotNull(out var goTag))
-                query.WithTag(goTag);
+                query = query.WithTag(goTag);
+
+            if (item.Attribute.RequireComponent is not null)
+                query = query.RequireComponent(item.Attribute.RequireComponent);
+
+            if (item.Attribute.DepthLimiter is not null)
+                query = query.WithDepthLimiter(item.Attribute.DepthLimiter);
 
             var seekingType = item.GetValueType();
 
