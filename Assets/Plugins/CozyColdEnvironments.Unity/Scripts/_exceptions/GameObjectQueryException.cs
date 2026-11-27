@@ -20,8 +20,8 @@ namespace CCEnvs.UnityX
             string? tag = null,
             int? layer = null,
             Type? componentFilter = null,
-            string? message = null,
-            InlinedList8<(string Name, object Value)> additionalParams = default)
+            string? message = null
+            )
             :
             base(new DebugMessageBuilder(null)
                 .AddMessage(message)
