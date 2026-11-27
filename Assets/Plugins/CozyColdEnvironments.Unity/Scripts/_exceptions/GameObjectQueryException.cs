@@ -25,8 +25,8 @@ namespace CCEnvs.UnityX
             :
             base(new DebugMessageBuilder(null)
                 .AddMessage(message)
-                .AddProperty(nameof(target), target.Maybe().Map(static target => $"{target.name}({target.GetType()})").GetValue())
-                .AddProperty(nameof(seekingComponentType), seekingComponentType)
+                .AddProperty(nameof(target), target.Maybe().Map(static target => $"{target.name}({target.GetType().FullName})").GetValue())
+                .AddProperty(nameof(seekingComponentType), seekingComponentType.Maybe().Map(x => x.FullName).GetValue())
                 .AddProperty(nameof(settings), settings)
                 .AddProperty(nameof(findMode), findMode)
                 .AddProperty(nameof(name), name)
