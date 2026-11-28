@@ -15,8 +15,6 @@ namespace CCEnvs.Disposables
             this.disposeAction = disposeAction;
         }
 
-        ~AnonymousDisposable() => Dispose();
-
         private int disposed;
         public void Dispose()
         {
@@ -39,8 +37,6 @@ namespace CCEnvs.Disposables
             this.disposeAction = disposeAction;
             this.state = state;
         }
-
-        ~AnonymousDisposable() => Dispose();
 
         private int disposed;
         public void Dispose()
