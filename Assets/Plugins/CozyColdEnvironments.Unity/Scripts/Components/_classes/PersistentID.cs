@@ -1,9 +1,12 @@
 using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.UnityX.EditorSerialization;
+using Humanizer;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 #nullable enable
 namespace CCEnvs.UnityX.Components
@@ -18,21 +21,53 @@ namespace CCEnvs.UnityX.Components
 
         public int Value {
             get => value.Data ?? 0;
-            private set => this.value = value;
+            set
+            {
+                if (this.value.Data is not null)
+                    Unregister(this.value.Data.Value);
+
+                Register(value);
+                this.value = value;
+            }
         }
 
         protected override void Awake()
         {
             base.Awake();
-
-            if (value.Data is null)
-                value = GetNextID();
+            Value = GetNextID();
         }
 
         protected override void OnDestroy()
         {
             base.OnDestroy();
             Unregister(Value);
+        }
+
+        public static bool TryFind(int id, [NotNullWhen(true)] out PersistentID? result, Scene scene = default)
+        {
+            foreach (var persistentID in GameObjectQuery.World.OnScene(scene).IncludeInactive().Components<PersistentID>())
+            {
+                if (persistentID.Value == id)
+                {
+                    result = persistentID;
+                    return true;
+                }
+            }
+
+            result = null;
+            return false;
+        }
+
+        public static int GetNextID()
+        {
+            int id;
+            do
+            {
+                id = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
+            }
+            while (used.Contains(id));
+
+            return id;
         }
 
         public static bool Unregister(int id) => used.Remove(id);
@@ -53,26 +88,6 @@ namespace CCEnvs.UnityX.Components
                     .ToStringAndDispose()
                     );
             }
-        }
-
-        public void SetID(int id)
-        {
-            ValidateID(id);
-            used.Add(id);
-            Unregister(Value);
-            Value = id;
-        }
-
-        private int GetNextID()
-        {
-            int id;
-            do
-            {
-                id = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
-            }
-            while (used.Contains(id));
-
-            return id;
         }
     }
 }

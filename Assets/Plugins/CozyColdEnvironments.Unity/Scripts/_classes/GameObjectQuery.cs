@@ -77,6 +77,8 @@ namespace CCEnvs.UnityX
         public Type? RequieredTypeFilter { get; set; }
         public Type? DepthLimiterType { get; set; }
 
+        public Scene Scene { get; set; }
+
         public static GameObjectQuery Create()
         {
             return new GameObjectQuery().Reset();
@@ -299,6 +301,12 @@ namespace CCEnvs.UnityX
             RequieredTypeFilter = null;
             GUID = null;
 
+            return this;
+        }
+
+        public GameObjectQuery OnScene(Scene scene)
+        {
+            Scene = scene;
             return this;
         }
 
@@ -651,6 +659,14 @@ namespace CCEnvs.UnityX
                    go.HasComponent(RequieredTypeFilter);
         }
 
+        public readonly bool IsSceneMatch(GameObject? go)
+        {
+            if (go == null)
+                return false;
+
+            return !Scene.IsValid() || go.scene == Scene;
+        }
+
         public readonly bool IsGameObjectMatch(GameObject? go)
         {
             return IsMatchLayerMaskFilter(go)
@@ -661,7 +677,9 @@ namespace CCEnvs.UnityX
                    &&
                    IsMatchGUIDFilter(go)
                    &&
-                   HasRequieredType(go);
+                   HasRequieredType(go)
+                   &&
+                   IsSceneMatch(go);
         }
 
         #endregion Filters
