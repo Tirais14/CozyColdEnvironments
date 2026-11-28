@@ -20,5 +20,7 @@ namespace CCEnvs.UnityX.Tickables
         bool Unregister(ITickable? tickable);
 
         bool Unregister(object? obj);
+
+        bool Unreigster(TickableHandle handle);
     }
 }
