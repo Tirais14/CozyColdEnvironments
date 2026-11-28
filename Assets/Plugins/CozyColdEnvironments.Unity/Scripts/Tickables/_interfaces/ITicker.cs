@@ -21,6 +21,6 @@ namespace CCEnvs.UnityX.Tickables
 
         bool Unregister(object? obj);
 
-        bool Unreigster(TickableHandle handle);
+        bool Unregister(TickableHandle handle);
     }
 }
