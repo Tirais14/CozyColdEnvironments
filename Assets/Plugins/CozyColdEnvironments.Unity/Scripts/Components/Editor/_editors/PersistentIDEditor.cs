@@ -17,14 +17,21 @@ namespace CCEnvs.UnityX.Components.Editr
             space.style.minHeight = 20f;
             root.Add(space);
 
-            var button = new Button(GenerateNewID)
+            var generateButton = new Button(GenerateNewID)
             {
                 text = "Generate ID"
             };
 
-            button.style.minHeight = 15f;
+            generateButton.style.minHeight = 15f;
+            root.Add(generateButton);
 
-            root.Add(button);
+            var eraseButton = new Button(EraseID)
+            {
+                text = "Erase ID"
+            };
+            eraseButton.style.minHeight = 15f;
+            root.Add(eraseButton);
+
             return root;
         }
 
@@ -32,6 +39,13 @@ namespace CCEnvs.UnityX.Components.Editr
         {
             var id = PersistentID.GetNextID();
             target.CastTo<PersistentID>().Value = id;
+        }
+
+        private void EraseID()
+        {
+            var id = target.CastTo<PersistentID>();
+            PersistentID.Unregister(id.Value);
+            id.value = null;
         }
     }
 }

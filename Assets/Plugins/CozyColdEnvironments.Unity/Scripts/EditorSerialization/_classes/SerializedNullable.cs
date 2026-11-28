@@ -1,12 +1,13 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using UnityEngine;
 
 #nullable enable
 namespace CCEnvs.UnityX.EditorSerialization
 {
-    [Serializable]
+    [Serializable, DataContract]
     public struct SerializedNullable<T> :
         IEditorSerialized<T?>,
         IEquatable<SerializedNullable<T>>,
@@ -18,14 +19,13 @@ namespace CCEnvs.UnityX.EditorSerialization
         private T @default;
 
         [SerializeField]
-        [JsonProperty("value")]
+        [DataMember(Name = "value")]
         private T value;
 
         [SerializeField]
-        [JsonProperty("hasValue")]
+        [DataMember(Name = "hasValue")]
         private bool hasValue;
 
-        [JsonIgnore]
         public readonly T? Data {
             get
             {
@@ -93,10 +93,10 @@ namespace CCEnvs.UnityX.EditorSerialization
 
         public readonly override string ToString()
         {
-            if (this == default)
-                return StringHelper.EMPTY_OBJECT;
-
-            return $"({nameof(value)}: {value}; {nameof(hasValue)}: {hasValue})";
+            return ToStringBuilder.CreatePooled()
+                .AddProperty("Value", value)
+                .AddProperty("HasValue", hasValue)
+                .ToStringAndDispose();
         }
 
         void ISerializationCallbackReceiver.OnBeforeSerialize()

@@ -1,3 +1,4 @@
+using CCEnvs.Attributes;
 using CCEnvs.Diagnostics;
 using CCEnvs.FuncLanguage;
 using CCEnvs.UnityX.EditorSerialization;
@@ -14,20 +15,28 @@ namespace CCEnvs.UnityX.Components
     [DisallowMultipleComponent]
     public sealed class PersistentID : CCBehaviour
     {
+#if UNITY_EDITOR
+        private static int usedExpirationKey;
+
+        private static bool isUsedExpired => usedExpirationKey != UnityEditorDomain.PlayModeEntranceCount;
+#endif
+
         private static readonly HashSet<int> used = new();
 
         [SerializeField]
-        private SerializedNullable<int> value;
+        private int value;
 
         public int Value {
-            get => value.Data ?? 0;
+            get => value;
             set
             {
-                if (this.value.Data is not null)
-                    Unregister(this.value.Data.Value);
+                Unregister(this.value);
 
-                Register(value);
-                this.value = value;
+                if (value != 0)
+                {
+                    Register(value);
+                    this.value = value;
+                }
             }
         }
 
@@ -65,7 +74,7 @@ namespace CCEnvs.UnityX.Components
             {
                 id = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
             }
-            while (used.Contains(id));
+            while (id == 0 || used.Contains(id));
 
             return id;
         }
@@ -74,6 +83,18 @@ namespace CCEnvs.UnityX.Components
 
         public static void Register(int id)
         {
+#if UNITY_EDITOR
+            if (!Application.isPlaying)
+            {
+                if (isUsedExpired)
+                    foreach (var persistentID in GameObjectQuery.World.Components<PersistentID>())
+                        if (persistentID.value != 0)
+                            used.Add(persistentID.value);
+
+                usedExpirationKey = UnityEditorDomain.PlayModeEntranceCount;
+            }
+#endif
+
             ValidateID(id);
             used.Add(id);
         }
@@ -88,6 +109,12 @@ namespace CCEnvs.UnityX.Components
                     .ToStringAndDispose()
                     );
             }
+        }
+
+        [OnInstallExecutable]
+        private static void OnInstall()
+        {
+            used.Clear();
         }
     }
 }
