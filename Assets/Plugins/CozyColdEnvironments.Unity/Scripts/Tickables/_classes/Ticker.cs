@@ -6,7 +6,7 @@ using UnityEngine;
 #nullable enable
 namespace CCEnvs.UnityX.Tickables
 {
-    public class Ticker : CCBehaviour
+    public class Ticker : CCBehaviour, ITicker
     {
         private readonly List<ITickable> tickables = new();
 
@@ -54,7 +54,7 @@ namespace CCEnvs.UnityX.Tickables
                 catch (System.Exception ex)
                 {
                     this.PrintException(ex);
-                } 
+                }
             }
         }
 
@@ -109,24 +109,112 @@ namespace CCEnvs.UnityX.Tickables
 
             return lateTickables.Remove(lateTickable);
         }
+        public bool Unregister(object? obj)
+        {
+            if (obj is null)
+                return false;
 
-        public DisposableLight<(Ticker Ticker, ITickable Tickable)> Register(ITickable tickable)
+            bool isUnregistered = false;
+
+            if (obj is ITickable tickable && Unregister(tickable))
+                isUnregistered = true;
+
+            if (obj is IFixedTickable fixedTickable && Unregister(fixedTickable))
+                isUnregistered = true;
+
+            if (obj is ILateTickable lateTickable && Unregister(lateTickable))
+                isUnregistered = true;
+
+            return isUnregistered;
+        }
+        public bool Unregister(TickableHandle handle)
+        {
+            if (!handle.IsInitialized)
+                return false;
+
+            bool isUnregistered = false;
+
+            if (handle.Tickable is not null)
+            {
+                if (handle.TickableIndex >= 0
+                    && handle.TickableIndex < tickables.Count
+                    && handle.Tickable.Equals(tickables[handle.TickableIndex])
+                    )
+                    tickables.RemoveAt(handle.TickableIndex);
+                else if (Unregister(handle.Tickable))
+                    isUnregistered = true;
+            }
+
+            if (handle.FixedTickable is not null)
+            {
+                if (handle.FixedTickableIndex >= 0
+                    && handle.FixedTickableIndex < fixedTickables.Count
+                    && handle.FixedTickable.Equals(fixedTickables[handle.FixedTickableIndex])
+                    )
+                    fixedTickables.RemoveAt(handle.FixedTickableIndex);
+                else if (Unregister(handle.FixedTickable))
+                    isUnregistered = true;
+            }
+
+            if (handle.LateTickable is not null)
+            {
+                if (handle.LateTickableIndex >= 0
+                    && handle.LateTickableIndex < lateTickables.Count
+                    && handle.LateTickable.Equals(lateTickables[handle.LateTickableIndex])
+                    )
+                    lateTickables.RemoveAt(handle.LateTickableIndex);
+                else if (Unregister(handle.LateTickable))
+                    isUnregistered = true;
+            }
+
+            return isUnregistered;
+        }
+
+        public TickableHandle Register(ITickable tickable)
         {
             CC.Guard.IsNotNull(tickable, nameof(tickable));
             tickables.Add(tickable);
-            return CCDisposable.Light((ticker: this, tickable), static args => args.ticker.tickables.Remove(args.tickable));
+            return new TickableHandle(tickable, this, tickables.Count - 1);
         }
-        public DisposableLight<(Ticker Ticker, IFixedTickable FixedTickable)> Register(IFixedTickable fixedTickable)
+        public TickableHandle Register(IFixedTickable fixedTickable)
         {
             CC.Guard.IsNotNull(fixedTickable, nameof(fixedTickable));
             fixedTickables.Add(fixedTickable);
-            return CCDisposable.Light((ticker: this, fixedTickable), static args => args.ticker.fixedTickables.Remove(args.fixedTickable));
+            return new TickableHandle(fixedTickable, this, fixedTickables.Count - 1);
         }
-        public DisposableLight<(Ticker Ticker, ILateTickable LateTickable)> Register(ILateTickable lateTickable)
+        public TickableHandle Register(ILateTickable lateTickable)
         {
             CC.Guard.IsNotNull(lateTickable, nameof(lateTickable));
             lateTickables.Add(lateTickable);
-            return CCDisposable.Light((ticker: this, lateTickable), static args => args.ticker.lateTickables.Remove(args.lateTickable));
+            return new TickableHandle(lateTickable, this, lateTickables.Count - 1);
+        }
+
+        public TickableHandle Register(object obj)
+        {
+            CC.Guard.IsNotNull(obj, nameof(obj));
+
+            var tickable = obj as ITickable;
+            var fixedTickable = obj as IFixedTickable;
+            var lateTickable = obj as ILateTickable;
+
+            if (tickable is not null)
+                Register(tickable);
+
+            if (fixedTickable is not null)
+                Register(fixedTickable);
+
+            if (lateTickable is not null)
+                Register(lateTickable);
+
+            return new TickableHandle(
+                tickable,
+                fixedTickable,
+                lateTickable,
+                this,
+                tickables.Count - 1,
+                fixedTickables.Count - 1,
+                lateTickables.Count - 1
+                );
         }
     }
 }
